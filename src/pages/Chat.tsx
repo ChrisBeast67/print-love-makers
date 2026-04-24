@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Printer, Send } from "lucide-react";
+import { LogOut, Printer, Send, Shield, Ban, ShieldCheck, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,24 +29,30 @@ const Chat = ({ user }: { user: User }) => {
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [bannedIds, setBannedIds] = useState<Set<string>>(new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Initial load
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const [{ data: msgs }, { data: profs }] = await Promise.all([
+      const [{ data: msgs }, { data: profs }, { data: roles }, { data: bans }] = await Promise.all([
         supabase.from("messages").select("*").order("created_at", { ascending: true }).limit(200),
         supabase.from("profiles").select("id, username, avatar_url"),
+        supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin"),
+        supabase.from("banned_users").select("user_id"),
       ]);
       if (!mounted) return;
       if (msgs) setMessages(msgs);
       if (profs) setProfiles(Object.fromEntries(profs.map((p) => [p.id, p])));
+      setIsAdmin((roles?.length ?? 0) > 0);
+      if (bans) setBannedIds(new Set(bans.map((b) => b.user_id)));
     })();
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [user.id]);
 
   // Realtime subscription
   useEffect(() => {
@@ -74,6 +80,26 @@ const Chat = ({ user }: { user: User }) => {
         (payload) => {
           const old = payload.old as { id: string };
           setMessages((prev) => prev.filter((m) => m.id !== old.id));
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "banned_users" },
+        (payload) => {
+          const row = payload.new as { user_id: string };
+          setBannedIds((s) => new Set(s).add(row.user_id));
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "banned_users" },
+        (payload) => {
+          const row = payload.old as { user_id: string };
+          setBannedIds((s) => {
+            const next = new Set(s);
+            next.delete(row.user_id);
+            return next;
+          });
         },
       )
       .subscribe();
@@ -108,7 +134,35 @@ const Chat = ({ user }: { user: User }) => {
     navigate("/auth", { replace: true });
   };
 
+  const banUser = async (targetId: string, username: string) => {
+    const { error } = await supabase
+      .from("banned_users")
+      .insert({ user_id: targetId, banned_by: user.id });
+    if (error) {
+      toast({ title: "Couldn't ban", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: `Banned ${username}` });
+    }
+  };
+
+  const unbanUser = async (targetId: string, username: string) => {
+    const { error } = await supabase.from("banned_users").delete().eq("user_id", targetId);
+    if (error) {
+      toast({ title: "Couldn't unban", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: `Unbanned ${username}` });
+    }
+  };
+
+  const deleteMessage = async (id: string) => {
+    const { error } = await supabase.from("messages").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Couldn't delete", description: error.message, variant: "destructive" });
+    }
+  };
+
   const me = profiles[user.id];
+  const iAmBanned = bannedIds.has(user.id);
 
   return (
     <div className="flex h-screen flex-col">
@@ -117,6 +171,11 @@ const Chat = ({ user }: { user: User }) => {
           <div className="flex items-center gap-2 text-xl font-bold">
             <Printer className="h-6 w-6 text-primary" />
             <span className="gradient-text">PrintForge Chat</span>
+            {isAdmin && (
+              <span className="ml-2 inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                <Shield className="h-3 w-3" /> Admin
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden text-right text-sm sm:block">
@@ -149,8 +208,9 @@ const Chat = ({ user }: { user: User }) => {
               const p = profiles[m.user_id];
               const isMe = m.user_id === user.id;
               const name = p?.username ?? "Unknown";
+              const userBanned = bannedIds.has(m.user_id);
               return (
-                <div key={m.id} className={`flex gap-3 ${isMe ? "flex-row-reverse" : ""}`}>
+                <div key={m.id} className={`group flex gap-3 ${isMe ? "flex-row-reverse" : ""}`}>
                   <Avatar className="h-8 w-8 shrink-0 border border-border/50">
                     <AvatarImage src={p?.avatar_url ?? undefined} />
                     <AvatarFallback className="bg-primary/10 text-xs text-primary">
@@ -160,6 +220,11 @@ const Chat = ({ user }: { user: User }) => {
                   <div className={`max-w-[75%] ${isMe ? "items-end" : "items-start"} flex flex-col`}>
                     <div className={`mb-1 flex items-center gap-2 text-xs text-muted-foreground ${isMe ? "flex-row-reverse" : ""}`}>
                       <span className="font-medium text-foreground">{isMe ? "You" : name}</span>
+                      {userBanned && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-destructive/15 px-1.5 py-0.5 text-[10px] font-medium text-destructive">
+                          <Ban className="h-2.5 w-2.5" /> banned
+                        </span>
+                      )}
                       <span>{formatTime(m.created_at)}</span>
                     </div>
                     <div
@@ -171,6 +236,39 @@ const Chat = ({ user }: { user: User }) => {
                     >
                       {m.content}
                     </div>
+                    {isAdmin && (
+                      <div className={`mt-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 ${isMe ? "flex-row-reverse" : ""}`}>
+                        {!isMe && (
+                          userBanned ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 gap-1 px-2 text-xs text-primary hover:text-primary"
+                              onClick={() => unbanUser(m.user_id, name)}
+                            >
+                              <ShieldCheck className="h-3 w-3" /> Unban
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 gap-1 px-2 text-xs text-destructive hover:text-destructive"
+                              onClick={() => banUser(m.user_id, name)}
+                            >
+                              <Ban className="h-3 w-3" /> Ban
+                            </Button>
+                          )
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 gap-1 px-2 text-xs text-muted-foreground hover:text-destructive"
+                          onClick={() => deleteMessage(m.id)}
+                        >
+                          <Trash2 className="h-3 w-3" /> Delete
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -184,12 +282,13 @@ const Chat = ({ user }: { user: User }) => {
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type a message..."
+            placeholder={iAmBanned ? "You are banned from sending messages" : "Type a message..."}
             maxLength={2000}
             className="border-border/50 bg-card"
             autoFocus
+            disabled={iAmBanned}
           />
-          <Button type="submit" size="icon" disabled={sending || !input.trim()} aria-label="Send">
+          <Button type="submit" size="icon" disabled={sending || !input.trim() || iAmBanned} aria-label="Send">
             <Send className="h-4 w-4" />
           </Button>
         </form>
