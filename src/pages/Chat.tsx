@@ -6,7 +6,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -171,7 +170,7 @@ const Chat = () => {
       </header>
 
       <main className="flex-1 container mx-auto flex flex-col max-w-3xl w-full px-4 py-4 min-h-0">
-        <ScrollArea className="flex-1 pr-2" viewportRef={scrollRef as any}>
+        <div ref={scrollRef} className="flex-1 overflow-y-auto pr-2">
           <div className="space-y-4 pb-4">
             {messages.length === 0 && (
               <p className="text-center text-muted-foreground text-sm py-12">
@@ -227,7 +226,7 @@ const Chat = () => {
               );
             })}
           </div>
-        </ScrollArea>
+        </div>
 
         <form onSubmit={sendMessage} className="flex gap-2 mt-2 pt-3 border-t border-border/50">
           <Input
