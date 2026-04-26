@@ -35,26 +35,128 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_invites: {
+        Row: {
+          chat_id: string
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          token: string
+        }
+        Insert: {
+          chat_id: string
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          token?: string
+        }
+        Update: {
+          chat_id?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_invites_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_members: {
+        Row: {
+          chat_id: string
+          joined_at: string
+          last_read_at: string
+          role: Database["public"]["Enums"]["chat_member_role"]
+          user_id: string
+        }
+        Insert: {
+          chat_id: string
+          joined_at?: string
+          last_read_at?: string
+          role?: Database["public"]["Enums"]["chat_member_role"]
+          user_id: string
+        }
+        Update: {
+          chat_id?: string
+          joined_at?: string
+          last_read_at?: string
+          role?: Database["public"]["Enums"]["chat_member_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_members_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chats: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string | null
+          type: Database["public"]["Enums"]["chat_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name?: string | null
+          type?: Database["public"]["Enums"]["chat_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string | null
+          type?: Database["public"]["Enums"]["chat_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
+          chat_id: string | null
           content: string
           created_at: string
           id: string
           user_id: string
         }
         Insert: {
+          chat_id?: string | null
           content: string
           created_at?: string
           id?: string
           user_id: string
         }
         Update: {
+          chat_id?: string | null
           content?: string
           created_at?: string
           id?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "messages_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -79,6 +181,32 @@ export type Database = {
           username?: string
         }
         Relationships: []
+      }
+      typing_indicators: {
+        Row: {
+          chat_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chat_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chat_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "typing_indicators_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -106,6 +234,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_member_by_username: {
+        Args: { _chat_id: string; _username: string }
+        Returns: undefined
+      }
+      create_group_chat: { Args: { _name: string }; Returns: string }
+      create_or_get_dm: { Args: { _other_user: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -114,9 +248,20 @@ export type Database = {
         Returns: boolean
       }
       is_banned: { Args: { _user_id: string }; Returns: boolean }
+      is_chat_admin: {
+        Args: { _chat_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_chat_member: {
+        Args: { _chat_id: string; _user_id: string }
+        Returns: boolean
+      }
+      join_chat_with_invite: { Args: { _token: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      chat_member_role: "admin" | "member"
+      chat_type: "dm" | "group"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -245,6 +390,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      chat_member_role: ["admin", "member"],
+      chat_type: ["dm", "group"],
     },
   },
 } as const
