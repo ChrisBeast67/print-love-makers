@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,6 +12,8 @@ import { toast } from "sonner";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get("redirect") || "/chat";
   const { session } = useAuth();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -19,13 +21,13 @@ const Auth = () => {
   const [username, setUsername] = useState("");
 
   useEffect(() => {
-    if (session) navigate("/chat", { replace: true });
-  }, [session, navigate]);
+    if (session) navigate(redirect, { replace: true });
+  }, [session, navigate, redirect]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const redirectUrl = `${window.location.origin}/chat`;
+    const redirectUrl = `${window.location.origin}${redirect}`;
     const { error } = await supabase.auth.signUp({
       email,
       password,
