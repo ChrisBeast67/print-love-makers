@@ -4,46 +4,46 @@
 
 @layer base {
   :root {
-    --background: 220 20% 7%;
-    --foreground: 210 20% 92%;
+    --background: 210 30% 98%;
+    --foreground: 215 30% 15%;
 
-    --card: 220 18% 11%;
-    --card-foreground: 210 20% 92%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 30% 15%;
 
-    --popover: 220 18% 11%;
-    --popover-foreground: 210 20% 92%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 30% 15%;
 
-    --primary: 174 72% 50%;
-    --primary-foreground: 220 20% 7%;
+    --primary: 215 90% 55%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 16% 16%;
-    --secondary-foreground: 210 20% 85%;
+    --secondary: 210 25% 94%;
+    --secondary-foreground: 215 30% 20%;
 
-    --muted: 220 14% 14%;
-    --muted-foreground: 215 15% 55%;
+    --muted: 210 25% 94%;
+    --muted-foreground: 215 15% 45%;
 
-    --accent: 174 72% 50%;
-    --accent-foreground: 220 20% 7%;
+    --accent: 200 95% 50%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 220 14% 18%;
-    --input: 220 14% 18%;
-    --ring: 174 72% 50%;
+    --border: 215 25% 88%;
+    --input: 215 25% 88%;
+    --ring: 215 90% 55%;
 
     --radius: 0.75rem;
 
-    --glow-primary: 174 72% 50%;
+    --glow-primary: 215 90% 55%;
 
-    --sidebar-background: 220 18% 9%;
-    --sidebar-foreground: 210 20% 92%;
-    --sidebar-primary: 174 72% 50%;
-    --sidebar-primary-foreground: 220 20% 7%;
-    --sidebar-accent: 220 14% 14%;
-    --sidebar-accent-foreground: 210 20% 85%;
-    --sidebar-border: 220 14% 18%;
-    --sidebar-ring: 174 72% 50%;
+    --sidebar-background: 215 35% 97%;
+    --sidebar-foreground: 215 30% 15%;
+    --sidebar-primary: 215 90% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 25% 92%;
+    --sidebar-accent-foreground: 215 30% 20%;
+    --sidebar-border: 215 25% 88%;
+    --sidebar-ring: 215 90% 55%;
   }
 }
 
@@ -60,21 +60,28 @@
 
 @layer utilities {
   .glow-text {
-    text-shadow: 0 0 20px hsl(174 72% 50% / 0.5), 0 0 40px hsl(174 72% 50% / 0.2);
+    text-shadow: 0 0 20px hsl(215 90% 55% / 0.35), 0 0 40px hsl(200 95% 55% / 0.2);
   }
 
   .glow-box {
-    box-shadow: 0 0 20px hsl(174 72% 50% / 0.15), 0 0 60px hsl(174 72% 50% / 0.05);
+    box-shadow: 0 0 0 1px hsl(215 90% 55% / 0.15), 0 10px 40px -10px hsl(215 90% 55% / 0.25);
   }
 
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(174 72% 50%), hsl(190 80% 45%));
+    background: linear-gradient(135deg, hsl(215 90% 55%), hsl(200 95% 60%));
   }
 
   .gradient-text {
-    background: linear-gradient(135deg, hsl(174 72% 56%), hsl(190 80% 60%));
+    background: linear-gradient(135deg, hsl(215 90% 50%), hsl(200 95% 55%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  .hi-tech-grid {
+    background-image:
+      linear-gradient(hsl(215 90% 55% / 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(215 90% 55% / 0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
   }
 }
