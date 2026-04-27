@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { GamesLauncher } from "@/components/games/GamesLauncher";
 
 interface Message {
   id: string;
@@ -585,6 +586,13 @@ const ChatPage = () => {
                     </div>
                   </div>
                 </div>
+                <div className="flex items-center gap-2">
+                {activeChat.type === "group" && user && (
+                  <GamesLauncher
+                    chatId={activeChat.id}
+                    username={profiles[user.id]?.username ?? "Player"}
+                  />
+                )}
                 <Dialog open={membersOpen} onOpenChange={setMembersOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm" variant="outline">
@@ -680,6 +688,7 @@ const ChatPage = () => {
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
+                </div>
               </div>
 
               <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4">
