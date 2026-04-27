@@ -126,6 +126,48 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_claims: {
+        Row: {
+          last_claim_date: string
+          user_id: string
+        }
+        Insert: {
+          last_claim_date: string
+          user_id: string
+        }
+        Update: {
+          last_claim_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          addressee_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          status: Database["public"]["Enums"]["friend_status"]
+          updated_at: string
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          status?: Database["public"]["Enums"]["friend_status"]
+          updated_at?: string
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          status?: Database["public"]["Enums"]["friend_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           chat_id: string | null
@@ -158,10 +200,47 @@ export type Database = {
           },
         ]
       }
+      profile_packs: {
+        Row: {
+          accent_hsl: string
+          created_at: string
+          emoji: string
+          id: string
+          name: string
+          price: number
+          rarity: string
+          slug: string
+          theme: string
+        }
+        Insert: {
+          accent_hsl: string
+          created_at?: string
+          emoji: string
+          id?: string
+          name: string
+          price?: number
+          rarity: string
+          slug: string
+          theme: string
+        }
+        Update: {
+          accent_hsl?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          name?: string
+          price?: number
+          rarity?: string
+          slug?: string
+          theme?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           created_at: string
+          equipped_pack_id: string | null
           id: string
           updated_at: string
           username: string
@@ -169,6 +248,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          equipped_pack_id?: string | null
           id: string
           updated_at?: string
           username: string
@@ -176,6 +256,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          equipped_pack_id?: string | null
           id?: string
           updated_at?: string
           username?: string
@@ -204,6 +285,50 @@ export type Database = {
             columns: ["chat_id"]
             isOneToOne: false
             referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_credits: {
+        Row: {
+          balance: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_packs: {
+        Row: {
+          acquired_at: string
+          pack_id: string
+          user_id: string
+        }
+        Insert: {
+          acquired_at?: string
+          pack_id: string
+          user_id: string
+        }
+        Update: {
+          acquired_at?: string
+          pack_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_packs_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "profile_packs"
             referencedColumns: ["id"]
           },
         ]
@@ -238,6 +363,7 @@ export type Database = {
         Args: { _chat_id: string; _username: string }
         Returns: undefined
       }
+      claim_daily_credits: { Args: never; Returns: number }
       create_group_chat: { Args: { _name: string }; Returns: string }
       create_or_get_dm: { Args: { _other_user: string }; Returns: string }
       has_role: {
@@ -257,11 +383,18 @@ export type Database = {
         Returns: boolean
       }
       join_chat_with_invite: { Args: { _token: string }; Returns: string }
+      purchase_pack: { Args: { _pack_id: string }; Returns: undefined }
+      respond_friend_request: {
+        Args: { _accept: boolean; _id: string }
+        Returns: undefined
+      }
+      send_friend_request: { Args: { _username: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
       chat_member_role: "admin" | "member"
       chat_type: "dm" | "group"
+      friend_status: "pending" | "accepted"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -392,6 +525,7 @@ export const Constants = {
       app_role: ["admin", "moderator", "user"],
       chat_member_role: ["admin", "member"],
       chat_type: ["dm", "group"],
+      friend_status: ["pending", "accepted"],
     },
   },
 } as const
