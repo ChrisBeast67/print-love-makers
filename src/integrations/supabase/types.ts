@@ -168,6 +168,39 @@ export type Database = {
         }
         Relationships: []
       }
+      game_sessions: {
+        Row: {
+          awarded: boolean
+          chat_id: string
+          created_at: string
+          ended_at: string | null
+          id: string
+          kind: Database["public"]["Enums"]["game_kind"]
+          started_by: string
+          winner_id: string | null
+        }
+        Insert: {
+          awarded?: boolean
+          chat_id: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["game_kind"]
+          started_by: string
+          winner_id?: string | null
+        }
+        Update: {
+          awarded?: boolean
+          chat_id?: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["game_kind"]
+          started_by?: string
+          winner_id?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           chat_id: string | null
@@ -363,6 +396,10 @@ export type Database = {
         Args: { _chat_id: string; _username: string }
         Returns: undefined
       }
+      award_game_credits: {
+        Args: { _session_id: string; _winner_id: string }
+        Returns: undefined
+      }
       claim_daily_credits: { Args: never; Returns: number }
       create_group_chat: { Args: { _name: string }; Returns: string }
       create_or_get_dm: { Args: { _other_user: string }; Returns: string }
@@ -395,6 +432,7 @@ export type Database = {
       chat_member_role: "admin" | "member"
       chat_type: "dm" | "group"
       friend_status: "pending" | "accepted"
+      game_kind: "parkour" | "skribble"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -526,6 +564,7 @@ export const Constants = {
       chat_member_role: ["admin", "member"],
       chat_type: ["dm", "group"],
       friend_status: ["pending", "accepted"],
+      game_kind: ["parkour", "skribble"],
     },
   },
 } as const
