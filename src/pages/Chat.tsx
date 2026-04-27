@@ -586,6 +586,13 @@ const ChatPage = () => {
                     </div>
                   </div>
                 </div>
+                <div className="flex items-center gap-2">
+                {activeChat.type === "group" && user && (
+                  <GamesLauncher
+                    chatId={activeChat.id}
+                    username={profiles[user.id]?.username ?? "Player"}
+                  />
+                )}
                 <Dialog open={membersOpen} onOpenChange={setMembersOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm" variant="outline">
