@@ -136,16 +136,31 @@ export const Parkour = ({ sessionId, chatId, userId, username, isHost, onClose }
         s.y += s.vy;
         if (s.y >= H - 60) { s.y = H - 60; s.vy = 0; s.onGround = true; }
 
-        // collisions
+        // collisions — solid blocks: land on top, otherwise stop at left edge
+        const px = 80; // player draws at fixed screen x
+        const PW = 20, PH = 30;
         for (const o of obstaclesRef.current) {
-          const px = 80; // player draws at fixed screen x
           const playerWorldX = s.x + px;
-          if (
-            playerWorldX + 20 > o.x &&
-            playerWorldX < o.x + o.w &&
-            s.y + 30 > H - 30 - o.h
-          ) {
-            s.x = Math.max(0, s.x - SPEED * 6); // knockback
+          const playerLeft = playerWorldX;
+          const playerRight = playerWorldX + PW;
+          const playerTop = s.y;
+          const playerBottom = s.y + PH;
+          const oLeft = o.x;
+          const oRight = o.x + o.w;
+          const oTop = H - 30 - o.h;
+
+          if (playerRight > oLeft && playerLeft < oRight && playerBottom > oTop) {
+            // Was the player above the obstacle in the previous frame? -> land on top
+            const prevBottom = playerBottom - s.vy;
+            if (s.vy >= 0 && prevBottom <= oTop + 1) {
+              s.y = oTop - PH;
+              s.vy = 0;
+              s.onGround = true;
+            } else {
+              // Block from passing through: clamp x to left edge of obstacle
+              const newWorldX = oLeft - PW - 0.1;
+              s.x = Math.max(0, newWorldX - px);
+            }
           }
         }
 
@@ -220,6 +235,16 @@ export const Parkour = ({ sessionId, chatId, userId, username, isHost, onClose }
     return () => cancelAnimationFrame(raf);
   }, [running, players, userId, username, broadcastPos, isHost]);
 
+  // Build leaderboard: finished first (by time asc), then unfinished (by x desc)
+  const leaderboard = Object.entries(players)
+    .map(([id, p]) => ({ id, ...p }))
+    .sort((a, b) => {
+      if (a.finished && b.finished) return (a.finishTime ?? 0) - (b.finishTime ?? 0);
+      if (a.finished) return -1;
+      if (b.finished) return 1;
+      return b.x - a.x;
+    });
+
   // Award credits: only host triggers, only once
   const awardedRef = useRef(false);
   useEffect(() => {
@@ -250,10 +275,28 @@ export const Parkour = ({ sessionId, chatId, userId, username, isHost, onClose }
           </div>
         )}
         {winner && (
-          <div className="absolute inset-0 bg-background/80 backdrop-blur flex flex-col items-center justify-center gap-3 rounded-lg">
-            <Trophy className="h-12 w-12 text-amber-500" />
+          <div className="absolute inset-0 bg-background/90 backdrop-blur flex flex-col items-center justify-center gap-3 rounded-lg p-4 overflow-auto">
+            <Trophy className="h-10 w-10 text-amber-500" />
             <div className="text-2xl font-bold">{winner.username} wins!</div>
-            <div className="text-sm text-muted-foreground">+25 credits awarded</div>
+            <div className="text-xs text-muted-foreground">+25 credits awarded</div>
+            <div className="w-full max-w-sm rounded-lg border border-primary/30 bg-card/80 p-3">
+              <div className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Leaderboard</div>
+              <ol className="space-y-1">
+                {leaderboard.map((p, i) => (
+                  <li key={p.id} className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-2">
+                      <span className="w-5 text-muted-foreground">{i + 1}.</span>
+                      <span className={p.id === winner.id ? "font-bold gradient-text" : ""}>{p.username}</span>
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {p.finished && p.finishTime != null
+                        ? `${p.finishTime.toFixed(2)}s`
+                        : `${Math.round((p.x / COURSE_LEN) * 100)}%`}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </div>
             <Button onClick={onClose}>Close</Button>
           </div>
         )}
