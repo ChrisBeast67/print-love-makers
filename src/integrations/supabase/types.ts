@@ -396,6 +396,29 @@ export type Database = {
         Args: { _chat_id: string; _username: string }
         Returns: undefined
       }
+      admin_ban_user: {
+        Args: { _reason: string; _target: string }
+        Returns: undefined
+      }
+      admin_grant_credits: {
+        Args: { _amount: number; _target: string }
+        Returns: undefined
+      }
+      admin_remove_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _target: string
+        }
+        Returns: undefined
+      }
+      admin_set_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _target: string
+        }
+        Returns: undefined
+      }
+      admin_unban_user: { Args: { _target: string }; Returns: undefined }
       award_game_credits: {
         Args: { _session_id: string; _winner_id: string }
         Returns: undefined
@@ -419,6 +442,7 @@ export type Database = {
         Args: { _chat_id: string; _user_id: string }
         Returns: boolean
       }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
       join_chat_with_invite: { Args: { _token: string }; Returns: string }
       purchase_pack: { Args: { _pack_id: string }; Returns: undefined }
       respond_friend_request: {
