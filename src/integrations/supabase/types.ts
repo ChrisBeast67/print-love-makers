@@ -428,7 +428,7 @@ export type Database = {
       send_friend_request: { Args: { _username: string }; Returns: string }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      app_role: "admin" | "moderator" | "user" | "owner"
       chat_member_role: "admin" | "member"
       chat_type: "dm" | "group"
       friend_status: "pending" | "accepted"
@@ -560,7 +560,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      app_role: ["admin", "moderator", "user", "owner"],
       chat_member_role: ["admin", "member"],
       chat_type: ["dm", "group"],
       friend_status: ["pending", "accepted"],
