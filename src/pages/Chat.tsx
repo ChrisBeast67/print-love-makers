@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check } from "lucide-react";
+import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -432,10 +432,20 @@ const ChatPage = () => {
             <MessageCircle className="h-5 w-5 text-primary hidden md:block" />
             <span className="font-bold gradient-text">PrintChat</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Sign out</span>
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
+              <Home className="h-4 w-4" />
+              <span className="hidden sm:inline">Home</span>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/shop")}>
+              <ShoppingBag className="h-4 w-4" />
+              <span className="hidden sm:inline">Shop</span>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Sign out</span>
+            </Button>
+          </div>
         </div>
       </header>
 
