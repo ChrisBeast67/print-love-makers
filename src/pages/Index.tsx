@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { MessageCircle, Zap, Shield, Users, ShoppingBag, LogOut, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useStaffRole } from "@/hooks/useStaffRole";
 import { CreateChatCard } from "@/components/hub/CreateChatCard";
 import { FriendsCard } from "@/components/hub/FriendsCard";
 import { CreditsCard } from "@/components/hub/CreditsCard";
@@ -16,6 +17,7 @@ const features = [
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
+  const { isStaff } = useStaffRole();
   const navigate = useNavigate();
   const [showTutorial, setShowTutorial] = useState(false);
 
@@ -37,6 +39,11 @@ const Index = () => {
             </Button>
             {user ? (
               <>
+                {isStaff && (
+                  <Button size="sm" variant="ghost" onClick={() => navigate("/admin")}>
+                    <Shield className="h-4 w-4 mr-1" /> Admin
+                  </Button>
+                )}
                 <Button size="sm" variant="ghost" onClick={() => navigate("/shop")}>
                   <ShoppingBag className="h-4 w-4 mr-1" /> Shop
                 </Button>
