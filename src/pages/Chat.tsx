@@ -740,6 +740,16 @@ const ChatPage = () => {
               </div>
 
               <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4">
+                {activeChat.type === "group" && (
+                  <div className="max-w-3xl mx-auto -mx-4 mb-2">
+                    <TradeOffersList
+                      chatId={activeChat.id}
+                      usernames={Object.fromEntries(
+                        Object.entries(profiles).map(([k, v]) => [k, v.username]),
+                      )}
+                    />
+                  </div>
+                )}
                 <div className="space-y-4 max-w-3xl mx-auto">
                   {messages.length === 0 && (
                     <p className="text-center text-muted-foreground text-sm py-12">
@@ -752,11 +762,23 @@ const ChatPage = () => {
                     const name = profile?.username ?? "user";
                     const isLastMine = isMine && idx === messages.length - 1;
                     const readers = isLastMine ? readByOthers(m) : [];
+                    const equippedId = profile?.equipped_avatar_id ?? null;
+                    const equipped = equippedId ? equippedItems[equippedId] : null;
                     return (
                       <div key={m.id} className={cn("flex gap-3 group", isMine && "flex-row-reverse")}>
-                        <Avatar className="h-8 w-8 shrink-0">
-                          <AvatarFallback className="bg-secondary text-xs">
-                            {name.slice(0, 2).toUpperCase()}
+                        <Avatar
+                          className="h-8 w-8 shrink-0"
+                          style={
+                            equipped
+                              ? {
+                                  boxShadow: `0 0 12px -2px hsl(${equipped.accent_hsl} / 0.8)`,
+                                  border: `1.5px solid hsl(${equipped.accent_hsl})`,
+                                }
+                              : undefined
+                          }
+                        >
+                          <AvatarFallback className="bg-secondary text-base">
+                            {equipped ? equipped.emoji : name.slice(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className={cn("flex flex-col max-w-[75%]", isMine && "items-end")}>
