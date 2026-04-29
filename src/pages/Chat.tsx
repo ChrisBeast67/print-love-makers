@@ -465,6 +465,14 @@ const ChatPage = () => {
               <ShoppingBag className="h-4 w-4" />
               <span className="hidden sm:inline">Shop</span>
             </Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/backpack")}>
+              <BackpackIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Backpack</span>
+            </Button>
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full border border-primary/30 bg-card text-sm">
+              <Coins className="h-3.5 w-3.5 text-primary" />
+              <span className="font-bold">{balance}</span>
+            </div>
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline">Sign out</span>
