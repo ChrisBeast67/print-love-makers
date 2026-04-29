@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home } from "lucide-react";
+import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useCredits } from "@/hooks/useCredits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -10,6 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { GamesLauncher } from "@/components/games/GamesLauncher";
+import { TradeDialog } from "@/components/trade/TradeDialog";
+import { TradeOffersList } from "@/components/trade/TradeOffersList";
 
 interface Message {
   id: string;
@@ -23,6 +26,7 @@ interface Profile {
   id: string;
   username: string;
   avatar_url: string | null;
+  equipped_avatar_id?: string | null;
 }
 
 interface Chat {
@@ -44,6 +48,9 @@ const ChatPage = () => {
   const navigate = useNavigate();
   const { chatId } = useParams();
   const { user, loading, signOut } = useAuth();
+  const { balance } = useCredits();
+  const [equippedItems, setEquippedItems] = useState<Record<string, { emoji: string; accent_hsl: string; rarity: string }>>({});
+  const [tradeOpen, setTradeOpen] = useState(false);
 
   const [chats, setChats] = useState<Chat[]>([]);
   const [members, setMembers] = useState<Member[]>([]); // members of currently-open chat
