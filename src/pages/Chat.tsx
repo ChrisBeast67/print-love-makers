@@ -858,6 +858,18 @@ const ChatPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {activeChat && activeChat.type === "group" && (
+        <TradeDialog
+          open={tradeOpen}
+          onOpenChange={setTradeOpen}
+          chatId={activeChat.id}
+          members={members.map((m) => ({
+            user_id: m.user_id,
+            username: profiles[m.user_id]?.username ?? "user",
+          }))}
+        />
+      )}
     </div>
   );
 };
