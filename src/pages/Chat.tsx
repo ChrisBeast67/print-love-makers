@@ -141,6 +141,23 @@ const ChatPage = () => {
         data.forEach((p) => (next[p.id] = p));
         return next;
       });
+      const equippedIds = Array.from(
+        new Set(data.map((p) => p.equipped_avatar_id).filter(Boolean) as string[]),
+      );
+      const missing = equippedIds.filter((id) => !equippedItems[id]);
+      if (missing.length) {
+        const { data: items } = await supabase
+          .from("avatar_items")
+          .select("id,emoji,accent_hsl,rarity")
+          .in("id", missing);
+        if (items) {
+          setEquippedItems((prev) => {
+            const next = { ...prev };
+            items.forEach((it) => (next[it.id] = { emoji: it.emoji, accent_hsl: it.accent_hsl, rarity: it.rarity }));
+            return next;
+          });
+        }
+      }
     }
   };
 
