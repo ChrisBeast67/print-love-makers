@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home } from "lucide-react";
+import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useCredits } from "@/hooks/useCredits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -10,6 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { GamesLauncher } from "@/components/games/GamesLauncher";
+import { TradeDialog } from "@/components/trade/TradeDialog";
+import { TradeOffersList } from "@/components/trade/TradeOffersList";
 
 interface Message {
   id: string;
@@ -23,6 +26,7 @@ interface Profile {
   id: string;
   username: string;
   avatar_url: string | null;
+  equipped_avatar_id?: string | null;
 }
 
 interface Chat {
@@ -44,6 +48,9 @@ const ChatPage = () => {
   const navigate = useNavigate();
   const { chatId } = useParams();
   const { user, loading, signOut } = useAuth();
+  const { balance } = useCredits();
+  const [equippedItems, setEquippedItems] = useState<Record<string, { emoji: string; accent_hsl: string; rarity: string }>>({});
+  const [tradeOpen, setTradeOpen] = useState(false);
 
   const [chats, setChats] = useState<Chat[]>([]);
   const [members, setMembers] = useState<Member[]>([]); // members of currently-open chat
@@ -134,6 +141,23 @@ const ChatPage = () => {
         data.forEach((p) => (next[p.id] = p));
         return next;
       });
+      const equippedIds = Array.from(
+        new Set(data.map((p) => p.equipped_avatar_id).filter(Boolean) as string[]),
+      );
+      const missing = equippedIds.filter((id) => !equippedItems[id]);
+      if (missing.length) {
+        const { data: items } = await supabase
+          .from("avatar_items")
+          .select("id,emoji,accent_hsl,rarity")
+          .in("id", missing);
+        if (items) {
+          setEquippedItems((prev) => {
+            const next = { ...prev };
+            items.forEach((it) => (next[it.id] = { emoji: it.emoji, accent_hsl: it.accent_hsl, rarity: it.rarity }));
+            return next;
+          });
+        }
+      }
     }
   };
 
@@ -441,6 +465,14 @@ const ChatPage = () => {
               <ShoppingBag className="h-4 w-4" />
               <span className="hidden sm:inline">Shop</span>
             </Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/backpack")}>
+              <BackpackIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Backpack</span>
+            </Button>
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full border border-primary/30 bg-card text-sm">
+              <Coins className="h-3.5 w-3.5 text-primary" />
+              <span className="font-bold">{balance}</span>
+            </div>
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline">Sign out</span>
@@ -603,6 +635,12 @@ const ChatPage = () => {
                     username={profiles[user.id]?.username ?? "Player"}
                   />
                 )}
+                {activeChat.type === "group" && (
+                  <Button size="sm" variant="outline" onClick={() => setTradeOpen(true)}>
+                    <ArrowLeftRight className="h-4 w-4" />
+                    <span className="hidden sm:inline">Trade</span>
+                  </Button>
+                )}
                 <Dialog open={membersOpen} onOpenChange={setMembersOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm" variant="outline">
@@ -702,6 +740,16 @@ const ChatPage = () => {
               </div>
 
               <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4">
+                {activeChat.type === "group" && (
+                  <div className="max-w-3xl mx-auto -mx-4 mb-2">
+                    <TradeOffersList
+                      chatId={activeChat.id}
+                      usernames={Object.fromEntries(
+                        Object.entries(profiles).map(([k, v]) => [k, v.username]),
+                      )}
+                    />
+                  </div>
+                )}
                 <div className="space-y-4 max-w-3xl mx-auto">
                   {messages.length === 0 && (
                     <p className="text-center text-muted-foreground text-sm py-12">
@@ -714,11 +762,23 @@ const ChatPage = () => {
                     const name = profile?.username ?? "user";
                     const isLastMine = isMine && idx === messages.length - 1;
                     const readers = isLastMine ? readByOthers(m) : [];
+                    const equippedId = profile?.equipped_avatar_id ?? null;
+                    const equipped = equippedId ? equippedItems[equippedId] : null;
                     return (
                       <div key={m.id} className={cn("flex gap-3 group", isMine && "flex-row-reverse")}>
-                        <Avatar className="h-8 w-8 shrink-0">
-                          <AvatarFallback className="bg-secondary text-xs">
-                            {name.slice(0, 2).toUpperCase()}
+                        <Avatar
+                          className="h-8 w-8 shrink-0"
+                          style={
+                            equipped
+                              ? {
+                                  boxShadow: `0 0 12px -2px hsl(${equipped.accent_hsl} / 0.8)`,
+                                  border: `1.5px solid hsl(${equipped.accent_hsl})`,
+                                }
+                              : undefined
+                          }
+                        >
+                          <AvatarFallback className="bg-secondary text-base">
+                            {equipped ? equipped.emoji : name.slice(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className={cn("flex flex-col max-w-[75%]", isMine && "items-end")}>
@@ -798,6 +858,18 @@ const ChatPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {activeChat && activeChat.type === "group" && (
+        <TradeDialog
+          open={tradeOpen}
+          onOpenChange={setTradeOpen}
+          chatId={activeChat.id}
+          members={members.map((m) => ({
+            user_id: m.user_id,
+            username: profiles[m.user_id]?.username ?? "user",
+          }))}
+        />
+      )}
     </div>
   );
 };

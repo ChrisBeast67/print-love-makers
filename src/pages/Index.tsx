@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { MessageCircle, Zap, Shield, Users, ShoppingBag, LogOut, BookOpen } from "lucide-react";
+import { MessageCircle, Zap, Shield, Users, ShoppingBag, LogOut, BookOpen, Backpack as BackpackIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useStaffRole } from "@/hooks/useStaffRole";
@@ -47,6 +47,9 @@ const Index = () => {
                 <Button size="sm" variant="ghost" onClick={() => navigate("/shop")}>
                   <ShoppingBag className="h-4 w-4 mr-1" /> Shop
                 </Button>
+                <Button size="sm" variant="ghost" onClick={() => navigate("/backpack")}>
+                  <BackpackIcon className="h-4 w-4 mr-1" /> Backpack
+                </Button>
                 <Button size="sm" variant="ghost" onClick={() => navigate("/chat")}>
                   Chats
                 </Button>
@@ -88,9 +91,14 @@ const Index = () => {
                   <ShoppingBag className="h-4 w-4 text-primary" /> Profile shop
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Robot, Animal, Circus & Underwater packs in 4 rarities.
+                  Buy booster packs to roll 5 random avatars. Manage your collection in the backpack.
                 </p>
-                <Button onClick={() => navigate("/shop")} className="w-full">Open shop</Button>
+                <div className="flex gap-2">
+                  <Button onClick={() => navigate("/shop")} className="flex-1">Shop</Button>
+                  <Button onClick={() => navigate("/backpack")} variant="secondary" className="flex-1">
+                    <BackpackIcon className="h-4 w-4 mr-1" /> Backpack
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

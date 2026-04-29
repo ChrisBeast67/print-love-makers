@@ -9,6 +9,7 @@ import Auth from "./pages/Auth.tsx";
 import Chat from "./pages/Chat.tsx";
 import InviteJoin from "./pages/InviteJoin.tsx";
 import Shop from "./pages/Shop.tsx";
+import Backpack from "./pages/Backpack.tsx";
 import Admin from "./pages/Admin.tsx";
 import { AuthProvider } from "@/hooks/useAuth";
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/chat/:chatId" element={<Chat />} />
             <Route path="/invite/:token" element={<InviteJoin />} />
             <Route path="/shop" element={<Shop />} />
+            <Route path="/backpack" element={<Backpack />} />
             <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

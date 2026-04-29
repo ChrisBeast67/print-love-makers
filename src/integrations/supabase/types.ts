@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      avatar_items: {
+        Row: {
+          accent_hsl: string
+          created_at: string
+          emoji: string
+          id: string
+          name: string
+          rarity: string
+          slug: string
+          theme: string
+        }
+        Insert: {
+          accent_hsl?: string
+          created_at?: string
+          emoji: string
+          id?: string
+          name: string
+          rarity: string
+          slug: string
+          theme: string
+        }
+        Update: {
+          accent_hsl?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          name?: string
+          rarity?: string
+          slug?: string
+          theme?: string
+        }
+        Relationships: []
+      }
       banned_users: {
         Row: {
           banned_at: string
@@ -273,7 +306,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
-          equipped_pack_id: string | null
+          equipped_avatar_id: string | null
           id: string
           updated_at: string
           username: string
@@ -281,7 +314,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
-          equipped_pack_id?: string | null
+          equipped_avatar_id?: string | null
           id: string
           updated_at?: string
           username: string
@@ -289,12 +322,77 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
-          equipped_pack_id?: string | null
+          equipped_avatar_id?: string | null
           id?: string
           updated_at?: string
           username?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_equipped_avatar_id_fkey"
+            columns: ["equipped_avatar_id"]
+            isOneToOne: false
+            referencedRelation: "avatar_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trade_offers: {
+        Row: {
+          chat_id: string
+          created_at: string
+          from_user: string
+          id: string
+          offered_avatar_id: string | null
+          offered_credits: number
+          requested_avatar_id: string | null
+          requested_credits: number
+          status: string
+          to_user: string
+          updated_at: string
+        }
+        Insert: {
+          chat_id: string
+          created_at?: string
+          from_user: string
+          id?: string
+          offered_avatar_id?: string | null
+          offered_credits?: number
+          requested_avatar_id?: string | null
+          requested_credits?: number
+          status?: string
+          to_user: string
+          updated_at?: string
+        }
+        Update: {
+          chat_id?: string
+          created_at?: string
+          from_user?: string
+          id?: string
+          offered_avatar_id?: string | null
+          offered_credits?: number
+          requested_avatar_id?: string | null
+          requested_credits?: number
+          status?: string
+          to_user?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trade_offers_offered_avatar_id_fkey"
+            columns: ["offered_avatar_id"]
+            isOneToOne: false
+            referencedRelation: "avatar_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trade_offers_requested_avatar_id_fkey"
+            columns: ["requested_avatar_id"]
+            isOneToOne: false
+            referencedRelation: "avatar_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       typing_indicators: {
         Row: {
@@ -318,6 +416,35 @@ export type Database = {
             columns: ["chat_id"]
             isOneToOne: false
             referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_avatars: {
+        Row: {
+          acquired_at: string
+          avatar_item_id: string
+          quantity: number
+          user_id: string
+        }
+        Insert: {
+          acquired_at?: string
+          avatar_item_id: string
+          quantity?: number
+          user_id: string
+        }
+        Update: {
+          acquired_at?: string
+          avatar_item_id?: string
+          quantity?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_avatars_avatar_item_id_fkey"
+            columns: ["avatar_item_id"]
+            isOneToOne: false
+            referencedRelation: "avatar_items"
             referencedColumns: ["id"]
           },
         ]
@@ -392,6 +519,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_trade_offer: { Args: { _id: string }; Returns: undefined }
       add_member_by_username: {
         Args: { _chat_id: string; _username: string }
         Returns: undefined
@@ -423,9 +551,23 @@ export type Database = {
         Args: { _session_id: string; _winner_id: string }
         Returns: undefined
       }
+      cancel_trade_offer: { Args: { _id: string }; Returns: undefined }
       claim_daily_credits: { Args: never; Returns: number }
       create_group_chat: { Args: { _name: string }; Returns: string }
       create_or_get_dm: { Args: { _other_user: string }; Returns: string }
+      create_trade_offer: {
+        Args: {
+          _chat_id: string
+          _offered_avatar: string
+          _offered_credits: number
+          _requested_avatar: string
+          _requested_credits: number
+          _to_user: string
+        }
+        Returns: string
+      }
+      decline_trade_offer: { Args: { _id: string }; Returns: undefined }
+      equip_avatar: { Args: { _avatar_item_id: string }; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -444,12 +586,25 @@ export type Database = {
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       join_chat_with_invite: { Args: { _token: string }; Returns: string }
+      open_pack: {
+        Args: { _pack_id: string }
+        Returns: {
+          accent_hsl: string
+          avatar_item_id: string
+          emoji: string
+          is_new: boolean
+          name: string
+          rarity: string
+        }[]
+      }
       purchase_pack: { Args: { _pack_id: string }; Returns: undefined }
       respond_friend_request: {
         Args: { _accept: boolean; _id: string }
         Returns: undefined
       }
+      sell_avatar: { Args: { _avatar_item_id: string }; Returns: number }
       send_friend_request: { Args: { _username: string }; Returns: string }
+      unequip_avatar: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "owner"
