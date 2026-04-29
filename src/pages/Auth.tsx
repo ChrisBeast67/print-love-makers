@@ -47,9 +47,35 @@ const Auth = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) toast.error(error.message);
+    
+    if (authError) {
+      // Check if user exists but is banned (not just wrong password)
+      if (authError.message === "Invalid login credentials") {
+        // Look up user by email to check ban status
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, username')
+          .eq('username', email.split('@')[0])
+          .single();
+        
+        if (profileData) {
+          const { data: bannedData } = await supabase
+            .from('banned_users')
+            .select('user_id')
+            .eq('user_id', profileData.id)
+            .single();
+          
+          if (bannedData) {
+            toast.error("Your account was banned by moderators.");
+            return;
+          }
+        }
+      }
+      toast.error(authError.message);
+    }
   };
 
   return (
