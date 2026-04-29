@@ -635,6 +635,12 @@ const ChatPage = () => {
                     username={profiles[user.id]?.username ?? "Player"}
                   />
                 )}
+                {activeChat.type === "group" && (
+                  <Button size="sm" variant="outline" onClick={() => setTradeOpen(true)}>
+                    <ArrowLeftRight className="h-4 w-4" />
+                    <span className="hidden sm:inline">Trade</span>
+                  </Button>
+                )}
                 <Dialog open={membersOpen} onOpenChange={setMembersOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm" variant="outline">
