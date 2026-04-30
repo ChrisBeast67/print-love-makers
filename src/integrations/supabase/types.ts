@@ -467,6 +467,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_luck_boosts: {
+        Row: {
+          expires_at: string
+          multiplier: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          expires_at: string
+          multiplier?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          expires_at?: string
+          multiplier?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_packs: {
         Row: {
           acquired_at: string
@@ -562,6 +583,7 @@ export type Database = {
         Args: { _session_id: string; _winner_id: string }
         Returns: undefined
       }
+      buy_luck_boost: { Args: { _tier: number }; Returns: string }
       cancel_trade_offer: { Args: { _id: string }; Returns: undefined }
       claim_daily_credits: { Args: never; Returns: number }
       create_group_chat: { Args: { _name: string }; Returns: string }
