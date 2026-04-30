@@ -38,29 +38,21 @@ const Admin = () => {
 
   const load = async () => {
     setLoading(true);
-    const [{ data: profiles }, { data: credits }, { data: bans }, { data: roles }] = await Promise.all([
-      supabase.from("profiles").select("id, username").order("username"),
-      supabase.from("user_credits").select("user_id, balance"),
-      supabase.from("banned_users").select("user_id"),
-      supabase.from("user_roles").select("user_id, role"),
-    ]);
-    const cMap = new Map((credits ?? []).map((c) => [c.user_id, c.balance]));
-    const bSet = new Set((bans ?? []).map((b) => b.user_id));
-    const rMap = new Map<string, string[]>();
-    (roles ?? []).forEach((r) => {
-      const arr = rMap.get(r.user_id) ?? [];
-      arr.push(r.role as string);
-      rMap.set(r.user_id, arr);
-    });
-    setRows(
-      (profiles ?? []).map((p) => ({
-        id: p.id,
-        username: p.username,
-        balance: cMap.get(p.id) ?? 0,
-        banned: bSet.has(p.id),
-        roles: rMap.get(p.id) ?? [],
-      })),
-    );
+    const { data, error } = await supabase.rpc("admin_list_users");
+    if (error) {
+      toast.error(error.message);
+      setRows([]);
+    } else {
+      setRows(
+        (data ?? []).map((r: { id: string; username: string; balance: number; banned: boolean; roles: string[] | null }) => ({
+          id: r.id,
+          username: r.username,
+          balance: r.balance ?? 0,
+          banned: !!r.banned,
+          roles: r.roles ?? [],
+        })),
+      );
+    }
     setLoading(false);
   };
 
