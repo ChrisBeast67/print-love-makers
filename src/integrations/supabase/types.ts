@@ -532,6 +532,16 @@ export type Database = {
         Args: { _amount: number; _target: string }
         Returns: undefined
       }
+      admin_list_users: {
+        Args: never
+        Returns: {
+          balance: number
+          banned: boolean
+          id: string
+          roles: string[]
+          username: string
+        }[]
+      }
       admin_remove_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
