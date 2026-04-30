@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog } from "lucide-react";
+import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -99,6 +99,18 @@ const Admin = () => {
     navigate(`/chat/${data}`);
   };
 
+  const handleDelete = async (id: string, username: string) => {
+    if (!confirm(`Permanently delete "${username}"? This wipes their account, messages, credits and inventory. This cannot be undone.`)) return;
+    const { data, error } = await supabase.functions.invoke("admin-delete-user", {
+      body: { user_id: id },
+    });
+    if (error || (data as { error?: string })?.error) {
+      return toast.error((data as { error?: string })?.error || error?.message || "Delete failed");
+    }
+    toast.success(`Deleted ${username}`);
+    load();
+  };
+
   if (authLoading || roleLoading) return null;
 
   return (
@@ -178,6 +190,16 @@ const Admin = () => {
                     >
                       <UserCog className="h-4 w-4 mr-1" />
                       {r.roles.includes("moderator") ? "Demote" : "Mod"}
+                    </Button>
+                  )}
+                  {r.id !== user?.id && (isOwner || !r.roles.includes("owner")) && (
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDelete(r.id, r.username)}
+                      title="Delete account"
+                    >
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
