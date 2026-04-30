@@ -51,6 +51,13 @@ const themeLabels: Record<Pack["theme"], string> = {
   underwater: "Underwater",
 };
 
+const LUCK_TIERS: { tier: 2 | 3 | 5 | 10; price: number }[] = [
+  { tier: 2, price: 50 },
+  { tier: 3, price: 100 },
+  { tier: 5, price: 150 },
+  { tier: 10, price: 1000 },
+];
+
 const Shop = () => {
   const { user, loading } = useAuth();
   const { balance, refresh } = useCredits();
@@ -59,10 +66,25 @@ const Shop = () => {
   const [opening, setOpening] = useState(false);
   const [pulls, setPulls] = useState<PullResult[] | null>(null);
   const [revealedCount, setRevealedCount] = useState(0);
+  const [luck, setLuck] = useState<{ multiplier: number; expires_at: string } | null>(null);
+  const [luckRemaining, setLuckRemaining] = useState(0);
+  const [buyingLuck, setBuyingLuck] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     const { data: ps } = await supabase.from("profile_packs").select("*").order("name");
     setPacks((ps ?? []) as Pack[]);
+  }, []);
+
+  const loadLuck = useCallback(async () => {
+    const { data } = await supabase
+      .from("user_luck_boosts")
+      .select("multiplier, expires_at")
+      .maybeSingle();
+    if (data && new Date(data.expires_at).getTime() > Date.now()) {
+      setLuck({ multiplier: Number(data.multiplier), expires_at: data.expires_at });
+    } else {
+      setLuck(null);
+    }
   }, []);
 
   useEffect(() => {
@@ -71,11 +93,48 @@ const Shop = () => {
 
   useEffect(() => {
     load();
-  }, [load]);
+    loadLuck();
+  }, [load, loadLuck]);
+
+  // Live countdown for active luck boost
+  useEffect(() => {
+    if (!luck) {
+      setLuckRemaining(0);
+      return;
+    }
+    const tick = () => {
+      const ms = new Date(luck.expires_at).getTime() - Date.now();
+      if (ms <= 0) {
+        setLuck(null);
+        setLuckRemaining(0);
+      } else {
+        setLuckRemaining(Math.ceil(ms / 1000));
+      }
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [luck]);
 
   useEffect(() => {
     document.title = "Shop — PrintChat";
   }, []);
+
+  const buyLuck = async (tier: number, price: number) => {
+    if (balance < price) {
+      toast.error("Not enough credits");
+      return;
+    }
+    setBuyingLuck(tier);
+    const { error } = await supabase.rpc("buy_luck_boost", { _tier: tier });
+    setBuyingLuck(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`${tier}× luck active for 30 minutes!`);
+    await Promise.all([refresh(), loadLuck()]);
+  };
 
   const openPack = async (pack: Pack) => {
     if (balance < pack.price) {
@@ -108,6 +167,12 @@ const Shop = () => {
     setRevealedCount(0);
   };
 
+  const formatTime = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2, "0")}`;
+  };
+
   return (
     <div className="min-h-screen bg-background hi-tech-grid">
       <div className="container mx-auto px-6 py-8 max-w-6xl">
@@ -136,6 +201,40 @@ const Shop = () => {
             Drop rates — Common 60% · Rare 25% · Epic 12% · Legendary 3%
           </p>
         </div>
+
+        <Card className="p-5 mb-8 border-2 border-primary/30 glow-box bg-gradient-to-br from-primary/10 to-transparent">
+          <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
+            <div>
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" /> Luck Boost
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Multiplies your odds for Rare, Epic and Legendary pulls. Lasts 30 minutes.
+              </p>
+            </div>
+            {luck && luckRemaining > 0 && (
+              <div className="px-3 py-1.5 rounded-full bg-primary/20 border border-primary/40 text-sm font-semibold">
+                {luck.multiplier}× active · {formatTime(luckRemaining)}
+              </div>
+            )}
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {LUCK_TIERS.map((t) => (
+              <Button
+                key={t.tier}
+                variant="outline"
+                className="flex-col h-auto py-3 gap-1 border-primary/30 hover:border-primary"
+                onClick={() => buyLuck(t.tier, t.price)}
+                disabled={buyingLuck !== null || balance < t.price}
+              >
+                <span className="text-lg font-bold gradient-text">{t.tier}× Luck</span>
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Coins className="h-3 w-3" /> {t.price}
+                </span>
+              </Button>
+            ))}
+          </div>
+        </Card>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {packs.map((p) => (
