@@ -528,6 +528,7 @@ export type Database = {
         Args: { _reason: string; _target: string }
         Returns: undefined
       }
+      admin_delete_user_data: { Args: { _target: string }; Returns: undefined }
       admin_grant_credits: {
         Args: { _amount: number; _target: string }
         Returns: undefined
