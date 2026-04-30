@@ -175,13 +175,17 @@ const Admin = () => {
                   <Button size="sm" variant="outline" onClick={() => handleDM(r.id)}>
                     <MessageCircle className="h-4 w-4" />
                   </Button>
-                  <Button
-                    size="sm"
-                    variant={r.banned ? "outline" : "destructive"}
-                    onClick={() => handleBan(r.id, r.banned)}
-                  >
-                    {r.banned ? <CheckCircle2 className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
-                  </Button>
+                  {r.id !== user?.id &&
+                    !r.roles.includes("owner") &&
+                    (!r.roles.includes("moderator") || isOwner) && (
+                      <Button
+                        size="sm"
+                        variant={r.banned ? "outline" : "destructive"}
+                        onClick={() => handleBan(r.id, r.banned)}
+                      >
+                        {r.banned ? <CheckCircle2 className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
+                      </Button>
+                    )}
                   {isOwner && r.id !== user?.id && (
                     <Button
                       size="sm"
@@ -192,7 +196,9 @@ const Admin = () => {
                       {r.roles.includes("moderator") ? "Demote" : "Mod"}
                     </Button>
                   )}
-                  {r.id !== user?.id && (isOwner || !r.roles.includes("owner")) && (
+                  {r.id !== user?.id &&
+                    !r.roles.includes("owner") &&
+                    (!r.roles.includes("moderator") || isOwner) && (
                     <Button
                       size="sm"
                       variant="destructive"
