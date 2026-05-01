@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon } from "lucide-react";
+import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCredits } from "@/hooks/useCredits";
+import { useStaffRole } from "@/hooks/useStaffRole";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -49,6 +50,7 @@ const ChatPage = () => {
   const { chatId } = useParams();
   const { user, loading, signOut } = useAuth();
   const { balance } = useCredits();
+  const { isStaff } = useStaffRole();
   const [equippedItems, setEquippedItems] = useState<Record<string, { emoji: string; accent_hsl: string; rarity: string }>>({});
   const [tradeOpen, setTradeOpen] = useState(false);
 
@@ -424,6 +426,34 @@ const ChatPage = () => {
     await loadChats();
   };
 
+  const closeDM = async () => {
+    if (!chatId || !user) return;
+    if (!confirm("Close this DM? You can re-open it later by starting a new DM with this user.")) return;
+    const { error } = await supabase.from("chat_members").delete().eq("chat_id", chatId).eq("user_id", user.id);
+    if (error) return toast.error(error.message);
+    setMembersOpen(false);
+    navigate("/chat", { replace: true });
+    await loadChats();
+  };
+
+  const staffSelfPromote = async () => {
+    if (!chatId) return;
+    const { error } = await supabase.rpc("staff_join_as_admin", { _chat_id: chatId });
+    if (error) return toast.error(error.message);
+    toast.success("You are now an admin of this group");
+    const { data: mems } = await supabase.from("chat_members").select("*").eq("chat_id", chatId);
+    if (mems) setMembers(mems as Member[]);
+  };
+
+  const setMemberRole = async (targetId: string, role: "admin" | "member") => {
+    if (!chatId) return;
+    const { error } = await supabase.rpc("set_member_role", { _chat_id: chatId, _target: targetId, _role: role });
+    if (error) return toast.error(error.message);
+    toast.success(role === "admin" ? "Promoted to admin" : "Demoted to member");
+    const { data: mems } = await supabase.from("chat_members").select("*").eq("chat_id", chatId);
+    if (mems) setMembers(mems as Member[]);
+  };
+
   const renameChat = async () => {
     if (!chatId || !renameValue.trim()) return;
     const { error } = await supabase.from("chats").update({ name: renameValue.trim() }).eq("id", chatId);
@@ -702,12 +732,22 @@ const ChatPage = () => {
                               )}
                             </div>
                             {activeChat.type === "group" && isAdminHere && m.user_id !== user.id && (
-                              <button
-                                onClick={() => removeMember(m.user_id)}
-                                className="text-xs text-muted-foreground hover:text-destructive"
-                              >
-                                Remove
-                              </button>
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  size="sm"
+                                  variant={m.role === "admin" ? "destructive" : "secondary"}
+                                  className="h-6 px-2 text-xs"
+                                  onClick={() => setMemberRole(m.user_id, m.role === "admin" ? "member" : "admin")}
+                                >
+                                  {m.role === "admin" ? "Demote" : "Admin"}
+                                </Button>
+                                <button
+                                  onClick={() => removeMember(m.user_id)}
+                                  className="text-xs text-muted-foreground hover:text-destructive"
+                                >
+                                  Remove
+                                </button>
+                              </div>
                             )}
                           </div>
                         );
@@ -715,6 +755,11 @@ const ChatPage = () => {
                     </div>
 
                     <DialogFooter className="flex-col sm:flex-row gap-2">
+                      {activeChat.type === "group" && isStaff && !isAdminHere && (
+                        <Button variant="outline" size="sm" onClick={staffSelfPromote}>
+                          <Shield className="h-4 w-4" /> Become Admin
+                        </Button>
+                      )}
                       {activeChat.type === "group" && isAdminHere && (
                         <Button
                           variant="outline"
@@ -731,6 +776,11 @@ const ChatPage = () => {
                       {activeChat.type === "group" && (
                         <Button variant="destructive" size="sm" onClick={leaveChat}>
                           <LeaveIcon className="h-4 w-4" /> Leave chat
+                        </Button>
+                      )}
+                      {activeChat.type === "dm" && (
+                        <Button variant="destructive" size="sm" onClick={closeDM}>
+                          <X className="h-4 w-4" /> Close DM
                         </Button>
                       )}
                     </DialogFooter>
