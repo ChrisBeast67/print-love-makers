@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon, Shield } from "lucide-react";
+import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon, Shield, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCredits } from "@/hooks/useCredits";
@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { GamesLauncher } from "@/components/games/GamesLauncher";
 import { TradeDialog } from "@/components/trade/TradeDialog";
 import { TradeOffersList } from "@/components/trade/TradeOffersList";
+import { Switch } from "@/components/ui/switch";
 
 interface Message {
   id: string;
@@ -36,6 +37,7 @@ interface Chat {
   type: "dm" | "group";
   created_by: string;
   updated_at: string;
+  admin_only?: boolean;
 }
 
 interface Member {
@@ -318,6 +320,17 @@ const ChatPage = () => {
   const activeChat = chats.find((c) => c.id === chatId);
   const myMembership = members.find((m) => m.user_id === user?.id);
   const isAdminHere = myMembership?.role === "admin";
+  const adminOnly = activeChat?.admin_only ?? false;
+  const canType = !adminOnly || isAdminHere;
+
+  const toggleAdminOnly = async () => {
+    if (!chatId || !activeChat) return;
+    const newVal = !activeChat.admin_only;
+    const { error } = await supabase.from("chats").update({ admin_only: newVal } as any).eq("id", chatId);
+    if (error) return toast.error(error.message);
+    setChats((prev) => prev.map((c) => (c.id === chatId ? { ...c, admin_only: newVal } : c)));
+    toast.success(newVal ? "Admin-only mode enabled" : "Admin-only mode disabled");
+  };
 
   // Derived: chat display name
   const getChatName = (c: Chat): string => {
@@ -773,6 +786,13 @@ const ChatPage = () => {
                           <Pencil className="h-4 w-4" /> Rename
                         </Button>
                       )}
+                      {activeChat.type === "group" && isAdminHere && (
+                        <div className="flex items-center gap-2">
+                          <Lock className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">Admin-only chat</span>
+                          <Switch checked={adminOnly} onCheckedChange={toggleAdminOnly} />
+                        </div>
+                      )}
                       {activeChat.type === "group" && (
                         <Button variant="destructive" size="sm" onClick={leaveChat}>
                           <LeaveIcon className="h-4 w-4" /> Leave chat
@@ -875,17 +895,26 @@ const ChatPage = () => {
               </div>
 
               <form onSubmit={sendMessage} className="flex gap-2 p-3 border-t border-border/50 max-w-3xl mx-auto w-full">
-                <Input
-                  value={input}
-                  onChange={(e) => onInputChange(e.target.value)}
-                  placeholder="Type a message…"
-                  disabled={sending}
-                  maxLength={1000}
-                  className="flex-1"
-                />
-                <Button type="submit" disabled={!input.trim() || sending}>
-                  <Send className="h-4 w-4" />
-                </Button>
+                {canType ? (
+                  <>
+                    <Input
+                      value={input}
+                      onChange={(e) => onInputChange(e.target.value)}
+                      placeholder="Type a message…"
+                      disabled={sending}
+                      maxLength={1000}
+                      className="flex-1"
+                    />
+                    <Button type="submit" disabled={!input.trim() || sending}>
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </>
+                ) : (
+                  <div className="flex-1 flex items-center justify-center gap-2 text-sm text-muted-foreground py-2">
+                    <Lock className="h-4 w-4" />
+                    Only admins can send messages in this chat.
+                  </div>
+                )}
               </form>
             </>
           )}
