@@ -134,6 +134,7 @@ export type Database = {
       }
       chats: {
         Row: {
+          admin_only: boolean
           created_at: string
           created_by: string
           id: string
@@ -142,6 +143,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          admin_only?: boolean
           created_at?: string
           created_by: string
           id?: string
@@ -150,6 +152,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          admin_only?: boolean
           created_at?: string
           created_by?: string
           id?: string
