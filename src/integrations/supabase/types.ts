@@ -559,6 +559,7 @@ export type Database = {
         Returns: {
           balance: number
           banned: boolean
+          email: string
           id: string
           roles: string[]
           username: string

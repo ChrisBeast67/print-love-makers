@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2 } from "lucide-react";
+import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import { useStaffRole } from "@/hooks/useStaffRole";
 type Row = {
   id: string;
   username: string;
+  email: string;
   balance: number;
   banned: boolean;
   roles: string[];
@@ -44,9 +45,10 @@ const Admin = () => {
       setRows([]);
     } else {
       setRows(
-        (data ?? []).map((r: { id: string; username: string; balance: number; banned: boolean; roles: string[] | null }) => ({
+        (data ?? []).map((r: { id: string; username: string; email: string; balance: number; banned: boolean; roles: string[] | null }) => ({
           id: r.id,
           username: r.username,
+          email: r.email ?? "",
           balance: r.balance ?? 0,
           banned: !!r.banned,
           roles: r.roles ?? [],
@@ -61,7 +63,7 @@ const Admin = () => {
   }, [isStaff]);
 
   const filtered = useMemo(
-    () => rows.filter((r) => r.username.toLowerCase().includes(q.toLowerCase())),
+    () => rows.filter((r) => r.username.toLowerCase().includes(q.toLowerCase()) || r.email.toLowerCase().includes(q.toLowerCase())),
     [rows, q],
   );
 
@@ -159,6 +161,11 @@ const Admin = () => {
                   <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
                     <Coins className="h-3 w-3" /> {r.balance} credits
                   </div>
+                  {r.email && (
+                    <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                      <Mail className="h-3 w-3" /> {r.email}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2 flex-wrap">
