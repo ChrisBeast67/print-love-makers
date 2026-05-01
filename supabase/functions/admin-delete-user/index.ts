@@ -25,9 +25,9 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY")!,
       { global: { headers: { Authorization: authHeader } } },
     );
-    const { data: claims, error: claimsErr } = await userClient.auth.getClaims(token);
-    if (claimsErr || !claims?.claims?.sub) return json({ error: "Unauthorized" }, 401);
-    const callerId = claims.claims.sub as string;
+    const { data: { user: caller }, error: callerErr } = await userClient.auth.getUser(token);
+    if (callerErr || !caller) return json({ error: "Unauthorized" }, 401);
+    const callerId = caller.id;
 
     const admin = createClient(
       Deno.env.get("SUPABASE_URL")!,
