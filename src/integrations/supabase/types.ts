@@ -638,6 +638,11 @@ export type Database = {
       }
       sell_avatar: { Args: { _avatar_item_id: string }; Returns: number }
       send_friend_request: { Args: { _username: string }; Returns: string }
+      set_member_role: {
+        Args: { _chat_id: string; _role: string; _target: string }
+        Returns: undefined
+      }
+      staff_join_as_admin: { Args: { _chat_id: string }; Returns: undefined }
       unequip_avatar: { Args: never; Returns: undefined }
     }
     Enums: {
