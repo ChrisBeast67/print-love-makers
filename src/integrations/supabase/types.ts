@@ -177,6 +177,39 @@ export type Database = {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string
+          ended_at: string | null
+          id: string
+          luck_multiplier: number
+          name: string
+          type: Database["public"]["Enums"]["event_type"]
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by: string
+          ended_at?: string | null
+          id?: string
+          luck_multiplier?: number
+          name: string
+          type?: Database["public"]["Enums"]["event_type"]
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string
+          ended_at?: string | null
+          id?: string
+          luck_multiplier?: number
+          name?: string
+          type?: Database["public"]["Enums"]["event_type"]
+        }
+        Relationships: []
+      }
       friendships: {
         Row: {
           addressee_id: string
@@ -555,6 +588,11 @@ export type Database = {
       admin_delete_user_data:
         | { Args: { _target: string }; Returns: undefined }
         | { Args: { _caller?: string; _target: string }; Returns: undefined }
+      admin_end_event: { Args: { _event_id: string }; Returns: undefined }
+      admin_grant_avatar: {
+        Args: { _avatar_item_id: string; _target: string }
+        Returns: undefined
+      }
       admin_grant_credits: {
         Args: { _amount: number; _target: string }
         Returns: undefined
@@ -583,6 +621,14 @@ export type Database = {
           _target: string
         }
         Returns: undefined
+      }
+      admin_start_event: {
+        Args: {
+          _luck_multiplier?: number
+          _name: string
+          _type: Database["public"]["Enums"]["event_type"]
+        }
+        Returns: string
       }
       admin_unban_user: { Args: { _target: string }; Returns: undefined }
       award_game_credits: {
@@ -654,6 +700,7 @@ export type Database = {
       app_role: "admin" | "moderator" | "user" | "owner"
       chat_member_role: "admin" | "member"
       chat_type: "dm" | "group"
+      event_type: "easter" | "christmas" | "halloween" | "luck_boost" | "custom"
       friend_status: "pending" | "accepted"
       game_kind: "parkour" | "skribble"
     }
@@ -786,6 +833,7 @@ export const Constants = {
       app_role: ["admin", "moderator", "user", "owner"],
       chat_member_role: ["admin", "member"],
       chat_type: ["dm", "group"],
+      event_type: ["easter", "christmas", "halloween", "luck_boost", "custom"],
       friend_status: ["pending", "accepted"],
       game_kind: ["parkour", "skribble"],
     },

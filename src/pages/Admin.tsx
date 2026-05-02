@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail } from "lucide-react";
+import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,6 +28,11 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [grant, setGrant] = useState<Record<string, string>>({});
+  const [events, setEvents] = useState<{ id: string; name: string; type: string; luck_multiplier: number; active: boolean; created_at: string }[]>([]);
+  const [newEvent, setNewEvent] = useState({ name: "", type: "custom" as string, luck: "1" });
+  const [avatarItems, setAvatarItems] = useState<{ id: string; name: string; emoji: string; rarity: string }[]>([]);
+  const [grantAvatar, setGrantAvatar] = useState<Record<string, string>>({});
+  const [tab, setTab] = useState<"users" | "events">("users");
 
   useEffect(() => {
     document.title = "Admin Panel — PrintChat";
@@ -61,6 +68,46 @@ const Admin = () => {
   useEffect(() => {
     if (isStaff) load();
   }, [isStaff]);
+
+  const loadEvents = useCallback(async () => {
+    const { data } = await supabase.from("events").select("*").order("created_at", { ascending: false });
+    setEvents((data as any[]) ?? []);
+  }, []);
+
+  const loadAvatarItems = useCallback(async () => {
+    const { data } = await supabase.from("avatar_items").select("id, name, emoji, rarity").order("name");
+    setAvatarItems((data as any[]) ?? []);
+  }, []);
+
+  useEffect(() => {
+    if (isStaff) { loadEvents(); loadAvatarItems(); }
+  }, [isStaff, loadEvents, loadAvatarItems]);
+
+  const handleStartEvent = async () => {
+    if (!newEvent.name.trim()) return toast.error("Enter event name");
+    const luck = parseFloat(newEvent.luck) || 1;
+    const { error } = await supabase.rpc("admin_start_event", { _name: newEvent.name.trim(), _type: newEvent.type as any, _luck_multiplier: luck });
+    if (error) return toast.error(error.message);
+    toast.success("Event started!");
+    setNewEvent({ name: "", type: "custom", luck: "1" });
+    loadEvents();
+  };
+
+  const handleEndEvent = async (id: string) => {
+    const { error } = await supabase.rpc("admin_end_event", { _event_id: id });
+    if (error) return toast.error(error.message);
+    toast.success("Event ended");
+    loadEvents();
+  };
+
+  const handleGrantAvatar = async (userId: string) => {
+    const avatarId = grantAvatar[userId];
+    if (!avatarId) return toast.error("Select an avatar");
+    const { error } = await supabase.rpc("admin_grant_avatar", { _target: userId, _avatar_item_id: avatarId });
+    if (error) return toast.error(error.message);
+    toast.success("Avatar granted!");
+    setGrantAvatar((g) => ({ ...g, [userId]: "" }));
+  };
 
   const filtered = useMemo(
     () => rows.filter((r) => r.username.toLowerCase().includes(q.toLowerCase()) || r.email.toLowerCase().includes(q.toLowerCase())),
@@ -127,103 +174,197 @@ const Admin = () => {
             <span className="font-bold gradient-text">Admin Panel</span>
             <Badge variant="outline" className="ml-2">{isOwner ? "Owner" : "Moderator"}</Badge>
           </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant={tab === "users" ? "default" : "outline"} onClick={() => setTab("users")}>Users</Button>
+            <Button size="sm" variant={tab === "events" ? "default" : "outline"} onClick={() => setTab("events")}>
+              <PartyPopper className="h-4 w-4 mr-1" /> Events
+            </Button>
+          </div>
         </div>
       </nav>
 
-      <section className="container mx-auto px-6 py-8 max-w-5xl">
-        <Input
-          placeholder="Search users by username…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          className="mb-6"
-        />
+      {tab === "users" && (
+        <section className="container mx-auto px-6 py-8 max-w-5xl">
+          <Input
+            placeholder="Search users by username or email…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            className="mb-6"
+          />
 
-        {loading ? (
-          <p className="text-muted-foreground">Loading…</p>
-        ) : (
-          <div className="space-y-3">
-            {filtered.map((r) => (
-              <div
-                key={r.id}
-                className="rounded-xl border border-border bg-card p-4 flex flex-col md:flex-row md:items-center gap-3 hover:border-primary/40 transition-colors"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold truncate">{r.username}</span>
-                    {r.roles.includes("owner") && (
-                      <Badge className="gap-1"><Crown className="h-3 w-3" /> Owner</Badge>
-                    )}
-                    {r.roles.includes("moderator") && (
-                      <Badge variant="secondary" className="gap-1"><UserCog className="h-3 w-3" /> Mod</Badge>
-                    )}
-                    {r.banned && <Badge variant="destructive">Banned</Badge>}
-                  </div>
-                  <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                    <Coins className="h-3 w-3" /> {r.balance} credits
-                  </div>
-                  {r.email && (
-                    <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                      <Mail className="h-3 w-3" /> {r.email}
+          {loading ? (
+            <p className="text-muted-foreground">Loading…</p>
+          ) : (
+            <div className="space-y-3">
+              {filtered.map((r) => (
+                <div
+                  key={r.id}
+                  className="rounded-xl border border-border bg-card p-4 flex flex-col md:flex-row md:items-center gap-3 hover:border-primary/40 transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold truncate">{r.username}</span>
+                      {r.roles.includes("owner") && (
+                        <Badge className="gap-1"><Crown className="h-3 w-3" /> Owner</Badge>
+                      )}
+                      {r.roles.includes("moderator") && (
+                        <Badge variant="secondary" className="gap-1"><UserCog className="h-3 w-3" /> Mod</Badge>
+                      )}
+                      {r.banned && <Badge variant="destructive">Banned</Badge>}
                     </div>
-                  )}
-                </div>
+                    <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                      <Coins className="h-3 w-3" /> {r.balance} credits
+                    </div>
+                    {r.email && (
+                      <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <Mail className="h-3 w-3" /> {r.email}
+                      </div>
+                    )}
+                  </div>
 
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Input
-                    type="number"
-                    placeholder="±credits"
-                    className="w-24"
-                    value={grant[r.id] ?? ""}
-                    onChange={(e) => setGrant((g) => ({ ...g, [r.id]: e.target.value }))}
-                  />
-                  <Button size="sm" variant="outline" onClick={() => handleGrant(r.id)}>
-                    <Coins className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleDM(r.id)}>
-                    <MessageCircle className="h-4 w-4" />
-                  </Button>
-                  {r.id !== user?.id &&
-                    !r.roles.includes("owner") &&
-                    (!r.roles.includes("moderator") || isOwner) && (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Input
+                      type="number"
+                      placeholder="±credits"
+                      className="w-24"
+                      value={grant[r.id] ?? ""}
+                      onChange={(e) => setGrant((g) => ({ ...g, [r.id]: e.target.value }))}
+                    />
+                    <Button size="sm" variant="outline" onClick={() => handleGrant(r.id)}>
+                      <Coins className="h-4 w-4" />
+                    </Button>
+
+                    {/* Grant Avatar */}
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button size="sm" variant="outline" title="Give avatar">
+                          <Gift className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader><DialogTitle>Give avatar to {r.username}</DialogTitle></DialogHeader>
+                        <div className="flex gap-2 items-end">
+                          <Select value={grantAvatar[r.id] ?? ""} onValueChange={(v) => setGrantAvatar((g) => ({ ...g, [r.id]: v }))}>
+                            <SelectTrigger className="flex-1"><SelectValue placeholder="Select avatar…" /></SelectTrigger>
+                            <SelectContent className="max-h-60">
+                              {avatarItems.map((a) => (
+                                <SelectItem key={a.id} value={a.id}>{a.emoji} {a.name} ({a.rarity})</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button onClick={() => handleGrantAvatar(r.id)}>Give</Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Button size="sm" variant="outline" onClick={() => handleDM(r.id)}>
+                      <MessageCircle className="h-4 w-4" />
+                    </Button>
+                    {r.id !== user?.id &&
+                      !r.roles.includes("owner") &&
+                      (!r.roles.includes("moderator") || isOwner) && (
+                        <Button
+                          size="sm"
+                          variant={r.banned ? "outline" : "destructive"}
+                          onClick={() => handleBan(r.id, r.banned)}
+                        >
+                          {r.banned ? <CheckCircle2 className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
+                        </Button>
+                      )}
+                    {isOwner && r.id !== user?.id && (
                       <Button
                         size="sm"
-                        variant={r.banned ? "outline" : "destructive"}
-                        onClick={() => handleBan(r.id, r.banned)}
+                        variant={r.roles.includes("moderator") ? "destructive" : "secondary"}
+                        onClick={() => handleRole(r.id, "moderator", r.roles.includes("moderator"))}
                       >
-                        {r.banned ? <CheckCircle2 className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
+                        <UserCog className="h-4 w-4 mr-1" />
+                        {r.roles.includes("moderator") ? "Demote" : "Mod"}
                       </Button>
                     )}
-                  {isOwner && r.id !== user?.id && (
-                    <Button
-                      size="sm"
-                      variant={r.roles.includes("moderator") ? "destructive" : "secondary"}
-                      onClick={() => handleRole(r.id, "moderator", r.roles.includes("moderator"))}
-                    >
-                      <UserCog className="h-4 w-4 mr-1" />
-                      {r.roles.includes("moderator") ? "Demote" : "Mod"}
-                    </Button>
-                  )}
-                  {r.id !== user?.id &&
-                    !r.roles.includes("owner") &&
-                    (!r.roles.includes("moderator") || isOwner) && (
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleDelete(r.id, r.username)}
-                      title="Delete account"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
+                    {r.id !== user?.id &&
+                      !r.roles.includes("owner") &&
+                      (!r.roles.includes("moderator") || isOwner) && (
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDelete(r.id, r.username)}
+                        title="Delete account"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
+              ))}
+              {filtered.length === 0 && (
+                <p className="text-center text-muted-foreground py-8">No users match your search.</p>
+              )}
+            </div>
+          )}
+        </section>
+      )}
+
+      {tab === "events" && (
+        <section className="container mx-auto px-6 py-8 max-w-3xl space-y-6">
+          {/* Create event */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <h2 className="font-bold text-lg flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> Start Event</h2>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Input placeholder="Event name…" value={newEvent.name} onChange={(e) => setNewEvent((ev) => ({ ...ev, name: e.target.value }))} className="flex-1" />
+              <Select value={newEvent.type} onValueChange={(v) => setNewEvent((ev) => ({ ...ev, type: v }))}>
+                <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="easter">🐣 Easter</SelectItem>
+                  <SelectItem value="christmas">🎄 Christmas</SelectItem>
+                  <SelectItem value="halloween">🎃 Halloween</SelectItem>
+                  <SelectItem value="luck_boost">🍀 Luck Boost</SelectItem>
+                  <SelectItem value="custom">⭐ Custom</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex items-center gap-1">
+                <Zap className="h-4 w-4 text-muted-foreground" />
+                <Input type="number" placeholder="Luck x" className="w-20" value={newEvent.luck} onChange={(e) => setNewEvent((ev) => ({ ...ev, luck: e.target.value }))} />
+              </div>
+              <Button onClick={handleStartEvent}>Start</Button>
+            </div>
+          </div>
+
+          {/* Active events */}
+          <div className="space-y-3">
+            <h3 className="font-semibold text-muted-foreground">Active Events</h3>
+            {events.filter((e) => e.active).length === 0 && <p className="text-sm text-muted-foreground">No active events.</p>}
+            {events.filter((e) => e.active).map((e) => (
+              <div key={e.id} className="rounded-xl border border-primary/40 bg-card p-4 flex items-center justify-between">
+                <div>
+                  <span className="font-semibold">{e.name}</span>
+                  <Badge variant="outline" className="ml-2">{e.type}</Badge>
+                  {e.luck_multiplier > 1 && <Badge className="ml-2 gap-1"><Zap className="h-3 w-3" />{e.luck_multiplier}x luck</Badge>}
+                </div>
+                <Button size="sm" variant="destructive" onClick={() => handleEndEvent(e.id)}>
+                  <X className="h-4 w-4 mr-1" /> End
+                </Button>
               </div>
             ))}
-            {filtered.length === 0 && (
-              <p className="text-center text-muted-foreground py-8">No users match your search.</p>
-            )}
           </div>
-        )}
-      </section>
+
+          {/* Past events */}
+          {events.filter((e) => !e.active).length > 0 && (
+            <div className="space-y-3">
+              <h3 className="font-semibold text-muted-foreground">Past Events</h3>
+              {events.filter((e) => !e.active).map((e) => (
+                <div key={e.id} className="rounded-xl border border-border bg-card/50 p-4 flex items-center justify-between opacity-60">
+                  <div>
+                    <span className="font-semibold">{e.name}</span>
+                    <Badge variant="outline" className="ml-2">{e.type}</Badge>
+                    {e.luck_multiplier > 1 && <Badge variant="secondary" className="ml-2">{e.luck_multiplier}x</Badge>}
+                  </div>
+                  <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleDateString()}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 };
