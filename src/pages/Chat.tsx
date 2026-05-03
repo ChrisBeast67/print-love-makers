@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon, Shield, Lock } from "lucide-react";
+import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon, Shield, Lock, Smile, ImagePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCredits } from "@/hooks/useCredits";
@@ -15,6 +15,8 @@ import { GamesLauncher } from "@/components/games/GamesLauncher";
 import { TradeDialog } from "@/components/trade/TradeDialog";
 import { TradeOffersList } from "@/components/trade/TradeOffersList";
 import { Switch } from "@/components/ui/switch";
+import EmojiPicker, { Theme } from "emoji-picker-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface Message {
   id: string;
@@ -77,6 +79,9 @@ const ChatPage = () => {
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState("");
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth", { replace: true });
@@ -289,6 +294,39 @@ const ChatPage = () => {
       .from("typing_indicators")
       .upsert({ chat_id: chatId, user_id: user.id, updated_at: new Date().toISOString() });
   };
+
+  const uploadImage = useCallback(async (file: File) => {
+    if (!user || !chatId) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Only images are allowed");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+    setUploading(true);
+    const ext = file.name.split(".").pop() ?? "png";
+    const path = `${user.id}/${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from("chat-images").upload(path, file);
+    if (upErr) {
+      toast.error("Upload failed: " + upErr.message);
+      setUploading(false);
+      return;
+    }
+    const { data: urlData } = supabase.storage.from("chat-images").getPublicUrl(path);
+    const imageUrl = urlData.publicUrl;
+    // Send as a message with image prefix
+    const { error } = await supabase.from("messages").insert({
+      content: `__img__:${imageUrl}`,
+      user_id: user.id,
+      chat_id: chatId,
+    });
+    if (error) toast.error(error.message);
+    setUploading(false);
+    // Clear typing
+    await supabase.from("typing_indicators").delete().eq("chat_id", chatId).eq("user_id", user.id);
+  }, [user, chatId]);
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -864,7 +902,16 @@ const ChatPage = () => {
                                 : "bg-secondary text-secondary-foreground rounded-bl-sm"
                             )}
                           >
-                            {m.content}
+                            {m.content.startsWith("__img__:") ? (
+                              <img
+                                src={m.content.replace("__img__:", "")}
+                                alt="Shared image"
+                                className="max-w-full max-h-64 rounded-lg cursor-pointer"
+                                onClick={() => window.open(m.content.replace("__img__:", ""), "_blank")}
+                              />
+                            ) : (
+                              m.content
+                            )}
                           </div>
                           {isLastMine && readers.length > 0 && (
                             <div className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground">
@@ -897,6 +944,45 @@ const ChatPage = () => {
               <form onSubmit={sendMessage} className="flex gap-2 p-3 border-t border-border/50 max-w-3xl mx-auto w-full">
                 {canType ? (
                   <>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) uploadImage(f);
+                        e.target.value = "";
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                    >
+                      <ImagePlus className="h-4 w-4" />
+                    </Button>
+                    <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
+                      <PopoverTrigger asChild>
+                        <Button type="button" variant="ghost" size="icon" className="shrink-0">
+                          <Smile className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 border-0" side="top" align="start">
+                        <EmojiPicker
+                          theme={Theme.DARK}
+                          onEmojiClick={(emojiData) => {
+                            setInput((prev) => prev + emojiData.emoji);
+                            setEmojiOpen(false);
+                          }}
+                          height={350}
+                          width={300}
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <Input
                       value={input}
                       onChange={(e) => onInputChange(e.target.value)}
@@ -905,7 +991,7 @@ const ChatPage = () => {
                       maxLength={1000}
                       className="flex-1"
                     />
-                    <Button type="submit" disabled={!input.trim() || sending}>
+                    <Button type="submit" disabled={!input.trim() || sending || uploading}>
                       <Send className="h-4 w-4" />
                     </Button>
                   </>
