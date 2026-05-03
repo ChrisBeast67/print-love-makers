@@ -902,12 +902,13 @@ const ChatPage = () => {
                                 : "bg-secondary text-secondary-foreground rounded-bl-sm"
                             )}
                           >
-                            {m.content.startsWith("__img__:") ? (
+                            {m.content?.startsWith("__img__:") ? (
                               <img
-                                src={m.content.replace("__img__:", "")}
+                                src={m.content.slice(8)}
                                 alt="Shared image"
-                                className="max-w-full max-h-64 rounded-lg cursor-pointer"
-                                onClick={() => window.open(m.content.replace("__img__:", ""), "_blank")}
+                                className="max-w-full max-h-64 rounded-lg cursor-pointer object-contain"
+                                loading="lazy"
+                                onClick={() => window.open(m.content.slice(8), "_blank")}
                               />
                             ) : (
                               m.content
