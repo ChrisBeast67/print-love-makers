@@ -12,6 +12,7 @@ import Shop from "./pages/Shop.tsx";
 import Backpack from "./pages/Backpack.tsx";
 import Admin from "./pages/Admin.tsx";
 import { AuthProvider } from "@/hooks/useAuth";
+import { LanguageProvider } from "@/hooks/useLanguage";
 
 const queryClient = new QueryClient();
 
@@ -22,18 +23,20 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/chat" element={<Chat />} />
-            <Route path="/chat/:chatId" element={<Chat />} />
-            <Route path="/invite/:token" element={<InviteJoin />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/backpack" element={<Backpack />} />
-            <Route path="/admin" element={<Admin />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <LanguageProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/chat" element={<Chat />} />
+              <Route path="/chat/:chatId" element={<Chat />} />
+              <Route path="/invite/:token" element={<InviteJoin />} />
+              <Route path="/shop" element={<Shop />} />
+              <Route path="/backpack" element={<Backpack />} />
+              <Route path="/admin" element={<Admin />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </LanguageProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
