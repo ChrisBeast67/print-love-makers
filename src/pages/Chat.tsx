@@ -516,6 +516,16 @@ const ChatPage = () => {
     toast.success("Renamed");
   };
 
+  const handleChangeUsername = async () => {
+    if (!user || !newUsername.trim()) return;
+    const trimmed = newUsername.trim();
+    const { error } = await supabase.from("profiles").update({ username: trimmed }).eq("id", user.id);
+    if (error) return toast.error(error.message);
+    setProfiles((prev) => ({ ...prev, [user.id]: { ...prev[user.id], username: trimmed } }));
+    setUsernameEditOpen(false);
+    toast.success("Username updated!");
+  };
+
   if (loading || !user) {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading…</div>;
   }
