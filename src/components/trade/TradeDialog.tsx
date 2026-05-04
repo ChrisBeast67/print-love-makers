@@ -20,7 +20,7 @@ interface AvatarItem {
   id: string;
   name: string;
   emoji: string;
-  rarity: "common" | "rare" | "epic" | "legendary";
+  rarity: "common" | "rare" | "epic" | "legendary" | "mythic";
   accent_hsl: string;
 }
 
@@ -29,6 +29,7 @@ const rarityColor: Record<AvatarItem["rarity"], string> = {
   rare: "border-blue-400",
   epic: "border-violet-400",
   legendary: "border-amber-400",
+  mythic: "border-pink-500",
 };
 
 export const TradeDialog = ({ open, onOpenChange, chatId, members }: TradeDialogProps) => {

@@ -24,7 +24,7 @@ interface PullResult {
   avatar_item_id: string;
   name: string;
   emoji: string;
-  rarity: "common" | "rare" | "epic" | "legendary";
+  rarity: "common" | "rare" | "epic" | "legendary" | "mythic";
   accent_hsl: string;
   is_new: boolean;
 }
@@ -35,6 +35,8 @@ const rarityClass: Record<PullResult["rarity"], string> = {
   epic: "border-violet-400 from-violet-500/25 shadow-[0_0_20px_-4px_hsl(270_80%_60%/0.6)]",
   legendary:
     "border-amber-400 from-amber-500/30 shadow-[0_0_30px_-4px_hsl(45_100%_60%/0.8)] animate-pulse",
+  mythic:
+    "border-pink-500 from-pink-500/40 shadow-[0_0_40px_-2px_hsl(330_100%_60%/0.9)] animate-pulse",
 };
 
 const rarityLabel: Record<PullResult["rarity"], string> = {
@@ -42,6 +44,7 @@ const rarityLabel: Record<PullResult["rarity"], string> = {
   rare: "Rare",
   epic: "Epic",
   legendary: "Legendary",
+  mythic: "✦ MYTHIC ✦",
 };
 
 const themeLabels: Record<Pack["theme"], string> = {
@@ -198,7 +201,7 @@ const Shop = () => {
             Open a pack to get <span className="text-foreground font-semibold">5 random avatars</span> from a theme.
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Drop rates — Common 60% · Rare 25% · Epic 12% · Legendary 3%
+            Drop rates — Common 59% · Rare 25% · Epic 12% · Legendary 3% · Mythic 1%
           </p>
         </div>
 
