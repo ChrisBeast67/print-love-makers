@@ -14,7 +14,7 @@ interface AvatarItem {
   slug: string;
   name: string;
   theme: string;
-  rarity: "common" | "rare" | "epic" | "legendary";
+  rarity: "common" | "rare" | "epic" | "legendary" | "mythic";
   emoji: string;
   accent_hsl: string;
 }
@@ -29,6 +29,7 @@ const rarityRing: Record<AvatarItem["rarity"], string> = {
   rare: "border-blue-400",
   epic: "border-violet-400",
   legendary: "border-amber-400",
+  mythic: "border-pink-500",
 };
 
 const rarityLabel: Record<AvatarItem["rarity"], string> = {
@@ -36,12 +37,13 @@ const rarityLabel: Record<AvatarItem["rarity"], string> = {
   rare: "Rare",
   epic: "Epic",
   legendary: "Legendary",
+  mythic: "✦ MYTHIC ✦",
 };
 
 const sellPrice = (r: AvatarItem["rarity"]) =>
-  ({ common: 15, rare: 50, epic: 200, legendary: 750 }[r]);
+  ({ common: 15, rare: 50, epic: 200, legendary: 750, mythic: 3000 }[r]);
 
-const rarityOrder = { legendary: 0, epic: 1, rare: 2, common: 3 } as const;
+const rarityOrder = { mythic: 0, legendary: 1, epic: 2, rare: 3, common: 4 } as const;
 
 const Backpack = () => {
   const { user, loading } = useAuth();
