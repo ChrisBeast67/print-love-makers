@@ -82,6 +82,8 @@ const ChatPage = () => {
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [usernameEditOpen, setUsernameEditOpen] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth", { replace: true });
@@ -678,6 +680,26 @@ const ChatPage = () => {
               );
             })}
           </div>
+          {/* User profile at bottom of sidebar */}
+          <div className="p-3 border-t border-border/50 flex items-center gap-2">
+            <Avatar className="h-8 w-8 shrink-0">
+              <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                {(profiles[user.id]?.username ?? "?").slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-sm font-medium truncate flex-1">{profiles[user.id]?.username ?? "user"}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              onClick={() => {
+                setNewUsername(profiles[user.id]?.username ?? "");
+                setUsernameEditOpen(true);
+              }}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </aside>
 
         {sidebarOpen && (
@@ -1036,6 +1058,30 @@ const ChatPage = () => {
           }))}
         />
       )}
+      {/* Username change dialog */}
+      <Dialog open={usernameEditOpen} onOpenChange={setUsernameEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change username</DialogTitle>
+            <DialogDescription>Pick a new display name.</DialogDescription>
+          </DialogHeader>
+          <Input
+            value={newUsername}
+            onChange={(e) => setNewUsername(e.target.value)}
+            placeholder="New username"
+            maxLength={30}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleChangeUsername();
+              }
+            }}
+          />
+          <DialogFooter>
+            <Button onClick={handleChangeUsername} disabled={!newUsername.trim()}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
