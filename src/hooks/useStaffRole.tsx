@@ -8,6 +8,7 @@ export type StaffRole = "owner" | "admin" | "moderator" | null;
 export function useStaffRole() {
   const { user } = useAuth();
   const [role, setRole] = useState<StaffRole>(null);
+  const [isActualOwner, setIsActualOwner] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,8 +26,8 @@ export function useStaffRole() {
       .then(({ data }) => {
         if (cancelled) return;
         const roles = (data ?? []).map((r) => r.role as string);
-        if (roles.includes("owner")) setRole("owner");
-        else if (roles.includes("deputy")) setRole("owner"); // deputies act as owners in UI
+        if (roles.includes("owner")) { setRole("owner"); setIsActualOwner(true); }
+        else if (roles.includes("deputy")) { setRole("owner"); setIsActualOwner(false); } // deputies act as owners in UI
         else if (roles.includes("admin")) setRole("owner"); // legacy admins act as owners
         else if (roles.includes("moderator")) setRole("moderator");
         else setRole(null);
@@ -39,5 +40,5 @@ export function useStaffRole() {
 
   const isStaff = role === "owner" || role === "moderator";
   const isOwner = role === "owner";
-  return { role, isStaff, isOwner, loading };
+  return { role, isStaff, isOwner, isActualOwner, loading };
 }
