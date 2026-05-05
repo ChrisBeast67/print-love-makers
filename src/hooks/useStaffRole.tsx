@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
 export type StaffRole = "owner" | "admin" | "moderator" | null;
+// deputy has same powers as owner (except owner can ban them)
 
 export function useStaffRole() {
   const { user } = useAuth();
@@ -25,6 +26,7 @@ export function useStaffRole() {
         if (cancelled) return;
         const roles = (data ?? []).map((r) => r.role as string);
         if (roles.includes("owner")) setRole("owner");
+        else if (roles.includes("deputy")) setRole("owner"); // deputies act as owners in UI
         else if (roles.includes("admin")) setRole("owner"); // legacy admins act as owners
         else if (roles.includes("moderator")) setRole("moderator");
         else setRole(null);
