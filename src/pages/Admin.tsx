@@ -265,7 +265,8 @@ const Admin = () => {
                     </Button>
                     {r.id !== user?.id &&
                       !r.roles.includes("owner") &&
-                      (!r.roles.includes("moderator") || isOwner) && (
+                      (!r.roles.includes("moderator") || isOwner) &&
+                      (!r.roles.includes("deputy") || isOwner) && (
                         <Button
                           size="sm"
                           variant={r.banned ? "outline" : "destructive"}
