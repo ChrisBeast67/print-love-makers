@@ -207,6 +207,9 @@ const Admin = () => {
                       {r.roles.includes("owner") && (
                         <Badge className="gap-1"><Crown className="h-3 w-3" /> Owner</Badge>
                       )}
+                      {r.roles.includes("deputy") && (
+                        <Badge className="gap-1 bg-amber-600"><Crown className="h-3 w-3" /> Deputy</Badge>
+                      )}
                       {r.roles.includes("moderator") && (
                         <Badge variant="secondary" className="gap-1"><UserCog className="h-3 w-3" /> Mod</Badge>
                       )}
@@ -262,7 +265,8 @@ const Admin = () => {
                     </Button>
                     {r.id !== user?.id &&
                       !r.roles.includes("owner") &&
-                      (!r.roles.includes("moderator") || isOwner) && (
+                      (!r.roles.includes("moderator") || isOwner) &&
+                      (!r.roles.includes("deputy") || isOwner) && (
                         <Button
                           size="sm"
                           variant={r.banned ? "outline" : "destructive"}
@@ -281,9 +285,20 @@ const Admin = () => {
                         {r.roles.includes("moderator") ? "Demote" : "Mod"}
                       </Button>
                     )}
+                    {isOwner && r.id !== user?.id && !r.roles.includes("owner") && (
+                      <Button
+                        size="sm"
+                        variant={r.roles.includes("deputy") ? "destructive" : "outline"}
+                        onClick={() => handleRole(r.id, "deputy" as any, r.roles.includes("deputy"))}
+                      >
+                        <Crown className="h-4 w-4 mr-1" />
+                        {r.roles.includes("deputy") ? "Remove Deputy" : "Deputy"}
+                      </Button>
+                    )}
                     {r.id !== user?.id &&
                       !r.roles.includes("owner") &&
-                      (!r.roles.includes("moderator") || isOwner) && (
+                      (!r.roles.includes("moderator") || isOwner) &&
+                      (!r.roles.includes("deputy") || isOwner) && (
                       <Button
                         size="sm"
                         variant="destructive"
