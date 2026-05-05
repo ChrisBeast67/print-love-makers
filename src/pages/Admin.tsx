@@ -23,7 +23,7 @@ type Row = {
 
 const Admin = () => {
   const { user, loading: authLoading } = useAuth();
-  const { isStaff, isOwner, loading: roleLoading } = useStaffRole();
+  const { isStaff, isOwner, isActualOwner, loading: roleLoading } = useStaffRole();
   const navigate = useNavigate();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -319,7 +319,7 @@ const Admin = () => {
                         {r.roles.includes("moderator") ? "Demote" : "Mod"}
                       </Button>
                     )}
-                    {isOwner && r.id !== user?.id && !r.roles.includes("owner") && (
+                    {isActualOwner && r.id !== user?.id && !r.roles.includes("owner") && (
                       <Button
                         size="sm"
                         variant={r.roles.includes("deputy") ? "destructive" : "outline"}
