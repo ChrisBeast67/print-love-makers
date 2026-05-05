@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper } from "lucide-react";
+import { Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,7 @@ const Admin = () => {
   const [newEvent, setNewEvent] = useState({ name: "", type: "custom" as string, luck: "1" });
   const [avatarItems, setAvatarItems] = useState<{ id: string; name: string; emoji: string; rarity: string }[]>([]);
   const [grantAvatar, setGrantAvatar] = useState<Record<string, string>>({});
+  const [removeAvatar, setRemoveAvatar] = useState<Record<string, string>>({});
   const [tab, setTab] = useState<"users" | "events">("users");
 
   useEffect(() => {
@@ -107,6 +109,15 @@ const Admin = () => {
     if (error) return toast.error(error.message);
     toast.success("Avatar granted!");
     setGrantAvatar((g) => ({ ...g, [userId]: "" }));
+  };
+
+  const handleRemoveAvatar = async (userId: string) => {
+    const avatarId = removeAvatar[userId];
+    if (!avatarId) return toast.error("Select an avatar");
+    const { error } = await supabase.rpc("admin_remove_avatar", { _target: userId, _avatar_item_id: avatarId });
+    if (error) return toast.error(error.message);
+    toast.success("Avatar removed!");
+    setRemoveAvatar((g) => ({ ...g, [userId]: "" }));
   };
 
   const filtered = useMemo(
@@ -260,6 +271,29 @@ const Admin = () => {
                       </DialogContent>
                     </Dialog>
 
+                    {/* Remove Avatar */}
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button size="sm" variant="outline" title="Remove avatar">
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader><DialogTitle>Remove avatar from {r.username}</DialogTitle></DialogHeader>
+                        <div className="flex gap-2 items-end">
+                          <Select value={removeAvatar[r.id] ?? ""} onValueChange={(v) => setRemoveAvatar((g) => ({ ...g, [r.id]: v }))}>
+                            <SelectTrigger className="flex-1"><SelectValue placeholder="Select avatar…" /></SelectTrigger>
+                            <SelectContent className="max-h-60">
+                              {avatarItems.map((a) => (
+                                <SelectItem key={a.id} value={a.id}>{a.emoji} {a.name} ({a.rarity})</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button variant="destructive" onClick={() => handleRemoveAvatar(r.id)}>Remove</Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
                     <Button size="sm" variant="outline" onClick={() => handleDM(r.id)}>
                       <MessageCircle className="h-4 w-4" />
                     </Button>
@@ -275,7 +309,7 @@ const Admin = () => {
                           {r.banned ? <CheckCircle2 className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
                         </Button>
                       )}
-                    {isOwner && r.id !== user?.id && (
+                    {(isOwner || isStaff) && r.id !== user?.id && (
                       <Button
                         size="sm"
                         variant={r.roles.includes("moderator") ? "destructive" : "secondary"}
