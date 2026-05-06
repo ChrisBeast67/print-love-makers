@@ -701,7 +701,7 @@ export type Database = {
       unequip_avatar: { Args: never; Returns: undefined }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user" | "owner"
+      app_role: "admin" | "moderator" | "user" | "owner" | "deputy"
       chat_member_role: "admin" | "member"
       chat_type: "dm" | "group"
       event_type: "easter" | "christmas" | "halloween" | "luck_boost" | "custom"
@@ -834,7 +834,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user", "owner"],
+      app_role: ["admin", "moderator", "user", "owner", "deputy"],
       chat_member_role: ["admin", "member"],
       chat_type: ["dm", "group"],
       event_type: ["easter", "christmas", "halloween", "luck_boost", "custom"],
