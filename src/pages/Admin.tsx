@@ -159,6 +159,12 @@ const Admin = () => {
     navigate(`/chat/${data}`);
   };
 
+  const handleGrantPremium = async (id: string) => {
+    const { error } = await supabase.rpc("admin_grant_premium", { _target: id });
+    if (error) return toast.error(error.message);
+    toast.success("Premium granted! ✨");
+  };
+
   const handleDelete = async (id: string, username: string) => {
     if (!confirm(`Permanently delete "${username}"? This wipes their account, messages, credits and inventory. This cannot be undone.`)) return;
     const { data, error } = await supabase.functions.invoke("admin-delete-user", {
@@ -297,6 +303,11 @@ const Admin = () => {
                     <Button size="sm" variant="outline" onClick={() => handleDM(r.id)}>
                       <MessageCircle className="h-4 w-4" />
                     </Button>
+                    {r.id !== user?.id && (
+                      <Button size="sm" variant="outline" onClick={() => handleGrantPremium(r.id)} title="Grant Premium">
+                        <Crown className="h-4 w-4 text-amber-500" />
+                      </Button>
+                    )}
                     {r.id !== user?.id &&
                       !r.roles.includes("owner") &&
                       (!r.roles.includes("moderator") || isOwner) &&

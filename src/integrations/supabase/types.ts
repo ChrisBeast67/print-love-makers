@@ -210,6 +210,47 @@ export type Database = {
         }
         Relationships: []
       }
+      exp_milestones: {
+        Row: {
+          created_at: string
+          exp_required: number
+          id: string
+          is_premium: boolean
+          level: number
+          name: string
+          reward_avatar_id: string | null
+          reward_credits: number
+        }
+        Insert: {
+          created_at?: string
+          exp_required: number
+          id?: string
+          is_premium?: boolean
+          level: number
+          name: string
+          reward_avatar_id?: string | null
+          reward_credits?: number
+        }
+        Update: {
+          created_at?: string
+          exp_required?: number
+          id?: string
+          is_premium?: boolean
+          level?: number
+          name?: string
+          reward_avatar_id?: string | null
+          reward_credits?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exp_milestones_reward_avatar_id_fkey"
+            columns: ["reward_avatar_id"]
+            isOneToOne: false
+            referencedRelation: "avatar_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       friendships: {
         Row: {
           addressee_id: string
@@ -503,6 +544,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_exp: {
+        Row: {
+          is_premium: boolean
+          total_exp: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          is_premium?: boolean
+          total_exp?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          is_premium?: boolean
+          total_exp?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_luck_boosts: {
         Row: {
           expires_at: string
@@ -523,6 +585,32 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_milestone_claims: {
+        Row: {
+          claimed_at: string
+          milestone_id: string
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          milestone_id: string
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          milestone_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_milestone_claims_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "exp_milestones"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_packs: {
         Row: {
@@ -597,6 +685,7 @@ export type Database = {
         Args: { _amount: number; _target: string }
         Returns: undefined
       }
+      admin_grant_premium: { Args: { _target: string }; Returns: undefined }
       admin_list_users: {
         Args: never
         Returns: {
@@ -640,8 +729,10 @@ export type Database = {
         Returns: undefined
       }
       buy_luck_boost: { Args: { _tier: number }; Returns: string }
+      buy_premium: { Args: never; Returns: undefined }
       cancel_trade_offer: { Args: { _id: string }; Returns: undefined }
       claim_daily_credits: { Args: never; Returns: number }
+      claim_milestone: { Args: { _milestone_id: string }; Returns: string }
       create_group_chat: { Args: { _name: string }; Returns: string }
       create_or_get_dm: { Args: { _other_user: string }; Returns: string }
       create_trade_offer: {
@@ -656,6 +747,10 @@ export type Database = {
         Returns: string
       }
       decline_trade_offer: { Args: { _id: string }; Returns: undefined }
+      earn_exp: {
+        Args: { _amount: number; _user_id: string }
+        Returns: undefined
+      }
       equip_avatar: { Args: { _avatar_item_id: string }; Returns: undefined }
       has_role: {
         Args: {
