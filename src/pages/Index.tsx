@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MessageCircle, Zap, Shield, Users, ShoppingBag, LogOut, BookOpen, Backpack as BackpackIcon } from "lucide-react";
+import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useStaffRole } from "@/hooks/useStaffRole";
@@ -49,6 +50,9 @@ const Index = () => {
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => navigate("/backpack")}>
                   <BackpackIcon className="h-4 w-4 mr-1" /> Backpack
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => navigate("/exp")}>
+                  <Star className="h-4 w-4 mr-1" /> EXP
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => navigate("/chat")}>
                   Chats
