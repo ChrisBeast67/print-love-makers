@@ -11,6 +11,7 @@ import InviteJoin from "./pages/InviteJoin.tsx";
 import Shop from "./pages/Shop.tsx";
 import Backpack from "./pages/Backpack.tsx";
 import Admin from "./pages/Admin.tsx";
+import Exp from "./pages/Exp.tsx";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
 
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="/shop" element={<Shop />} />
               <Route path="/backpack" element={<Backpack />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/exp" element={<Exp />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
