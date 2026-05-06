@@ -303,6 +303,11 @@ const Admin = () => {
                     <Button size="sm" variant="outline" onClick={() => handleDM(r.id)}>
                       <MessageCircle className="h-4 w-4" />
                     </Button>
+                    {r.id !== user?.id && (
+                      <Button size="sm" variant="outline" onClick={() => handleGrantPremium(r.id)} title="Grant Premium">
+                        <Crown className="h-4 w-4 text-amber-500" />
+                      </Button>
+                    )}
                     {r.id !== user?.id &&
                       !r.roles.includes("owner") &&
                       (!r.roles.includes("moderator") || isOwner) &&
