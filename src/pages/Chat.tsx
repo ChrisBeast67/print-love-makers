@@ -82,8 +82,36 @@ const ChatPage = () => {
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const profileFileRef = useRef<HTMLInputElement>(null);
   const [usernameEditOpen, setUsernameEditOpen] = useState(false);
   const [newUsername, setNewUsername] = useState("");
+  const [profileUploading, setProfileUploading] = useState(false);
+
+  const handleEditProfileImage = () => profileFileRef.current?.click();
+
+  const handleProfileImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!validTypes.includes(file.type)) return toast.error("Only images allowed");
+    if (file.size > 5 * 1024 * 1024) return toast.error("Max 5MB");
+    setProfileUploading(true);
+    const ext = file.name.split(".").pop() ?? "jpg";
+    const { data, error } = await supabase.rpc("upload_profile_image", {
+      file_name: `avatar.${ext}`,
+      mime_type: file.type,
+    });
+    setProfileUploading(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Profile image updated!");
+    setProfiles((prev) => ({ ...prev, [user.id]: { ...prev[user.id], avatar_url: data } }));
+  };
+
+  // Load user profile (including avatar_url) for sidebar
+  useEffect(() => {
+    if (!user) return;
+    loadProfiles([user.id]);
+  }, [user]);
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth", { replace: true });
@@ -673,9 +701,15 @@ const ChatPage = () => {
                   )}
                 >
                   <Avatar className="h-9 w-9 shrink-0">
-                    <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                      {c.type === "dm" ? getChatName(c).slice(0, 2).toUpperCase() : (c.name ?? "G").slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
+                    {(() => {
+                      const otherId = c.type === "dm" ? allMyMemberships.find(m => m.chat_id === c.id && m.user_id !== user.id)?.user_id : null;
+                      const prof = otherId ? profiles[otherId] : null;
+                      return prof?.avatar_url
+                        ? <img src={prof.avatar_url!} alt={getChatName(c)} className="h-full w-full object-cover rounded-full" />
+                        : <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                            {c.type === "dm" ? getChatName(c).slice(0, 2).toUpperCase() : (c.name ?? "G").slice(0, 2).toUpperCase()}
+                          </AvatarFallback>;
+                    })()}
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
@@ -692,12 +726,35 @@ const ChatPage = () => {
           </div>
           {/* User profile at bottom of sidebar */}
           <div className="p-3 border-t border-border/50 flex items-center gap-2">
-            <Avatar className="h-8 w-8 shrink-0">
+            <Avatar
+            className="h-8 w-8 shrink-0"
+            style={profiles[user.id]?.avatar_url ? { border: "1.5px solid var(--primary)" } : undefined}
+          >
+            {profiles[user.id]?.avatar_url ? (
+              <img src={profiles[user.id].avatar_url!} alt="avatar" className="h-full w-full object-cover rounded-full" />
+            ) : (
               <AvatarFallback className="bg-primary/20 text-primary text-xs">
                 {(profiles[user.id]?.username ?? "?").slice(0, 2).toUpperCase()}
               </AvatarFallback>
-            </Avatar>
+            )}
+          </Avatar>
             <span className="text-sm font-medium truncate flex-1">{profiles[user.id]?.username ?? "user"}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              onClick={handleEditProfileImage}
+              title="Change profile image"
+            >
+              <ImagePlus className="h-3.5 w-3.5" />
+            </Button>
+            <input
+              ref={profileFileRef}
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              className="hidden"
+              onChange={handleProfileImageChange}
+            />
             <Button
               variant="ghost"
               size="sm"
@@ -730,9 +787,17 @@ const ChatPage = () => {
               <div className="border-b border-border/50 px-4 py-3 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <Avatar className="h-8 w-8 shrink-0">
-                    <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                      {getChatName(activeChat).slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
+                    {(() => {
+                      const otherId = activeChat.type === "dm"
+                        ? members.find(m => m.user_id !== user.id)?.user_id
+                        : null;
+                      const prof = otherId ? profiles[otherId] : null;
+                      return prof?.avatar_url
+                        ? <img src={prof.avatar_url!} alt={getChatName(activeChat)} className="h-full w-full object-cover rounded-full" />
+                        : <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                            {getChatName(activeChat).slice(0, 2).toUpperCase()}
+                          </AvatarFallback>;
+                    })()}
                   </Avatar>
                   <div className="min-w-0">
                     <div className="font-semibold truncate">{getChatName(activeChat)}</div>
@@ -914,12 +979,18 @@ const ChatPage = () => {
                                   boxShadow: `0 0 12px -2px hsl(${equipped.accent_hsl} / 0.8)`,
                                   border: `1.5px solid hsl(${equipped.accent_hsl})`,
                                 }
+                              : profile?.avatar_url
+                              ? { border: "1.5px solid var(--primary)" }
                               : undefined
                           }
                         >
-                          <AvatarFallback className="bg-secondary text-base">
-                            {equipped ? equipped.emoji : name.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
+                          {profile?.avatar_url ? (
+                            <img src={profile.avatar_url!} alt={name} className="h-full w-full object-cover rounded-full" />
+                          ) : (
+                            <AvatarFallback className="bg-secondary text-base">
+                              {equipped ? equipped.emoji : name.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          )}
                         </Avatar>
                         <div className={cn("flex flex-col max-w-[75%]", isMine && "items-end")}>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
