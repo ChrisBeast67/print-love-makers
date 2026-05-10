@@ -60,6 +60,7 @@ const RARITY_OPTIONS: { value: AvatarItem["rarity"]; label: string }[] = [
   { value: "rare", label: "Rare" },
   { value: "epic", label: "Epic" },
   { value: "legendary", label: "Legendary" },
+  { value: "mythic", label: "✦ Mythic ✦" },
 ];
 
 const Backpack = () => {
