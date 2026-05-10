@@ -3,9 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCredits } from "@/hooks/useCredits";
+import { useStaffRole } from "@/hooks/useStaffRole";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Coins, ArrowLeft, Check, ShoppingBag } from "lucide-react";
+import { Coins, ArrowLeft, Check, ShoppingBag, Upload } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -45,15 +48,37 @@ const sellPrice = (r: AvatarItem["rarity"]) =>
 
 const rarityOrder = { mythic: 0, legendary: 1, epic: 2, rare: 3, common: 4 } as const;
 
+const THEME_OPTIONS: { value: string; label: string }[] = [
+  { value: "robot", label: "Robot" },
+  { value: "animal", label: "Animal" },
+  { value: "circus", label: "Circus" },
+  { value: "underwater", label: "Underwater" },
+];
+
+const RARITY_OPTIONS: { value: AvatarItem["rarity"]; label: string }[] = [
+  { value: "common", label: "Common" },
+  { value: "rare", label: "Rare" },
+  { value: "epic", label: "Epic" },
+  { value: "legendary", label: "Legendary" },
+];
+
 const Backpack = () => {
   const { user, loading } = useAuth();
   const { balance, refresh } = useCredits();
+  const { isDeputy, loading: roleLoading } = useStaffRole();
   const navigate = useNavigate();
   const [items, setItems] = useState<AvatarItem[]>([]);
   const [owned, setOwned] = useState<Record<string, number>>({});
   const [equipped, setEquipped] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | AvatarItem["theme"]>("all");
   const [busy, setBusy] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [uploadName, setUploadName] = useState("");
+  const [uploadEmoji, setUploadEmoji] = useState("");
+  const [uploadTheme, setUploadTheme] = useState<string>("robot");
+  const [uploadRarity, setUploadRarity] = useState<AvatarItem["rarity"]>("common");
+  const [uploadColor, setUploadColor] = useState("#14b8a6");
+  const [uploading, setUploading] = useState(false);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -107,6 +132,36 @@ const Backpack = () => {
     load();
   };
 
+  const handleUploadCustom = async () => {
+    if (!uploadName.trim() || !uploadEmoji.trim()) {
+      toast.error("Name and emoji are required");
+      return;
+    }
+    setUploading(true);
+    const hsl = hexToHsl(uploadColor);
+    const { error } = await supabase.rpc("insert_custom_avatar", {
+      _name: uploadName.trim(),
+      _emoji: uploadEmoji.trim(),
+      _theme: uploadTheme,
+      _rarity: uploadRarity,
+      _accent_hsl: hsl,
+    });
+    setUploading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Custom avatar uploaded!");
+    setUploadOpen(false);
+    setUploadName("");
+    setUploadEmoji("");
+    setUploadTheme("robot");
+    setUploadRarity("common");
+    setUploadColor("#14b8a6");
+    load();
+  };
+
+
   const ownedItems = items
     .filter((i) => (owned[i.id] ?? 0) > 0)
     .filter((i) => filter === "all" || i.theme === filter)
@@ -122,6 +177,11 @@ const Backpack = () => {
             <ArrowLeft className="h-4 w-4" /> Back
           </Link>
           <div className="flex items-center gap-2">
+            {isDeputy && (
+              <Button variant="secondary" size="sm" onClick={() => setUploadOpen(true)}>
+                <Upload className="h-4 w-4 mr-1" /> Upload Custom
+              </Button>
+            )}
             <Button variant="secondary" size="sm" onClick={() => navigate("/shop")}>
               <ShoppingBag className="h-4 w-4 mr-1" /> Shop
             </Button>
@@ -228,8 +288,100 @@ const Backpack = () => {
           </div>
         )}
       </div>
+
+      <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="gradient-text">Upload Custom Avatar</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Emoji</label>
+              <input
+                type="text"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-lg text-center"
+                placeholder="😸"
+                value={uploadEmoji}
+                onChange={(e) => setUploadEmoji(e.target.value.slice(0, 4))}
+                maxLength={4}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Name</label>
+              <input
+                type="text"
+                className="w-full rounded-md border border-input bg-background px-3 py-2"
+                placeholder="Cool Cat"
+                value={uploadName}
+                onChange={(e) => setUploadName(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm font-medium mb-1 block">Theme</label>
+                <Select value={uploadTheme} onValueChange={setUploadTheme}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {THEME_OPTIONS.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Rarity</label>
+                <Select value={uploadRarity} onValueChange={(v) => setUploadRarity(v as AvatarItem["rarity"])}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {RARITY_OPTIONS.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Accent Color</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  className="w-12 h-10 rounded border border-input cursor-pointer"
+                  value={uploadColor}
+                  onChange={(e) => setUploadColor(e.target.value)}
+                />
+                <input
+                  type="text"
+                  className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={uploadColor}
+                  onChange={(e) => setUploadColor(e.target.value)}
+                  placeholder="#14b8a6"
+                />
+              </div>
+            </div>
+            <Button className="w-full" onClick={handleUploadCustom} disabled={uploading}>
+              {uploading ? "Uploading…" : "Upload Avatar"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
 export default Backpack;
+
+function hexToHsl(hex: string): string {
+  let r = 0, g = 0, b = 0;
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!m) return "180 80% 50%";
+  r = parseInt(m[1], 16) / 255; g = parseInt(m[2], 16) / 255; b = parseInt(m[3], 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+}
