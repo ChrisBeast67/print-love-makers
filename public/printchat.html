@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrintChat - Official Logo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh; 
+            color: white; 
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .container { text-align: center; padding: 40px 20px; }
+        .logo-section { margin-bottom: 40px; }
+        .logo-section img { 
+            width: 300px; 
+            height: 300px; 
+            object-fit: contain; 
+            filter: drop-shadow(0 0 40px rgba(0, 212, 255, 0.6));
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow { 
+            from { filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.4)); } 
+            to { filter: drop-shadow(0 0 60px rgba(0, 212, 255, 0.8)); } 
+        }
+        h1 { 
+            font-size: 64px; 
+            background: linear-gradient(135deg, #00d4ff, #ff6b00); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            margin-bottom: 15px;
+            text-shadow: none;
+        }
+        .subtitle { 
+            color: #00d4ff; 
+            font-size: 24px; 
+            margin-bottom: 40px; 
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+        .description {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+        .description p { color: #ccc; line-height: 1.8; font-size: 18px; }
+        .app-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #00d4ff, #ff6b00);
+            color: white;
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 20px;
+            font-weight: bold;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .app-link:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+        }
+        .nav { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            background: rgba(0,0,0,0.9); 
+            padding: 10px; 
+            display: flex; 
+            justify-content: center; 
+            gap: 15px; 
+            z-index: 100; 
+            border-bottom: 1px solid rgba(0, 212, 255, 0.3); 
+        }
+        .nav a { color: #aaa; text-decoration: none; padding: 8px 15px; border-radius: 20px; transition: all 0.3s; }
+        .nav a:hover { background: linear-gradient(135deg, #00d4ff, #ff6b00); color: white; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="fencing.html">Fencing</a>
+        <a href="3dprinting.html">3D Print</a>
+        <a href="art.html">Art</a>
+    </div>
+    <div class="container">
+        <div class="logo-section">
+            <img src="printchat-logo.png" alt="PrintChat Logo">
+        </div>
+        <h1>PrintChat</h1>
+        <p class="subtitle">🖨️ The Future of 3D Printing Communication</p>
+        <div class="description">
+            <p>Hi-tech messaging for 3D printing enthusiasts. Real-time chat, group chats, friend requests, credits system, and a profile-pack shop.</p>
+        </div>
+        <a href="https://print-love-makers.lovable.app/" class="app-link" target="_blank">🚀 Open PrintChat App</a>
+    </div>
+</body>
+</html>
