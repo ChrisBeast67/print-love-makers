@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import printchatLogo from "@/../../printchat-logo.png";
+import printchatLogo from "/printchat-logo.png";
 
 const Hero = () => (
   <section className="relative min-h-screen flex items-center overflow-hidden">
