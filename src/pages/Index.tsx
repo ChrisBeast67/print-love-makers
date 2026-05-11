@@ -9,6 +9,7 @@ import { CreateChatCard } from "@/components/hub/CreateChatCard";
 import { FriendsCard } from "@/components/hub/FriendsCard";
 import { CreditsCard } from "@/components/hub/CreditsCard";
 import { Tutorial } from "@/components/Tutorial";
+import printchatLogo from "/printchat-logo.png";
 
 const features = [
   { icon: Zap, title: "Real-time", desc: "Messages appear instantly for everyone in the chat." },
@@ -31,7 +32,7 @@ const Index = () => {
       <nav className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto flex items-center justify-between px-6 py-3">
           <Link to="/" className="flex items-center gap-2 text-xl font-bold">
-            <MessageCircle className="h-6 w-6 text-primary" />
+            <img src={printchatLogo} alt="PrintChat" className="h-8 w-8 object-contain" />
             <span className="gradient-text">PrintChat</span>
           </Link>
           <div className="flex items-center gap-2">
@@ -77,11 +78,14 @@ const Index = () => {
 
       {user ? (
         <section className="container mx-auto px-6 py-10 max-w-6xl">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-              Your <span className="gradient-text glow-text">command center</span>
-            </h1>
-            <p className="text-muted-foreground mt-2">Create chats, manage friends, and earn credits — all from here.</p>
+          <div className="text-center mb-8 flex items-center justify-center gap-4">
+            <img src={printchatLogo} alt="PrintChat" className="h-16 w-16 object-contain" />
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+                Your <span className="gradient-text glow-text">command center</span>
+              </h1>
+              <p className="text-muted-foreground mt-2">Create chats, manage friends, and earn credits — all from here.</p>
+            </div>
           </div>
           <div className="grid lg:grid-cols-3 gap-5">
             <div className="lg:col-span-2 space-y-5">
@@ -111,6 +115,9 @@ const Index = () => {
         <>
           <section className="pt-24 pb-16 px-6">
             <div className="container mx-auto max-w-4xl text-center">
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <img src={printchatLogo} alt="PrintChat" className="h-24 w-24 object-contain" />
+              </div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-card text-xs text-muted-foreground mb-6">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                 Hi-tech messaging
