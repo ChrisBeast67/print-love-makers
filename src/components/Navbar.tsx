@@ -1,10 +1,23 @@
 import { useState } from "react";
-import { Menu, X, Printer } from "lucide-react";
+import { Menu, X, Printer, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const links = ["Services", "Materials", "How It Works", "Gallery", "Contact"];
+
+  const gameLinks = [
+    { name: "Slope Game", url: "https://slopeonline.online/", icon: "⛰️" },
+    { name: "Poor Bunny", url: "https://poorbunny2.io/", icon: "🐰" },
+    { name: "Monkey Mart", url: "https://monkeymartgame.io/", icon: "🍌" },
+    { name: "Wave Dash", url: "https://www.cokitos.com/wave-dash/", icon: "🌊" },
+  ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
@@ -20,6 +33,22 @@ const Navbar = () => {
               {l}
             </a>
           ))}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-primary cursor-pointer">
+                🎮 Games <ChevronDown className="h-3 w-3" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {gameLinks.map((g) => (
+                <DropdownMenuItem key={g.name} asChild>
+                  <a href={g.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 cursor-pointer">
+                    <span>{g.icon}</span> {g.name}
+                  </a>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button size="sm">Get a Quote</Button>
         </div>
 
@@ -36,6 +65,14 @@ const Navbar = () => {
                 {l}
               </a>
             ))}
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-muted-foreground">🎮 External Games</span>
+              {gameLinks.map((g) => (
+                <a key={g.name} href={g.url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary pl-2" onClick={() => setOpen(false)}>
+                  {g.icon} {g.name}
+                </a>
+              ))}
+            </div>
             <Button size="sm">Get a Quote</Button>
           </div>
         </div>
