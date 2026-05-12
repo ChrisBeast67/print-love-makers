@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X, Printer, ChevronDown } from "lucide-react";
+import { Menu, X, Printer, ChevronDown, Gamepad2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -35,9 +35,11 @@ const Navbar = () => {
           ))}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-primary cursor-pointer">
-                🎮 Games <ChevronDown className="h-3 w-3" />
-              </button>
+              <Button variant="outline" size="sm" className="gap-2 border-primary/50 hover:border-primary hover:bg-primary/10">
+                <Gamepad2 className="h-4 w-4 text-primary" />
+                <span>Games</span>
+                <ChevronDown className="h-3 w-3 text-primary" />
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {gameLinks.map((g) => (
