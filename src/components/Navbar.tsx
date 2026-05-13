@@ -13,6 +13,7 @@ const Navbar = () => {
   const links = ["Services", "Materials", "How It Works", "Gallery", "Contact"];
 
   const gameLinks = [
+    { name: "All Games", url: "https://chrisbeast67.github.io/percy-website/games.html", icon: "🎮" },
     { name: "Slope Game", url: "https://slopeonline.online/", icon: "⛰️" },
     { name: "Poor Bunny", url: "https://poorbunny2.io/", icon: "🐰" },
     { name: "Monkey Mart", url: "https://monkeymartgame.io/", icon: "🍌" },
