@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { MessageCircle, Zap, Shield, Users, ShoppingBag, LogOut, BookOpen, Backpack as BackpackIcon } from "lucide-react";
+import { MessageCircle, Zap, Shield, Users, ShoppingBag, LogOut, BookOpen, Backpack as BackpackIcon, Gamepad2 } from "lucide-react";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,6 +10,12 @@ import { FriendsCard } from "@/components/hub/FriendsCard";
 import { CreditsCard } from "@/components/hub/CreditsCard";
 import { Tutorial } from "@/components/Tutorial";
 import printchatLogo from "/printchat-logo.png";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const features = [
   { icon: Zap, title: "Real-time", desc: "Messages appear instantly for everyone in the chat." },
@@ -55,6 +61,48 @@ const Index = () => {
                 <Button size="sm" variant="ghost" onClick={() => navigate("/exp")}>
                   <Star className="h-4 w-4 mr-1" /> EXP
                 </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="ghost">
+                      <Gamepad2 className="h-4 w-4 mr-1" /> Games
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <a href="https://chrisbeast67.github.io/percy-website/games.html" target="_blank" rel="noopener noreferrer">🎮 All Games</a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <a href="https://chrisbeast67.github.io/percy-website/games/snake.html" target="_blank" rel="noopener noreferrer">🐍 Snake</a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <a href="https://chrisbeast67.github.io/percy-website/games/pong.html" target="_blank" rel="noopener noreferrer">🏓 Pong</a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <a href="https://chrisbeast67.github.io/percy-website/games/breakout.html" target="_blank" rel="noopener noreferrer">🧱 Breakout</a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <a href="https://chrisbeast67.github.io/percy-website/games/tetris.html" target="_blank" rel="noopener noreferrer">🟦 Tetris</a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <a href="https://chrisbeast67.github.io/percy-website/games/racing.html" target="_blank" rel="noopener noreferrer">🏎️ Racing</a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <a href="https://chrisbeast67.github.io/percy-website/games/catch-stars.html" target="_blank" rel="noopener noreferrer">🎯 Catch Stars</a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <a href="https://slopeonline.online/" target="_blank" rel="noopener noreferrer">⛰️ Slope Game</a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <a href="https://poorbunny2.io/" target="_blank" rel="noopener noreferrer">🐰 Poor Bunny</a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <a href="https://monkeymartgame.io/" target="_blank" rel="noopener noreferrer">🍌 Monkey Mart</a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <a href="https://www.cokitos.com/wave-dash/" target="_blank" rel="noopener noreferrer">🌊 Wave Dash</a>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button size="sm" variant="ghost" onClick={() => navigate("/chat")}>
                   Chats
                 </Button>
