@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon, Shield, Lock, Smile, ImagePlus } from "lucide-react";
+import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon, Shield, Lock, Smile, ImagePlus, Gamepad2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCredits } from "@/hooks/useCredits";
@@ -17,6 +17,12 @@ import { TradeOffersList } from "@/components/trade/TradeOffersList";
 import { Switch } from "@/components/ui/switch";
 import EmojiPicker, { Theme } from "emoji-picker-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Message {
   id: string;
@@ -590,6 +596,49 @@ const ChatPage = () => {
               <BackpackIcon className="h-4 w-4" />
               <span className="hidden sm:inline">Backpack</span>
             </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <Gamepad2 className="h-4 w-4" />
+                  <span className="hidden sm:inline">Games</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <a href="https://chrisbeast67.github.io/percy-website/games.html" target="_blank" rel="noopener noreferrer">🎮 All Games</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="https://chrisbeast67.github.io/percy-website/games/snake.html" target="_blank" rel="noopener noreferrer">🐍 Snake</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="https://chrisbeast67.github.io/percy-website/games/pong.html" target="_blank" rel="noopener noreferrer">🏓 Pong</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="https://chrisbeast67.github.io/percy-website/games/breakout.html" target="_blank" rel="noopener noreferrer">🧱 Breakout</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="https://chrisbeast67.github.io/percy-website/games/tetris.html" target="_blank" rel="noopener noreferrer">🟦 Tetris</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="https://chrisbeast67.github.io/percy-website/games/racing.html" target="_blank" rel="noopener noreferrer">🏎️ Racing</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="https://chrisbeast67.github.io/percy-website/games/catch-stars.html" target="_blank" rel="noopener noreferrer">🎯 Catch Stars</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="https://slopeonline.online/" target="_blank" rel="noopener noreferrer">⛰️ Slope Game</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="https://poorbunny2.io/" target="_blank" rel="noopener noreferrer">🐰 Poor Bunny</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="https://monkeymartgame.io/" target="_blank" rel="noopener noreferrer">🍌 Monkey Mart</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="https://www.cokitos.com/wave-dash/" target="_blank" rel="noopener noreferrer">🌊 Wave Dash</a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full border border-primary/30 bg-card text-sm">
               <Coins className="h-3.5 w-3.5 text-primary" />
               <span className="font-bold">{balance}</span>
