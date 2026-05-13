@@ -104,9 +104,9 @@ const ChatPage = () => {
     setProfileUploading(true);
     const ext = file.name.split(".").pop() ?? "jpg";
     const path = `${user.id}/avatar.${ext}`;
-    const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+    const { error: upErr } = await supabase.storage.from("chat-images").upload(path, file, { upsert: true });
     if (upErr) { toast.error("Upload failed: " + upErr.message); setProfileUploading(false); return; }
-    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+    const { data: urlData } = supabase.storage.from("chat-images").getPublicUrl(path);
     const imageUrl = urlData.publicUrl;
     const { error: upProfErr } = await supabase.from("profiles").update({ avatar_url: imageUrl }).eq("id", user.id);
     setProfileUploading(false);
