@@ -103,14 +103,16 @@ const ChatPage = () => {
     if (file.size > 5 * 1024 * 1024) return toast.error("Max 5MB");
     setProfileUploading(true);
     const ext = file.name.split(".").pop() ?? "jpg";
-    const { data, error } = await supabase.rpc("upload_profile_image", {
-      file_name: `avatar.${ext}`,
-      mime_type: file.type,
-    });
+    const path = `${user.id}/avatar.${ext}`;
+    const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+    if (upErr) { toast.error("Upload failed: " + upErr.message); setProfileUploading(false); return; }
+    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+    const imageUrl = urlData.publicUrl;
+    const { error: upProfErr } = await supabase.from("profiles").update({ avatar_url: imageUrl }).eq("id", user.id);
     setProfileUploading(false);
-    if (error) { toast.error(error.message); return; }
+    if (upProfErr) { toast.error(upProfErr.message); return; }
     toast.success("Profile image updated!");
-    setProfiles((prev) => ({ ...prev, [user.id]: { ...prev[user.id], avatar_url: data } }));
+    setProfiles((prev) => ({ ...prev, [user.id]: { ...prev[user.id], avatar_url: imageUrl } }));
   };
 
   // Load user profile (including avatar_url) for sidebar
