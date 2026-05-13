@@ -69,27 +69,6 @@ const Index = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <a href="https://chrisbeast67.github.io/percy-website/games.html" target="_blank" rel="noopener noreferrer">🎮 All Games</a>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <a href="https://chrisbeast67.github.io/percy-website/games/snake.html" target="_blank" rel="noopener noreferrer">🐍 Snake</a>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <a href="https://chrisbeast67.github.io/percy-website/games/pong.html" target="_blank" rel="noopener noreferrer">🏓 Pong</a>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <a href="https://chrisbeast67.github.io/percy-website/games/breakout.html" target="_blank" rel="noopener noreferrer">🧱 Breakout</a>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <a href="https://chrisbeast67.github.io/percy-website/games/tetris.html" target="_blank" rel="noopener noreferrer">🟦 Tetris</a>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <a href="https://chrisbeast67.github.io/percy-website/games/racing.html" target="_blank" rel="noopener noreferrer">🏎️ Racing</a>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <a href="https://chrisbeast67.github.io/percy-website/games/catch-stars.html" target="_blank" rel="noopener noreferrer">🎯 Catch Stars</a>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
                       <a href="https://slopeonline.online/" target="_blank" rel="noopener noreferrer">⛰️ Slope Game</a>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
