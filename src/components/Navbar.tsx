@@ -13,11 +13,17 @@ const Navbar = () => {
   const links = ["Services", "Materials", "How It Works", "Gallery", "Contact"];
 
   const gameLinks = [
-    { name: "All Games", url: "https://chrisbeast67.github.io/percy-website/games.html", icon: "🎮" },
-    { name: "Slope Game", url: "https://slopeonline.online/", icon: "⛰️" },
-    { name: "Poor Bunny", url: "https://poorbunny2.io/", icon: "🐰" },
-    { name: "Monkey Mart", url: "https://monkeymartgame.io/", icon: "🍌" },
-    { name: "Wave Dash", url: "https://www.cokitos.com/wave-dash/", icon: "🌊" },
+    { name: "🎮 All Games", url: "https://chrisbeast67.github.io/percy-website/games.html", icon: "🎮" },
+    { name: "🐍 Snake Game", url: "https://chrisbeast67.github.io/percy-website/games/snake.html", icon: "🐍" },
+    { name: "🏓 Pong", url: "https://chrisbeast67.github.io/percy-website/games/pong.html", icon: "🏓" },
+    { name: "🧱 Breakout", url: "https://chrisbeast67.github.io/percy-website/games/breakout.html", icon: "🧱" },
+    { name: "🟦 Tetris", url: "https://chrisbeast67.github.io/percy-website/games/tetris.html", icon: "🟦" },
+    { name: "🏎️ Car Racing", url: "https://chrisbeast67.github.io/percy-website/games/racing.html", icon: "🏎️" },
+    { name: "🎯 Catch Stars", url: "https://chrisbeast67.github.io/percy-website/games/catch-stars.html", icon: "🎯" },
+    { name: "⛰️ Slope Game", url: "https://slopeonline.online/", icon: "⛰️" },
+    { name: "🐰 Poor Bunny", url: "https://poorbunny2.io/", icon: "🐰" },
+    { name: "🍌 Monkey Mart", url: "https://monkeymartgame.io/", icon: "🍌" },
+    { name: "🌊 Wave Dash", url: "https://www.cokitos.com/wave-dash/", icon: "🌊" },
   ];
 
   return (
