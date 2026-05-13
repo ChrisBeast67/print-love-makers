@@ -82,6 +82,12 @@
         }
         .nav a { color: #aaa; text-decoration: none; padding: 8px 15px; border-radius: 20px; transition: all 0.3s; }
         .nav a:hover { background: linear-gradient(135deg, #00d4ff, #ff6b00); color: white; }
+        .nav .dropdown { position: relative; }
+        .nav .dropdown-btn { color: #aaa; cursor: pointer; padding: 8px 15px; border-radius: 20px; transition: all 0.3s; display: inline-block; }
+        .nav .dropdown-btn:hover { background: linear-gradient(135deg, #00d4ff, #ff6b00); color: white; }
+        .nav .dropdown-content { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.95); min-width: 180px; border-radius: 10px; padding: 10px 0; z-index: 200; box-shadow: 0 0 20px rgba(0,0,0,0.5); border: 1px solid rgba(0, 212, 255, 0.3); }
+        .nav .dropdown:hover .dropdown-content { display: block; }
+        .nav .dropdown-content a { display: block; padding: 10px 20px; text-align: center; white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -90,7 +96,16 @@
         <a href="fencing.html">Fencing</a>
         <a href="3dprinting.html">3D Print</a>
         <a href="art.html">Art</a>
-        <a href="https://chrisbeast67.github.io/percy-website/games.html" target="_blank">🎮 Games</a>
+        <div class="dropdown">
+            <span class="dropdown-btn">🎮 Games ▾</span>
+            <div class="dropdown-content">
+                <a href="https://chrisbeast67.github.io/percy-website/games.html" target="_blank">🎮 All Games</a>
+                <a href="https://slopeonline.online/" target="_blank">⛰️ Slope Game</a>
+                <a href="https://poorbunny2.io/" target="_blank">🐰 Poor Bunny</a>
+                <a href="https://monkeymartgame.io/" target="_blank">🍌 Monkey Mart</a>
+                <a href="https://www.cokitos.com/wave-dash/" target="_blank">🌊 Wave Dash</a>
+            </div>
+        </div>
     </div>
     <div class="container">
         <div class="logo-section">
