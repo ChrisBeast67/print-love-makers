@@ -134,18 +134,19 @@ const loadChats = async () => {
     if (!mems) return;
     setAllMyMemberships(mems);
     const ids = mems.map((m) => m.chat_id);
-    if (ids.length === 0) {
-      setChats([]);
-      return;
-    }
-    const { data: cs } = await supabase
-      .from("chats")
-      .select("*")
-      .in("id", ids)
-      .order("updated_at", { ascending: false });
 
-    // Always include global announcements chat for all users
-    let finalChats = cs ? [...cs] : [];
+    // Always include global announcements chat
+    let finalChats: Chat[] = [];
+    if (ids.length > 0) {
+      const { data: cs } = await supabase
+        .from("chats")
+        .select("*")
+        .in("id", ids)
+        .order("updated_at", { ascending: false });
+      finalChats = cs ? [...cs] : [];
+    }
+
+    // Add global announcements if not already in list
     if (!finalChats.find(c => c.id === GLOBAL_ANNOUNCEMENTS_ID)) {
       const { data: globalChat } = await supabase
         .from("chats")
@@ -156,7 +157,7 @@ const loadChats = async () => {
         finalChats.unshift(globalChat as Chat);
       }
     }
-    if (cs) setChats(finalChats as Chat[]);
+    setChats(finalChats);
 
     // Load profiles for DM display names
     const dmChats = (cs ?? []).filter((c) => c.type === "dm");
