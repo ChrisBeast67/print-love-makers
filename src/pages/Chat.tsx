@@ -126,7 +126,9 @@ const ChatPage = () => {
   }, [user, loading, navigate]);
 
   // Load my chats
-  const loadChats = async () => {
+  const GLOBAL_ANNOUNCEMENTS_ID = "00000000-0000-0000-0000-000000000001";
+
+const loadChats = async () => {
     if (!user) return;
     const { data: mems } = await supabase.from("chat_members").select("*").eq("user_id", user.id);
     if (!mems) return;
@@ -141,7 +143,23 @@ const ChatPage = () => {
       .select("*")
       .in("id", ids)
       .order("updated_at", { ascending: false });
-    if (cs) setChats(cs as Chat[]);
+
+    // Always include global announcements chat if user is staff (owner/deputy/admin)
+    let finalChats = cs ? [...cs] : [];
+    const { data: roleData } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+    const roles = roleData?.map(r => r.role) ?? [];
+    const isStaff = roles.some(r => ["owner", "deputy", "admin", "moderator"].includes(r));
+    if (isStaff && !finalChats.find(c => c.id === GLOBAL_ANNOUNCEMENTS_ID)) {
+      const { data: globalChat } = await supabase
+        .from("chats")
+        .select("*")
+        .eq("id", GLOBAL_ANNOUNCEMENTS_ID)
+        .single();
+      if (globalChat) {
+        finalChats.unshift(globalChat as Chat);
+      }
+    }
+    if (cs) setChats(finalChats as Chat[]);
 
     // Load profiles for DM display names
     const dmChats = (cs ?? []).filter((c) => c.type === "dm");
@@ -397,7 +415,8 @@ const ChatPage = () => {
   const myMembership = members.find((m) => m.user_id === user?.id);
   const isAdminHere = myMembership?.role === "admin";
   const adminOnly = activeChat?.admin_only ?? false;
-  const canType = !adminOnly || isAdminHere;
+  const isGlobalAnnouncements = chatId === GLOBAL_ANNOUNCEMENTS_ID;
+  const canType = (!adminOnly || isAdminHere) && (!isGlobalAnnouncements || isStaff);
 
   const toggleAdminOnly = async () => {
     if (!chatId || !activeChat) return;
@@ -744,7 +763,7 @@ const ChatPage = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <span className={cn("text-sm truncate", isUnread && "font-bold")}>{getChatName(c)}</span>
-                      {isUnread && <span className="h-2 w-2 rounded-full bg-primary shrink-0" />}
+                      {isUnread && c.id !== GLOBAL_ANNOUNCEMENTS_ID && <span className="h-2 w-2 rounded-full bg-primary shrink-0" />}
                     </div>
                     <span className="text-xs text-muted-foreground">
                       {c.type === "dm" ? "Direct message" : "Group"}
