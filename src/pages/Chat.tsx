@@ -144,12 +144,9 @@ const loadChats = async () => {
       .in("id", ids)
       .order("updated_at", { ascending: false });
 
-    // Always include global announcements chat if user is staff (owner/deputy/admin)
+    // Always include global announcements chat for all users
     let finalChats = cs ? [...cs] : [];
-    const { data: roleData } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
-    const roles = roleData?.map(r => r.role) ?? [];
-    const isStaff = roles.some(r => ["owner", "deputy", "admin", "moderator"].includes(r));
-    if (isStaff && !finalChats.find(c => c.id === GLOBAL_ANNOUNCEMENTS_ID)) {
+    if (!finalChats.find(c => c.id === GLOBAL_ANNOUNCEMENTS_ID)) {
       const { data: globalChat } = await supabase
         .from("chats")
         .select("*")
