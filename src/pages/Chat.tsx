@@ -137,12 +137,14 @@ const loadChats = async () => {
 
     // Always include global announcements chat
     let finalChats: Chat[] = [];
+    let cs: Chat[] | null = null;
     if (ids.length > 0) {
-      const { data: cs } = await supabase
+      const { data } = await supabase
         .from("chats")
         .select("*")
         .in("id", ids)
         .order("updated_at", { ascending: false });
+      cs = data;
       finalChats = cs ? [...cs] : [];
     }
 
