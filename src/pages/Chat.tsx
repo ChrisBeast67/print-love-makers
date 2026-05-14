@@ -61,7 +61,7 @@ const ChatPage = () => {
   const { chatId } = useParams();
   const { user, loading, signOut } = useAuth();
   const { balance } = useCredits();
-  const { isStaff } = useStaffRole();
+  const { isStaff, isActualOwner, isDeputy } = useStaffRole();
   const [equippedItems, setEquippedItems] = useState<Record<string, { emoji: string; accent_hsl: string; rarity: string }>>({});
   const [tradeOpen, setTradeOpen] = useState(false);
 
@@ -441,7 +441,7 @@ const loadChats = async () => {
   const isAdminHere = myMembership?.role === "admin";
   const adminOnly = activeChat?.admin_only ?? false;
   const isGlobalAnnouncements = chatId === GLOBAL_ANNOUNCEMENTS_ID;
-  const canType = (!adminOnly || isAdminHere) && (!isGlobalAnnouncements || isStaff);
+  const canType = (!adminOnly || isAdminHere) && (!isGlobalAnnouncements || isActualOwner || isDeputy);
 
   const toggleAdminOnly = async () => {
     if (!chatId || !activeChat) return;
