@@ -131,6 +131,13 @@ const ChatPage = () => {
 
 const loadChats = async () => {
     if (!user) return;
+    
+    // Auto-join global announcements chat first
+    const { error: joinErr } = await supabase
+      .from("chat_members")
+      .insert({ chat_id: GLOBAL_ANNOUNCEMENTS_ID, user_id: user.id, role: 'member' });
+    // Ignore errors - means already a member
+    
     const { data: mems } = await supabase.from("chat_members").select("*").eq("user_id", user.id);
     if (!mems) return;
     setAllMyMemberships(mems);
@@ -151,7 +158,6 @@ const loadChats = async () => {
 
     // Add global announcements if not already in list (create if needed)
     if (!finalChats.find(c => c.id === GLOBAL_ANNOUNCEMENTS_ID)) {
-      // Try to get existing chat
       const { data: globalChat } = await supabase
         .from("chats")
         .select("*")
@@ -161,7 +167,6 @@ const loadChats = async () => {
       if (globalChat) {
         finalChats.unshift(globalChat as Chat);
       } else {
-        // Create the global announcements chat if it doesn't exist
         const { data: newChat } = await supabase
           .from("chats")
           .insert({
@@ -176,12 +181,6 @@ const loadChats = async () => {
           .single();
         if (newChat) {
           finalChats.unshift(newChat as Chat);
-          // Auto-join as member
-          await supabase.from("chat_members").insert({
-            chat_id: GLOBAL_ANNOUNCEMENTS_ID,
-            user_id: user.id,
-            role: 'member'
-          });
         }
       }
     }
