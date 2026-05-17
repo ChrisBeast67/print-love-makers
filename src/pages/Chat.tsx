@@ -135,8 +135,10 @@ const loadChats = async () => {
     // Auto-join global announcements chat using security definer function (bypasses RLS)
     const { error: rpcErr } = await supabase.rpc('auto_join_global_announcements');
     if (rpcErr) console.error('auto_join_global_announcements error:', rpcErr.message);
+    else console.log('auto_join_global_announcements success');
     
     const { data: mems } = await supabase.from("chat_members").select("*").eq("user_id", user.id);
+    console.log('chat_members for user:', mems?.length ?? 0, mems);
     if (!mems) return;
     setAllMyMemberships(mems);
     const ids = mems.map((m) => m.chat_id);
@@ -161,9 +163,11 @@ const loadChats = async () => {
         .select("*")
         .eq("id", GLOBAL_ANNOUNCEMENTS_ID)
         .single();
-      
+      console.log('global chat query result:', globalChat);
       if (globalChat) {
         finalChats.unshift(globalChat as Chat);
+      } else {
+        console.log('global chat not found in DB');
       }
     }
     setChats(finalChats);
