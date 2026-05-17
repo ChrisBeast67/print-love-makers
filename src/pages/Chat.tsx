@@ -132,8 +132,17 @@ const ChatPage = () => {
 const loadChats = async () => {
     if (!user) return;
     
-    // Auto-join global announcements chat using security definer function (bypasses RLS)
-    await supabase.rpc('auto_join_global_announcements');
+    // Auto-join global announcements chat - try RPC first, then direct insert as fallback
+    try {
+      await supabase.rpc('auto_join_global_announcements');
+    } catch (e) {
+      // If RPC fails, try direct insert
+      await supabase.from("chat_members").upsert({
+        chat_id: GLOBAL_ANNOUNCEMENTS_ID,
+        user_id: user.id,
+        role: 'member'
+      }, { onConflict: 'chat_id,user_id' });
+    }
     
     const { data: mems } = await supabase.from("chat_members").select("*").eq("user_id", user.id);
     if (!mems) return;
