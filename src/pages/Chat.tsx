@@ -132,11 +132,8 @@ const ChatPage = () => {
 const loadChats = async () => {
     if (!user) return;
     
-    // Auto-join global announcements chat first
-    const { error: joinErr } = await supabase
-      .from("chat_members")
-      .insert({ chat_id: GLOBAL_ANNOUNCEMENTS_ID, user_id: user.id, role: 'member' });
-    // Ignore errors - means already a member
+    // Auto-join global announcements chat using security definer function (bypasses RLS)
+    await supabase.rpc('auto_join_global_announcements');
     
     const { data: mems } = await supabase.from("chat_members").select("*").eq("user_id", user.id);
     if (!mems) return;
@@ -156,7 +153,7 @@ const loadChats = async () => {
       finalChats = cs ? [...cs] : [];
     }
 
-    // Add global announcements if not already in list (create if needed)
+    // Add global announcements if not already in list
     if (!finalChats.find(c => c.id === GLOBAL_ANNOUNCEMENTS_ID)) {
       const { data: globalChat } = await supabase
         .from("chats")
@@ -166,22 +163,6 @@ const loadChats = async () => {
       
       if (globalChat) {
         finalChats.unshift(globalChat as Chat);
-      } else {
-        const { data: newChat } = await supabase
-          .from("chats")
-          .insert({
-            id: GLOBAL_ANNOUNCEMENTS_ID,
-            name: '📢 Global Announcements',
-            type: 'group',
-            created_by: user.id,
-            admin_only: true,
-            is_global_announcements: true
-          })
-          .select()
-          .single();
-        if (newChat) {
-          finalChats.unshift(newChat as Chat);
-        }
       }
     }
     setChats(finalChats);
