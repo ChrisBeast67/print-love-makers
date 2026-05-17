@@ -553,6 +553,7 @@ const loadChats = async () => {
 
   const removeMember = async (uid: string) => {
     if (!chatId) return;
+    if (chatId === GLOBAL_ANNOUNCEMENTS_ID) { toast.error("Cannot remove anyone from global announcements"); return; }
     if (!confirm("Remove this member?")) return;
     const { error } = await supabase.from("chat_members").delete().eq("chat_id", chatId).eq("user_id", uid);
     if (error) return toast.error(error.message);
@@ -562,6 +563,7 @@ const loadChats = async () => {
 
   const leaveChat = async () => {
     if (!chatId || !user) return;
+    if (chatId === GLOBAL_ANNOUNCEMENTS_ID) { toast.error("Cannot leave global announcements"); return; }
     if (!confirm("Leave this chat?")) return;
     const { error } = await supabase.from("chat_members").delete().eq("chat_id", chatId).eq("user_id", user.id);
     if (error) return toast.error(error.message);
@@ -572,6 +574,7 @@ const loadChats = async () => {
 
   const closeDM = async () => {
     if (!chatId || !user) return;
+    if (chatId === GLOBAL_ANNOUNCEMENTS_ID) { toast.error("Cannot close global announcements"); return; }
     if (!confirm("Close this DM? You can re-open it later by starting a new DM with this user.")) return;
     const { error } = await supabase.from("chat_members").delete().eq("chat_id", chatId).eq("user_id", user.id);
     if (error) return toast.error(error.message);

@@ -76,6 +76,7 @@ CREATE POLICY "Prevent deleting global announcements"
 ON public.chats FOR DELETE
 USING (id != '00000000-0000-0000-0000-000000000001');
 
+-- Prevent leaving global announcements
 DROP POLICY IF EXISTS "Prevent leaving global announcements" ON public.chat_members;
 CREATE POLICY "Prevent leaving global announcements"
 ON public.chat_members FOR DELETE
