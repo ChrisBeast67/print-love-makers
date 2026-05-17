@@ -413,6 +413,16 @@ const loadChats = async () => {
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || !user || !chatId || sending) return;
+    
+    // Check if user can type in this chat
+    const activeChat = chats.find((c) => c.id === chatId);
+    const isGlobalAnnouncements = chatId === GLOBAL_ANNOUNCEMENTS_ID;
+    const canType = (!activeChat?.admin_only || isDeputy || isActualOwner) && (!isGlobalAnnouncements || isActualOwner || isDeputy);
+    if (!canType) {
+      toast.error("You don't have permission to send messages in this chat");
+      return;
+    }
+    
     setSending(true);
     const content = input.trim();
     setInput("");
