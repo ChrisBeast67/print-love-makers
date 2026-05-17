@@ -172,6 +172,21 @@ const loadChats = async () => {
     }
     setChats(finalChats);
 
+    // ALWAYS add global announcements chat to sidebar (even if not a member yet)
+    const globalAnnouncementChat: Chat = {
+      id: GLOBAL_ANNOUNCEMENTS_ID,
+      name: '📢 Global Announcements',
+      type: 'group',
+      created_by: '00000000-0000-0000-0000-000000000000',
+      updated_at: new Date().toISOString(),
+      admin_only: true,
+      is_global_announcements: true
+    };
+    if (!finalChats.find(c => c.id === GLOBAL_ANNOUNCEMENTS_ID)) {
+      finalChats.unshift(globalAnnouncementChat);
+    }
+    setChats(finalChats);
+
     // Load profiles for DM display names
     const dmChats = (cs ?? []).filter((c) => c.type === "dm");
     if (dmChats.length) {
