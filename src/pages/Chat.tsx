@@ -252,12 +252,15 @@ const loadChats = async () => {
         setMembers(mems as Member[]);
         await loadProfiles(mems.map((m) => m.user_id));
       }
-      // Update last_read_at
-      await supabase
-        .from("chat_members")
-        .update({ last_read_at: new Date().toISOString() })
-        .eq("chat_id", chatId)
-        .eq("user_id", user.id);
+      // Update last_read_at (only if user is a member of this chat)
+      const isMember = mems?.some(m => m.user_id === user.id);
+      if (isMember) {
+        await supabase
+          .from("chat_members")
+          .update({ last_read_at: new Date().toISOString() })
+          .eq("chat_id", chatId)
+          .eq("user_id", user.id);
+      }
     })();
   }, [chatId, user]);
 
