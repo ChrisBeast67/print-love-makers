@@ -133,7 +133,8 @@ const loadChats = async () => {
     if (!user) return;
     
     // Auto-join global announcements chat using security definer function (bypasses RLS)
-    await supabase.rpc('auto_join_global_announcements');
+    const { error: rpcErr } = await supabase.rpc('auto_join_global_announcements');
+    if (rpcErr) console.error('auto_join_global_announcements error:', rpcErr.message);
     
     const { data: mems } = await supabase.from("chat_members").select("*").eq("user_id", user.id);
     if (!mems) return;
