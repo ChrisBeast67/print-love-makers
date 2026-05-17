@@ -140,20 +140,7 @@ const loadChats = async () => {
     setAllMyMemberships(mems);
     const ids = mems.map((m) => m.chat_id);
 
-    // Always include global announcements chat
-    let finalChats: Chat[] = [];
-    let cs: Chat[] | null = null;
-    if (ids.length > 0) {
-      const { data } = await supabase
-        .from("chats")
-        .select("*")
-        .in("id", ids)
-        .order("updated_at", { ascending: false });
-      cs = data;
-      finalChats = cs ? [...cs] : [];
-    }
-
-    // Add global announcements to list - either from DB or hardcoded fallback
+    // Always add global announcements chat (even if no memberships)
     const globalAnnouncementChat: Chat = {
       id: GLOBAL_ANNOUNCEMENTS_ID,
       name: '📢 Global Announcements',
@@ -162,8 +149,17 @@ const loadChats = async () => {
       updated_at: new Date().toISOString(),
       is_global_announcements: true
     };
-    if (!finalChats.find(c => c.id === GLOBAL_ANNOUNCEMENTS_ID)) {
-      finalChats.unshift(globalAnnouncementChat);
+    let finalChats: Chat[] = [globalAnnouncementChat];
+    
+    if (ids.length > 0) {
+      const { data } = await supabase
+        .from("chats")
+        .select("*")
+        .in("id", ids)
+        .order("updated_at", { ascending: false });
+      if (data && data.length > 0) {
+        finalChats = [globalAnnouncementChat, ...data.filter((c) => c.id !== GLOBAL_ANNOUNCEMENTS_ID)];
+      }
     }
     setChats(finalChats);
 
@@ -433,9 +429,8 @@ const loadChats = async () => {
   const activeChat = chats.find((c) => c.id === chatId);
   const myMembership = members.find((m) => m.user_id === user?.id);
   const isAdminHere = myMembership?.role === "admin";
-  const adminOnly = activeChat?.admin_only ?? false;
   const isGlobalAnnouncements = chatId === GLOBAL_ANNOUNCEMENTS_ID;
-  const canType = (!adminOnly || isAdminHere) && (!isGlobalAnnouncements || isActualOwner || isDeputy);
+  const canType = !isGlobalAnnouncements || isActualOwner || isDeputy;
 
   const toggleAdminOnly = async () => {
     if (!chatId || !activeChat) return;
