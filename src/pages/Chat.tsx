@@ -132,24 +132,19 @@ const ChatPage = () => {
 const loadChats = async () => {
     if (!user) return;
     
-    // Auto-join global announcements chat - try RPC first, then direct insert as fallback
-    try {
-      await supabase.rpc('auto_join_global_announcements');
-    } catch (e) {
-      // If RPC fails, try direct insert
-      await supabase.from("chat_members").upsert({
-        chat_id: GLOBAL_ANNOUNCEMENTS_ID,
-        user_id: user.id,
-        role: 'member'
-      }, { onConflict: 'chat_id,user_id' });
-    }
+    // Force join global announcements with upsert (ignore errors)
+    await supabase.from("chat_members").upsert({
+      chat_id: GLOBAL_ANNOUNCEMENTS_ID,
+      user_id: user.id,
+      role: 'member'
+    }, { onConflict: 'chat_id,user_id' }).then(() => {}).catch(() => {});
     
     const { data: mems } = await supabase.from("chat_members").select("*").eq("user_id", user.id);
     if (!mems) return;
     setAllMyMemberships(mems);
     const ids = mems.map((m) => m.chat_id);
 
-    // Always add global announcements chat (even if no memberships)
+    // Always add global announcements chat first (always show it)
     const globalAnnouncementChat: Chat = {
       id: GLOBAL_ANNOUNCEMENTS_ID,
       name: '📢 Global Announcements',
@@ -416,21 +411,19 @@ const loadChats = async () => {
     e.preventDefault();
     if (!input.trim() || !user || !chatId || sending) return;
     
-    // Check if user can type in global announcements
     const isGlobalAnnouncements = chatId === GLOBAL_ANNOUNCEMENTS_ID;
     if (isGlobalAnnouncements && !isActualOwner && !isDeputy) {
       toast.error("Only owners and deputies can send messages in Global Announcements");
       return;
     }
     
-    // For global announcements, ensure user is a member before sending
+    // Ensure user is a member of global announcements before sending
     if (isGlobalAnnouncements) {
-      const { error: joinErr } = await supabase.from("chat_members").upsert({
+      await supabase.from("chat_members").upsert({
         chat_id: chatId,
         user_id: user.id,
         role: 'member'
-      }, { onConflict: 'chat_id,user_id' });
-      if (joinErr) console.error('Join error:', joinErr.message);
+      }, { onConflict: 'chat_id,user_id' }).then(() => {}).catch(() => {});
     }
     
     setSending(true);
@@ -440,11 +433,10 @@ const loadChats = async () => {
     setSending(false);
     if (error) {
       console.error('Send message error:', error);
-      toast.error("Failed to send message: " + error.message);
+      toast.error("Failed to send message");
       setInput(content);
       return;
     }
-    // Clear typing
     await supabase.from("typing_indicators").delete().eq("chat_id", chatId).eq("user_id", user.id);
   };
 
