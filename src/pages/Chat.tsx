@@ -133,12 +133,9 @@ const loadChats = async () => {
     if (!user) return;
     
     // Auto-join global announcements chat using security definer function (bypasses RLS)
-    const { error: rpcErr } = await supabase.rpc('auto_join_global_announcements');
-    if (rpcErr) console.error('auto_join_global_announcements error:', rpcErr.message);
-    else console.log('auto_join_global_announcements success');
+    await supabase.rpc('auto_join_global_announcements');
     
     const { data: mems } = await supabase.from("chat_members").select("*").eq("user_id", user.id);
-    console.log('chat_members for user:', mems?.length ?? 0, mems);
     if (!mems) return;
     setAllMyMemberships(mems);
     const ids = mems.map((m) => m.chat_id);
@@ -156,27 +153,11 @@ const loadChats = async () => {
       finalChats = cs ? [...cs] : [];
     }
 
-    // Add global announcements if not already in list
-    if (!finalChats.find(c => c.id === GLOBAL_ANNOUNCEMENTS_ID)) {
-      const { data: globalChat } = await supabase
-        .from("chats")
-        .select("*")
-        .eq("id", GLOBAL_ANNOUNCEMENTS_ID)
-        .single();
-      console.log('global chat query result:', globalChat);
-      if (globalChat) {
-        finalChats.unshift(globalChat as Chat);
-      } else {
-        console.log('global chat not found in DB');
-      }
-    }
-    setChats(finalChats);
-
-    // ALWAYS add global announcements chat to sidebar (even if not a member yet)
+    // Add global announcements to list - either from DB or hardcoded fallback
     const globalAnnouncementChat: Chat = {
       id: GLOBAL_ANNOUNCEMENTS_ID,
       name: '📢 Global Announcements',
-      type: 'group',
+      type: 'group' as const,
       created_by: '00000000-0000-0000-0000-000000000000',
       updated_at: new Date().toISOString(),
       is_global_announcements: true
@@ -465,6 +446,7 @@ const loadChats = async () => {
   // Derived: chat display name
   const getChatName = (c: Chat): string => {
     if (c.name) return c.name;
+    if (c.id === GLOBAL_ANNOUNCEMENTS_ID) return '📢 Global Announcements';
     if (c.type === "dm") {
       const others = allMyMemberships.filter((m) => m.chat_id === c.id && m.user_id !== user?.id);
       const other = others[0];
