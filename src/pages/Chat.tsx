@@ -416,13 +416,21 @@ const loadChats = async () => {
     e.preventDefault();
     if (!input.trim() || !user || !chatId || sending) return;
     
-    // Check if user can type in this chat
-    const activeChat = chats.find((c) => c.id === chatId);
+    // Check if user can type in global announcements
     const isGlobalAnnouncements = chatId === GLOBAL_ANNOUNCEMENTS_ID;
-    const canType = (!activeChat?.admin_only || isDeputy || isActualOwner) && (!isGlobalAnnouncements || isActualOwner || isDeputy);
-    if (!canType) {
-      toast.error("You don't have permission to send messages in this chat");
+    if (isGlobalAnnouncements && !isActualOwner && !isDeputy) {
+      toast.error("Only owners and deputies can send messages in Global Announcements");
       return;
+    }
+    
+    // For global announcements, ensure user is a member before sending
+    if (isGlobalAnnouncements) {
+      const { error: joinErr } = await supabase.from("chat_members").upsert({
+        chat_id: chatId,
+        user_id: user.id,
+        role: 'member'
+      }, { onConflict: 'chat_id,user_id' });
+      if (joinErr) console.error('Join error:', joinErr.message);
     }
     
     setSending(true);
@@ -431,7 +439,8 @@ const loadChats = async () => {
     const { error } = await supabase.from("messages").insert({ content, user_id: user.id, chat_id: chatId });
     setSending(false);
     if (error) {
-      toast.error(error.message);
+      console.error('Send message error:', error);
+      toast.error("Failed to send message: " + error.message);
       setInput(content);
       return;
     }
