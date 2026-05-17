@@ -256,6 +256,20 @@ const loadChats = async () => {
       if (mems) {
         setMembers(mems as Member[]);
         await loadProfiles(mems.map((m) => m.user_id));
+      } else {
+        // If we can't fetch members (RLS issue), try to fetch just the current user
+        const { data: myMember } = await supabase
+          .from("chat_members")
+          .select("*")
+          .eq("chat_id", chatId)
+          .eq("user_id", user.id)
+          .single();
+        if (myMember) {
+          setMembers([myMember as Member]);
+        } else if (chatId === GLOBAL_ANNOUNCEMENTS_ID) {
+          // For global announcements, set self as member to avoid 0 members
+          setMembers([{ chat_id: GLOBAL_ANNOUNCEMENTS_ID, user_id: user.id, role: 'member', last_read_at: new Date().toISOString() }]);
+        }
       }
       // Update last_read_at (only if user is a member of this chat)
       const isMember = mems?.some(m => m.user_id === user.id);
@@ -878,7 +892,7 @@ const loadChats = async () => {
                   <div className="min-w-0">
                     <div className="font-semibold truncate">{getChatName(activeChat)}</div>
                     <div className="text-xs text-muted-foreground">
-                      {members.length} member{members.length === 1 ? "" : "s"}
+                      {activeChat.id === GLOBAL_ANNOUNCEMENTS_ID ? 'Announcements' : `${members.length} member${members.length === 1 ? '' : 's'}`}
                     </div>
                   </div>
                 </div>
