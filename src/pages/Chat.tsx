@@ -179,7 +179,6 @@ const loadChats = async () => {
       type: 'group',
       created_by: '00000000-0000-0000-0000-000000000000',
       updated_at: new Date().toISOString(),
-      admin_only: true,
       is_global_announcements: true
     };
     if (!finalChats.find(c => c.id === GLOBAL_ANNOUNCEMENTS_ID)) {
