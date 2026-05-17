@@ -808,7 +808,7 @@ const loadChats = async () => {
                       {isUnread && c.id !== GLOBAL_ANNOUNCEMENTS_ID && <span className="h-2 w-2 rounded-full bg-primary shrink-0" />}
                     </div>
                     <span className="text-xs text-muted-foreground">
-                      {c.type === "dm" ? "Direct message" : "Group"}
+                      {c.type === "dm" ? "Direct message" : c.id === GLOBAL_ANNOUNCEMENTS_ID ? "Announcements" : "Group"}
                     </span>
                   </div>
                 </button>
