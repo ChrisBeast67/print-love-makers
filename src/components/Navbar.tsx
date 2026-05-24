@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X, Printer, ChevronDown, Gamepad2 } from "lucide-react";
+import { Menu, X, Printer, ChevronDown, Gamepad2, Skull } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,9 +7,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useHackerMode } from "@/hooks/useHackerMode";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const { isHacker, isOwner, undoHack, activateHackerMode } = useHackerMode();
   const links = ["Services", "Materials", "How It Works", "Gallery", "Contact"];
 
   const gameLinks = [
@@ -59,6 +61,22 @@ const Navbar = () => {
             </DropdownMenuContent>
           </DropdownMenu>
           <Button size="sm">Get a Quote</Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className={`gap-2 transition-all ${isHacker ? "bg-green-600 text-black hover:bg-green-500" : "text-green-500 hover:bg-green-500/10"}`}
+            onClick={() => {
+              if (isOwner) {
+                undoHack();
+              } else {
+                activateHackerMode();
+              }
+            }}
+            title={isOwner ? "🔓 Undo All Hacks" : "🕵️ Enter Hacker Mode"}
+          >
+            <Skull className="h-4 w-4" />
+            {isOwner ? "Undo" : "Hack"}
+          </Button>
         </div>
 
         <button className="md:hidden text-foreground" onClick={() => setOpen(!open)}>
