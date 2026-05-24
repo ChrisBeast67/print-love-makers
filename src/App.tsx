@@ -14,6 +14,9 @@ import Admin from "./pages/Admin.tsx";
 import Exp from "./pages/Exp.tsx";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
+import { HackerModeProvider } from "@/hooks/useHackerMode";
+import { HackerTheme } from "@/components/HackerTheme";
+import { HackerCodeInput } from "@/components/HackerCodeInput";
 
 const queryClient = new QueryClient();
 
@@ -24,21 +27,25 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <LanguageProvider>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/chat" element={<Chat />} />
-              <Route path="/chat/:chatId" element={<Chat />} />
-              <Route path="/invite/:token" element={<InviteJoin />} />
-              <Route path="/shop" element={<Shop />} />
-              <Route path="/backpack" element={<Backpack />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/exp" element={<Exp />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </LanguageProvider>
+          <HackerModeProvider>
+            <LanguageProvider>
+              <HackerTheme />
+              <HackerCodeInput />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/chat" element={<Chat />} />
+                <Route path="/chat/:chatId" element={<Chat />} />
+                <Route path="/invite/:token" element={<InviteJoin />} />
+                <Route path="/shop" element={<Shop />} />
+                <Route path="/backpack" element={<Backpack />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/exp" element={<Exp />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </LanguageProvider>
+          </HackerModeProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
