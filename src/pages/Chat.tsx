@@ -139,7 +139,7 @@ const loadChats = async () => {
       chat_id: GLOBAL_ANNOUNCEMENTS_ID,
       user_id: user.id,
       role: 'member'
-    }, { onConflict: 'chat_id,user_id' }).then(() => {}).catch(() => {});
+    }, { onConflict: 'chat_id,user_id' });
     
     const { data: mems } = await supabase.from("chat_members").select("*").eq("user_id", user.id);
     if (!mems) return;
