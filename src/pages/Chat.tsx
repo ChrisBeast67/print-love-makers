@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon, Shield, Lock, Smile, ImagePlus, Gamepad2, Skull } from "lucide-react";
+import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon, Shield, Lock, Smile, ImagePlus, Gamepad2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCredits } from "@/hooks/useCredits";
 import { useStaffRole } from "@/hooks/useStaffRole";
-import { useHackerMode } from "@/hooks/useHackerMode";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -63,7 +62,6 @@ const ChatPage = () => {
   const { user, loading, signOut } = useAuth();
   const { balance } = useCredits();
   const { isStaff, isActualOwner, isDeputy } = useStaffRole();
-  const { isHacker, isOwner, undoHack, activateHackerMode } = useHackerMode();
   const [equippedItems, setEquippedItems] = useState<Record<string, { emoji: string; accent_hsl: string; rarity: string }>>({});
   const [tradeOpen, setTradeOpen] = useState(false);
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X, Printer, ChevronDown, Gamepad2, Skull } from "lucide-react";
+import { Menu, X, Printer, ChevronDown, Gamepad2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,11 +7,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useHackerMode } from "@/hooks/useHackerMode";
-
 const Navbar = () => {
   const [open, setOpen] = useState(false);
-  const { isHacker, isOwner, undoHack, activateHackerMode } = useHackerMode();
   const links = ["Services", "Materials", "How It Works", "Gallery", "Contact"];
 
   const gameLinks = [
