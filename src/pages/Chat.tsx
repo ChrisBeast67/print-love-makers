@@ -170,7 +170,7 @@ const loadChats = async () => {
     setChats(finalChats);
 
     // Load profiles for DM display names
-    const dmChats = (cs ?? []).filter((c) => c.type === "dm");
+    const dmChats = finalChats.filter((c) => c.type === "dm");
     if (dmChats.length) {
       const { data: dmMems } = await supabase
         .from("chat_members")
@@ -1034,7 +1034,7 @@ const loadChats = async () => {
                         <div className="flex items-center gap-2">
                           <Lock className="h-4 w-4 text-muted-foreground" />
                           <span className="text-sm">Admin-only chat</span>
-                          <Switch checked={adminOnly} onCheckedChange={toggleAdminOnly} />
+                          <Switch checked={!!activeChat.admin_only} onCheckedChange={toggleAdminOnly} />
                         </div>
                       )}
                       {activeChat.type === "group" && (
