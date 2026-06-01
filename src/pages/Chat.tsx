@@ -425,7 +425,7 @@ const loadChats = async () => {
         chat_id: chatId,
         user_id: user.id,
         role: 'member'
-      }, { onConflict: 'chat_id,user_id' }).then(() => {}).catch(() => {});
+      }, { onConflict: 'chat_id,user_id' });
     }
     
     setSending(true);
