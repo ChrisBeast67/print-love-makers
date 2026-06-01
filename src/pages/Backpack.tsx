@@ -140,7 +140,7 @@ const Backpack = () => {
     }
     setUploading(true);
     const hsl = hexToHsl(uploadColor);
-    const { error } = await supabase.rpc("insert_custom_avatar", {
+    const { error } = await supabase.rpc("insert_custom_avatar" as any, {
       _name: uploadName.trim(),
       _emoji: uploadEmoji.trim(),
       _theme: uploadTheme,

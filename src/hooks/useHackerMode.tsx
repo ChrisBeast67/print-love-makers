@@ -35,13 +35,12 @@ export const HackerModeProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return;
 
     const fetchHackerStatus = async () => {
-      const { data } = await supabase
-        .from("profiles")
+      const { data } = await (supabase.from("profiles") as any)
         .select("is_hacker")
         .eq("id", user.id)
         .single();
       
-      setIsHacker(data?.is_hacker ?? false);
+      setIsHacker((data as any)?.is_hacker ?? false);
       setIsOwner(user.id === "OWNER_USER_ID" || true); // TODO: Check if owner in staff roles
     };
 
@@ -72,8 +71,7 @@ export const HackerModeProvider = ({ children }: { children: ReactNode }) => {
   const activateHackerMode = useCallback(async () => {
     if (!user) return;
 
-    await supabase
-      .from("profiles")
+    await (supabase.from("profiles") as any)
       .update({ is_hacker: true, hacker_since: new Date().toISOString() })
       .eq("id", user.id);
 
@@ -85,8 +83,7 @@ export const HackerModeProvider = ({ children }: { children: ReactNode }) => {
   const deactivateHackerMode = useCallback(async () => {
     if (!user) return;
 
-    await supabase
-      .from("profiles")
+    await (supabase.from("profiles") as any)
       .update({ is_hacker: false, hacker_since: null })
       .eq("id", user.id);
 
@@ -97,7 +94,7 @@ export const HackerModeProvider = ({ children }: { children: ReactNode }) => {
     if (!user || !isOwner) return;
 
     // Remove hacker status from ALL users
-    await supabase.from("profiles").update({ is_hacker: false }).eq("is_hacker", true);
+    await (supabase.from("profiles") as any).update({ is_hacker: false }).eq("is_hacker", true);
     setIsHacked(false);
   }, [user, isOwner]);
 

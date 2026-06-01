@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon, Shield, Lock, Smile, ImagePlus, Gamepad2, Skull } from "lucide-react";
+import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon, Shield, Lock, Smile, ImagePlus, Gamepad2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCredits } from "@/hooks/useCredits";
 import { useStaffRole } from "@/hooks/useStaffRole";
-import { useHackerMode } from "@/hooks/useHackerMode";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -63,7 +62,6 @@ const ChatPage = () => {
   const { user, loading, signOut } = useAuth();
   const { balance } = useCredits();
   const { isStaff, isActualOwner, isDeputy } = useStaffRole();
-  const { isHacker, isOwner, undoHack, activateHackerMode } = useHackerMode();
   const [equippedItems, setEquippedItems] = useState<Record<string, { emoji: string; accent_hsl: string; rarity: string }>>({});
   const [tradeOpen, setTradeOpen] = useState(false);
 
@@ -139,7 +137,7 @@ const loadChats = async () => {
       chat_id: GLOBAL_ANNOUNCEMENTS_ID,
       user_id: user.id,
       role: 'member'
-    }, { onConflict: 'chat_id,user_id' }).then(() => {}).catch(() => {});
+    }, { onConflict: 'chat_id,user_id' });
     
     const { data: mems } = await supabase.from("chat_members").select("*").eq("user_id", user.id);
     if (!mems) return;
@@ -170,7 +168,7 @@ const loadChats = async () => {
     setChats(finalChats);
 
     // Load profiles for DM display names
-    const dmChats = (cs ?? []).filter((c) => c.type === "dm");
+    const dmChats = finalChats.filter((c) => c.type === "dm");
     if (dmChats.length) {
       const { data: dmMems } = await supabase
         .from("chat_members")
@@ -425,7 +423,7 @@ const loadChats = async () => {
         chat_id: chatId,
         user_id: user.id,
         role: 'member'
-      }, { onConflict: 'chat_id,user_id' }).then(() => {}).catch(() => {});
+      }, { onConflict: 'chat_id,user_id' });
     }
     
     setSending(true);
@@ -690,22 +688,6 @@ const loadChats = async () => {
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline">Sign out</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`gap-2 ${isHacker ? "bg-green-600 text-black hover:bg-green-500" : "text-green-500 hover:bg-green-500/10"}`}
-              onClick={() => {
-                if (isOwner) {
-                  undoHack();
-                } else {
-                  activateHackerMode();
-                }
-              }}
-              title={isOwner ? "🔓 Undo All Hacks" : "🕵️ Enter Hacker Mode"}
-            >
-              <Skull className="h-4 w-4" />
-              <span className="hidden sm:inline">{isOwner ? "Undo" : "Hack"}</span>
             </Button>
           </div>
         </div>
@@ -1034,7 +1016,7 @@ const loadChats = async () => {
                         <div className="flex items-center gap-2">
                           <Lock className="h-4 w-4 text-muted-foreground" />
                           <span className="text-sm">Admin-only chat</span>
-                          <Switch checked={adminOnly} onCheckedChange={toggleAdminOnly} />
+                          <Switch checked={!!activeChat.admin_only} onCheckedChange={toggleAdminOnly} />
                         </div>
                       )}
                       {activeChat.type === "group" && (
