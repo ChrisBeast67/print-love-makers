@@ -691,22 +691,6 @@ const loadChats = async () => {
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline">Sign out</span>
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`gap-2 ${isHacker ? "bg-green-600 text-black hover:bg-green-500" : "text-green-500 hover:bg-green-500/10"}`}
-              onClick={() => {
-                if (isOwner) {
-                  undoHack();
-                } else {
-                  activateHackerMode();
-                }
-              }}
-              title={isOwner ? "🔓 Undo All Hacks" : "🕵️ Enter Hacker Mode"}
-            >
-              <Skull className="h-4 w-4" />
-              <span className="hidden sm:inline">{isOwner ? "Undo" : "Hack"}</span>
-            </Button>
           </div>
         </div>
       </header>

@@ -61,22 +61,6 @@ const Navbar = () => {
             </DropdownMenuContent>
           </DropdownMenu>
           <Button size="sm">Get a Quote</Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className={`gap-2 transition-all ${isHacker ? "bg-green-600 text-black hover:bg-green-500" : "text-green-500 hover:bg-green-500/10"}`}
-            onClick={() => {
-              if (isOwner) {
-                undoHack();
-              } else {
-                activateHackerMode();
-              }
-            }}
-            title={isOwner ? "🔓 Undo All Hacks" : "🕵️ Enter Hacker Mode"}
-          >
-            <Skull className="h-4 w-4" />
-            {isOwner ? "Undo" : "Hack"}
-          </Button>
         </div>
 
         <button className="md:hidden text-foreground" onClick={() => setOpen(!open)}>
