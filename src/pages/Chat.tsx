@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon, Shield, Lock, Smile, ImagePlus, Gamepad2 } from "lucide-react";
+import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon, Shield, Lock, Smile, ImagePlus, Gamepad2, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCredits } from "@/hooks/useCredits";
@@ -37,6 +37,8 @@ interface Profile {
   username: string;
   avatar_url: string | null;
   equipped_avatar_id?: string | null;
+  title?: string | null;
+  is_premium?: boolean;
 }
 
 interface Chat {
