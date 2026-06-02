@@ -1074,30 +1074,38 @@ const loadChats = async () => {
                     const equipped = equippedId ? equippedItems[equippedId] : null;
                     return (
                       <div key={m.id} className={cn("flex gap-3 group", isMine && "flex-row-reverse")}>
-                        <Avatar
-                          className="h-8 w-8 shrink-0"
-                          style={
-                            equipped
-                              ? {
-                                  boxShadow: `0 0 12px -2px hsl(${equipped.accent_hsl} / 0.8)`,
-                                  border: `1.5px solid hsl(${equipped.accent_hsl})`,
-                                }
-                              : profile?.avatar_url
-                              ? { border: "1.5px solid var(--primary)" }
-                              : undefined
-                          }
-                        >
-                          {profile?.avatar_url ? (
-                            <img src={profile.avatar_url!} alt={name} className="h-full w-full object-cover rounded-full" />
-                          ) : (
-                            <AvatarFallback className="bg-secondary text-base">
-                              {equipped ? equipped.emoji : name.slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
+                        <div className="relative shrink-0">
+                          {profile?.is_premium && (
+                            <Crown className="absolute -top-2 left-1/2 -translate-x-1/2 h-3.5 w-3.5 text-amber-400 drop-shadow z-10" fill="currentColor" />
                           )}
-                        </Avatar>
+                          <Avatar
+                            className="h-8 w-8"
+                            style={
+                              equipped
+                                ? {
+                                    boxShadow: `0 0 12px -2px hsl(${equipped.accent_hsl} / 0.8)`,
+                                    border: `1.5px solid hsl(${equipped.accent_hsl})`,
+                                  }
+                                : profile?.avatar_url
+                                ? { border: "1.5px solid var(--primary)" }
+                                : undefined
+                            }
+                          >
+                            {profile?.avatar_url ? (
+                              <img src={profile.avatar_url!} alt={name} className="h-full w-full object-cover rounded-full" />
+                            ) : (
+                              <AvatarFallback className="bg-secondary text-base">
+                                {equipped ? equipped.emoji : name.slice(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            )}
+                          </Avatar>
+                        </div>
                         <div className={cn("flex flex-col max-w-[75%]", isMine && "items-end")}>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                             <span className="font-medium text-foreground/80">{name}</span>
+                            {profile?.title && (
+                              <span className="text-[10px] text-primary font-medium">{profile.title}</span>
+                            )}
                             <span>{new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                           </div>
                           <div
