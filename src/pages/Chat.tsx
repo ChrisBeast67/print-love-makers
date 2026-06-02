@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon, Shield, Lock, Smile, ImagePlus, Gamepad2 } from "lucide-react";
+import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon, Shield, Lock, Smile, ImagePlus, Gamepad2, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCredits } from "@/hooks/useCredits";
@@ -37,6 +37,8 @@ interface Profile {
   username: string;
   avatar_url: string | null;
   equipped_avatar_id?: string | null;
+  title?: string | null;
+  is_premium?: boolean;
 }
 
 interface Chat {
@@ -817,19 +819,29 @@ const loadChats = async () => {
           </div>
           {/* User profile at bottom of sidebar */}
           <div className="p-3 border-t border-border/50 flex items-center gap-2">
-            <Avatar
-            className="h-8 w-8 shrink-0"
-            style={profiles[user.id]?.avatar_url ? { border: "1.5px solid var(--primary)" } : undefined}
-          >
-            {profiles[user.id]?.avatar_url ? (
-              <img src={profiles[user.id].avatar_url!} alt="avatar" className="h-full w-full object-cover rounded-full" />
-            ) : (
-              <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                {(profiles[user.id]?.username ?? "?").slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            )}
-          </Avatar>
-            <span className="text-sm font-medium truncate flex-1">{profiles[user.id]?.username ?? "user"}</span>
+            <div className="relative shrink-0">
+              {profiles[user.id]?.is_premium && (
+                <Crown className="absolute -top-2 left-1/2 -translate-x-1/2 h-3.5 w-3.5 text-amber-400 drop-shadow z-10" fill="currentColor" />
+              )}
+              <Avatar
+                className="h-8 w-8"
+                style={profiles[user.id]?.avatar_url ? { border: "1.5px solid var(--primary)" } : undefined}
+              >
+                {profiles[user.id]?.avatar_url ? (
+                  <img src={profiles[user.id].avatar_url!} alt="avatar" className="h-full w-full object-cover rounded-full" />
+                ) : (
+                  <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                    {(profiles[user.id]?.username ?? "?").slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+            </div>
+            <div className="flex flex-col min-w-0 flex-1">
+              <span className="text-sm font-medium truncate">{profiles[user.id]?.username ?? "user"}</span>
+              {profiles[user.id]?.title && (
+                <span className="text-[10px] text-primary truncate">{profiles[user.id]?.title}</span>
+              )}
+            </div>
             <Button
               variant="ghost"
               size="sm"
@@ -1062,30 +1074,38 @@ const loadChats = async () => {
                     const equipped = equippedId ? equippedItems[equippedId] : null;
                     return (
                       <div key={m.id} className={cn("flex gap-3 group", isMine && "flex-row-reverse")}>
-                        <Avatar
-                          className="h-8 w-8 shrink-0"
-                          style={
-                            equipped
-                              ? {
-                                  boxShadow: `0 0 12px -2px hsl(${equipped.accent_hsl} / 0.8)`,
-                                  border: `1.5px solid hsl(${equipped.accent_hsl})`,
-                                }
-                              : profile?.avatar_url
-                              ? { border: "1.5px solid var(--primary)" }
-                              : undefined
-                          }
-                        >
-                          {profile?.avatar_url ? (
-                            <img src={profile.avatar_url!} alt={name} className="h-full w-full object-cover rounded-full" />
-                          ) : (
-                            <AvatarFallback className="bg-secondary text-base">
-                              {equipped ? equipped.emoji : name.slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
+                        <div className="relative shrink-0">
+                          {profile?.is_premium && (
+                            <Crown className="absolute -top-2 left-1/2 -translate-x-1/2 h-3.5 w-3.5 text-amber-400 drop-shadow z-10" fill="currentColor" />
                           )}
-                        </Avatar>
+                          <Avatar
+                            className="h-8 w-8"
+                            style={
+                              equipped
+                                ? {
+                                    boxShadow: `0 0 12px -2px hsl(${equipped.accent_hsl} / 0.8)`,
+                                    border: `1.5px solid hsl(${equipped.accent_hsl})`,
+                                  }
+                                : profile?.avatar_url
+                                ? { border: "1.5px solid var(--primary)" }
+                                : undefined
+                            }
+                          >
+                            {profile?.avatar_url ? (
+                              <img src={profile.avatar_url!} alt={name} className="h-full w-full object-cover rounded-full" />
+                            ) : (
+                              <AvatarFallback className="bg-secondary text-base">
+                                {equipped ? equipped.emoji : name.slice(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            )}
+                          </Avatar>
+                        </div>
                         <div className={cn("flex flex-col max-w-[75%]", isMine && "items-end")}>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                             <span className="font-medium text-foreground/80">{name}</span>
+                            {profile?.title && (
+                              <span className="text-[10px] text-primary font-medium">{profile.title}</span>
+                            )}
                             <span>{new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                           </div>
                           <div
