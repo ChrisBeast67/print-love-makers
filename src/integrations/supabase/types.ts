@@ -385,6 +385,8 @@ export type Database = {
           created_at: string
           equipped_avatar_id: string | null
           id: string
+          is_premium: boolean
+          title: string | null
           updated_at: string
           username: string
         }
@@ -393,6 +395,8 @@ export type Database = {
           created_at?: string
           equipped_avatar_id?: string | null
           id: string
+          is_premium?: boolean
+          title?: string | null
           updated_at?: string
           username: string
         }
@@ -401,6 +405,8 @@ export type Database = {
           created_at?: string
           equipped_avatar_id?: string | null
           id?: string
+          is_premium?: boolean
+          title?: string | null
           updated_at?: string
           username?: string
         }
