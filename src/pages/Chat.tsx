@@ -819,19 +819,29 @@ const loadChats = async () => {
           </div>
           {/* User profile at bottom of sidebar */}
           <div className="p-3 border-t border-border/50 flex items-center gap-2">
-            <Avatar
-            className="h-8 w-8 shrink-0"
-            style={profiles[user.id]?.avatar_url ? { border: "1.5px solid var(--primary)" } : undefined}
-          >
-            {profiles[user.id]?.avatar_url ? (
-              <img src={profiles[user.id].avatar_url!} alt="avatar" className="h-full w-full object-cover rounded-full" />
-            ) : (
-              <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                {(profiles[user.id]?.username ?? "?").slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            )}
-          </Avatar>
-            <span className="text-sm font-medium truncate flex-1">{profiles[user.id]?.username ?? "user"}</span>
+            <div className="relative shrink-0">
+              {profiles[user.id]?.is_premium && (
+                <Crown className="absolute -top-2 left-1/2 -translate-x-1/2 h-3.5 w-3.5 text-amber-400 drop-shadow z-10" fill="currentColor" />
+              )}
+              <Avatar
+                className="h-8 w-8"
+                style={profiles[user.id]?.avatar_url ? { border: "1.5px solid var(--primary)" } : undefined}
+              >
+                {profiles[user.id]?.avatar_url ? (
+                  <img src={profiles[user.id].avatar_url!} alt="avatar" className="h-full w-full object-cover rounded-full" />
+                ) : (
+                  <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                    {(profiles[user.id]?.username ?? "?").slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+            </div>
+            <div className="flex flex-col min-w-0 flex-1">
+              <span className="text-sm font-medium truncate">{profiles[user.id]?.username ?? "user"}</span>
+              {profiles[user.id]?.title && (
+                <span className="text-[10px] text-primary truncate">{profiles[user.id]?.title}</span>
+              )}
+            </div>
             <Button
               variant="ghost"
               size="sm"
