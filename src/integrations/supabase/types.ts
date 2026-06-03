@@ -691,6 +691,10 @@ export type Database = {
         Args: { _amount: number; _target: string }
         Returns: undefined
       }
+      admin_grant_exp: {
+        Args: { _amount: number; _target: string }
+        Returns: undefined
+      }
       admin_grant_premium: { Args: { _target: string }; Returns: undefined }
       admin_list_users: {
         Args: never
