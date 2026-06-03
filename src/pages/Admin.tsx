@@ -29,6 +29,7 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [grant, setGrant] = useState<Record<string, string>>({});
+  const [expGrant, setExpGrant] = useState<Record<string, string>>({});
   const [events, setEvents] = useState<{ id: string; name: string; type: string; luck_multiplier: number; active: boolean; created_at: string }[]>([]);
   const [newEvent, setNewEvent] = useState({ name: "", type: "custom" as string, luck: "1" });
   const [avatarItems, setAvatarItems] = useState<{ id: string; name: string; emoji: string; rarity: string }[]>([]);
@@ -133,6 +134,15 @@ const Admin = () => {
     toast.success(`Granted ${amount} credits`);
     setGrant((g) => ({ ...g, [id]: "" }));
     load();
+  };
+
+  const handleGrantExp = async (id: string) => {
+    const amount = parseInt(expGrant[id] || "0", 10);
+    if (!amount) return toast.error("Enter an amount");
+    const { error } = await supabase.rpc("admin_grant_exp", { _target: id, _amount: amount });
+    if (error) return toast.error(error.message);
+    toast.success(`${amount > 0 ? "Granted" : "Removed"} ${Math.abs(amount)} EXP`);
+    setExpGrant((g) => ({ ...g, [id]: "" }));
   };
 
   const handleBan = async (id: string, banned: boolean) => {
@@ -252,6 +262,17 @@ const Admin = () => {
                     />
                     <Button size="sm" variant="outline" onClick={() => handleGrant(r.id)}>
                       <Coins className="h-4 w-4" />
+                    </Button>
+
+                    <Input
+                      type="number"
+                      placeholder="±EXP"
+                      className="w-24"
+                      value={expGrant[r.id] ?? ""}
+                      onChange={(e) => setExpGrant((g) => ({ ...g, [r.id]: e.target.value }))}
+                    />
+                    <Button size="sm" variant="outline" onClick={() => handleGrantExp(r.id)} title="Give/take EXP">
+                      <Zap className="h-4 w-4" />
                     </Button>
 
                     {/* Grant Avatar */}
