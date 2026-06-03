@@ -201,7 +201,7 @@ const Shop = () => {
             Open a pack to get <span className="text-foreground font-semibold">5 random avatars</span> from a theme.
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Drop rates — Common 59% · Rare 25% · Epic 12% · Legendary 3% · Mythic 1%
+            Drop rates — Common 61% · Rare 25% · Epic 12% · Legendary 1% · Mythic 1%
           </p>
         </div>
 
