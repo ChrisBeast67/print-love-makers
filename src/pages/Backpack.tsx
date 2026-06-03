@@ -17,7 +17,7 @@ interface AvatarItem {
   slug: string;
   name: string;
   theme: string;
-  rarity: "common" | "rare" | "epic" | "legendary" | "mythic";
+  rarity: "common" | "rare" | "epic" | "legendary" | "mythic" | "secret";
   emoji: string;
   accent_hsl: string;
 }
@@ -33,6 +33,7 @@ const rarityRing: Record<AvatarItem["rarity"], string> = {
   epic: "border-violet-400",
   legendary: "border-amber-400",
   mythic: "border-pink-500",
+  secret: "border-fuchsia-500",
 };
 
 const rarityLabel: Record<AvatarItem["rarity"], string> = {
@@ -41,12 +42,13 @@ const rarityLabel: Record<AvatarItem["rarity"], string> = {
   epic: "Epic",
   legendary: "Legendary",
   mythic: "✦ MYTHIC ✦",
+  secret: "❂ SECRET ❂",
 };
 
 const sellPrice = (r: AvatarItem["rarity"]) =>
-  ({ common: 15, rare: 50, epic: 200, legendary: 750, mythic: 3000 }[r]);
+  ({ common: 15, rare: 50, epic: 200, legendary: 750, mythic: 3000, secret: 0 }[r]);
 
-const rarityOrder = { mythic: 0, legendary: 1, epic: 2, rare: 3, common: 4 } as const;
+const rarityOrder = { secret: -1, mythic: 0, legendary: 1, epic: 2, rare: 3, common: 4 } as const;
 
 const THEME_OPTIONS: { value: string; label: string }[] = [
   { value: "robot", label: "Robot" },
@@ -273,15 +275,21 @@ const Backpack = () => {
                         "Equip"
                       )}
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-full"
-                      disabled={busy}
-                      onClick={() => sell(item)}
-                    >
-                      Sell · +{sellPrice(item.rarity)}
-                    </Button>
+                    {item.rarity === "secret" ? (
+                      <p className="text-center text-[11px] text-fuchsia-400 font-semibold">
+                        Exclusive · cannot be sold or traded
+                      </p>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full"
+                        disabled={busy}
+                        onClick={() => sell(item)}
+                      >
+                        Sell · +{sellPrice(item.rarity)}
+                      </Button>
+                    )}
                   </div>
                 </Card>
               );

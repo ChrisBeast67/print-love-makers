@@ -179,6 +179,11 @@ const Exp = () => {
                     <p className="text-xs text-muted-foreground">
                       {ms.exp_required.toLocaleString()} EXP — Reward: {ms.reward_credits.toLocaleString()} credits
                     </p>
+                    {ms.reward_avatar_id && (
+                      <p className="text-xs font-semibold text-fuchsia-400">
+                        ❂ Secret avatar — exclusive to this milestone
+                      </p>
+                    )}
                   </div>
                 </div>
                 {isClaimed ? (
@@ -227,6 +232,11 @@ const Exp = () => {
                       {ms.exp_required.toLocaleString()} EXP — Reward: {ms.reward_credits.toLocaleString()} credits
                       {!isPremium && " 🔒 Premium"}
                     </p>
+                    {ms.reward_avatar_id && (
+                      <p className="text-xs font-semibold text-fuchsia-400">
+                        ❂ Secret avatar — exclusive to this milestone
+                      </p>
+                    )}
                   </div>
                 </div>
                 {isClaimed ? (
