@@ -71,8 +71,9 @@ export const TradeDialog = ({ open, onOpenChange, chatId, members }: TradeDialog
           .select("avatar_item_id, avatar_items(*)")
           .eq("user_id", otherId),
       ]);
-      setMyItems(((mine.data ?? []) as { avatar_items: AvatarItem }[]).map((r) => r.avatar_items).filter(Boolean));
-      setTheirItems(((theirs.data ?? []) as { avatar_items: AvatarItem }[]).map((r) => r.avatar_items).filter(Boolean));
+      const notSecret = (a: AvatarItem) => a && a.rarity !== "secret";
+      setMyItems(((mine.data ?? []) as { avatar_items: AvatarItem }[]).map((r) => r.avatar_items).filter(notSecret));
+      setTheirItems(((theirs.data ?? []) as { avatar_items: AvatarItem }[]).map((r) => r.avatar_items).filter(notSecret));
     },
     [user],
   );
