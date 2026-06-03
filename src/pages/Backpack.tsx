@@ -275,15 +275,21 @@ const Backpack = () => {
                         "Equip"
                       )}
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-full"
-                      disabled={busy}
-                      onClick={() => sell(item)}
-                    >
-                      Sell · +{sellPrice(item.rarity)}
-                    </Button>
+                    {item.rarity === "secret" ? (
+                      <p className="text-center text-[11px] text-fuchsia-400 font-semibold">
+                        Exclusive · cannot be sold or traded
+                      </p>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full"
+                        disabled={busy}
+                        onClick={() => sell(item)}
+                      >
+                        Sell · +{sellPrice(item.rarity)}
+                      </Button>
+                    )}
                   </div>
                 </Card>
               );
