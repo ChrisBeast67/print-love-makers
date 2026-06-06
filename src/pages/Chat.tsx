@@ -130,6 +130,7 @@ const ChatPage = () => {
 
   // Load my chats
   const GLOBAL_ANNOUNCEMENTS_ID = "00000000-0000-0000-0000-000000000001";
+  const MODERATION_NOTICE = "⚠️ This message was removed for inappropriate language.";
 
 const loadChats = async () => {
     if (!user) return;
