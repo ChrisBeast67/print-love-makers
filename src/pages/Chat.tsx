@@ -1225,7 +1225,7 @@ const loadChats = async () => {
                     <input
                       ref={fileInputRef}
                       type="file"
-                      accept="image/*"
+                      accept="image/*,video/*"
                       className="hidden"
                       onChange={(e) => {
                         const f = e.target.files?.[0];
