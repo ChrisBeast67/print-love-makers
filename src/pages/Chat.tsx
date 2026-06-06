@@ -394,16 +394,19 @@ const loadChats = async () => {
 
   const uploadImage = useCallback(async (file: File) => {
     if (!user || !chatId) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error("Only images are allowed");
+    const isImage = file.type.startsWith("image/");
+    const isVideo = file.type.startsWith("video/");
+    if (!isImage && !isVideo) {
+      toast.error("Only images or videos are allowed");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5MB");
+    const maxBytes = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      toast.error(isVideo ? "Video must be under 50MB" : "Image must be under 5MB");
       return;
     }
     setUploading(true);
-    const ext = file.name.split(".").pop() ?? "png";
+    const ext = file.name.split(".").pop() ?? (isVideo ? "mp4" : "png");
     const path = `${user.id}/${Date.now()}.${ext}`;
     const { error: upErr } = await supabase.storage.from("chat-images").upload(path, file);
     if (upErr) {
@@ -412,10 +415,10 @@ const loadChats = async () => {
       return;
     }
     const { data: urlData } = supabase.storage.from("chat-images").getPublicUrl(path);
-    const imageUrl = urlData.publicUrl;
-    // Send as a message with image prefix
+    const mediaUrl = urlData.publicUrl;
+    // Send as a message with image/video prefix
     const { error } = await supabase.from("messages").insert({
-      content: `__img__:${imageUrl}`,
+      content: `${isVideo ? "__vid__" : "__img__"}:${mediaUrl}`,
       user_id: user.id,
       chat_id: chatId,
     });
@@ -424,6 +427,27 @@ const loadChats = async () => {
     // Clear typing
     await supabase.from("typing_indicators").delete().eq("chat_id", chatId).eq("user_id", user.id);
   }, [user, chatId]);
+
+  const handleGroupImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !user || !chatId) return;
+    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!validTypes.includes(file.type)) return toast.error("Only images allowed");
+    if (file.size > 5 * 1024 * 1024) return toast.error("Max 5MB");
+    setGroupUploading(true);
+    const ext = file.name.split(".").pop() ?? "jpg";
+    const path = `${user.id}/group-${chatId}-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from("chat-images").upload(path, file, { upsert: true });
+    if (upErr) { toast.error("Upload failed: " + upErr.message); setGroupUploading(false); return; }
+    const { data: urlData } = supabase.storage.from("chat-images").getPublicUrl(path);
+    const imageUrl = urlData.publicUrl;
+    const { error: upChatErr } = await supabase.from("chats").update({ avatar_url: imageUrl } as any).eq("id", chatId);
+    setGroupUploading(false);
+    if (upChatErr) { toast.error(upChatErr.message); return; }
+    toast.success("Group photo updated!");
+    setChats((prev) => prev.map((c) => (c.id === chatId ? { ...c, avatar_url: imageUrl } : c)));
+  };
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
