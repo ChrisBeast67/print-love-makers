@@ -130,6 +130,7 @@ const ChatPage = () => {
 
   // Load my chats
   const GLOBAL_ANNOUNCEMENTS_ID = "00000000-0000-0000-0000-000000000001";
+  const MODERATION_NOTICE = "⚠️ This message was removed for inappropriate language.";
 
 const loadChats = async () => {
     if (!user) return;
@@ -311,6 +312,18 @@ const loadChats = async () => {
       )
       .on(
         "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "messages", filter: `chat_id=eq.${chatId}` },
+        (payload) => {
+          const m = payload.new as Message;
+          setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, ...m } : x)));
+          // Notify the offender that they were warned
+          if (m.user_id === user.id && m.content === MODERATION_NOTICE) {
+            toast.warning("⚠️ Warning issued — watch your language! 3 warnings = a 1 week ban.");
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
         { event: "*", schema: "public", table: "typing_indicators", filter: `chat_id=eq.${chatId}` },
         async () => {
           const { data } = await supabase
@@ -435,7 +448,21 @@ const loadChats = async () => {
     setSending(false);
     if (error) {
       console.error('Send message error:', error);
-      toast.error("Failed to send message");
+      // Check whether the user is currently banned (e.g. after 3 warnings)
+      const { data: ban } = await supabase
+        .from("banned_users")
+        .select("expires_at, reason")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (ban && (!ban.expires_at || new Date(ban.expires_at) > new Date())) {
+        toast.error(
+          ban.expires_at
+            ? `You are banned until ${new Date(ban.expires_at).toLocaleDateString()} — ${ban.reason ?? "rule violation"}.`
+            : "You are banned from sending messages.",
+        );
+      } else {
+        toast.error("Failed to send message");
+      }
       setInput(content);
       return;
     }
