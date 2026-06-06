@@ -950,8 +950,9 @@ const loadChats = async () => {
                         ? members.find(m => m.user_id !== user.id)?.user_id
                         : null;
                       const prof = otherId ? profiles[otherId] : null;
-                      return prof?.avatar_url
-                        ? <img src={prof.avatar_url!} alt={getChatName(activeChat)} className="h-full w-full object-cover rounded-full" />
+                      const imgSrc = activeChat.type === "dm" ? prof?.avatar_url : activeChat.avatar_url;
+                      return imgSrc
+                        ? <img src={imgSrc} alt={getChatName(activeChat)} className="h-full w-full object-cover rounded-full" />
                         : <AvatarFallback className="bg-primary/20 text-primary text-xs">
                             {getChatName(activeChat).slice(0, 2).toUpperCase()}
                           </AvatarFallback>;
