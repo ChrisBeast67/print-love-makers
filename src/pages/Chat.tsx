@@ -93,6 +93,8 @@ const ChatPage = () => {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const profileFileRef = useRef<HTMLInputElement>(null);
+  const groupFileRef = useRef<HTMLInputElement>(null);
+  const [groupUploading, setGroupUploading] = useState(false);
   const [usernameEditOpen, setUsernameEditOpen] = useState(false);
   const [newUsername, setNewUsername] = useState("");
   const [profileUploading, setProfileUploading] = useState(false);
