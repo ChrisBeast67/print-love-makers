@@ -1180,6 +1180,13 @@ const loadChats = async () => {
                                 loading="lazy"
                                 onClick={() => window.open(m.content.slice(8), "_blank")}
                               />
+                            ) : m.content?.startsWith("__vid__:") ? (
+                              <video
+                                src={m.content.slice(8)}
+                                controls
+                                preload="metadata"
+                                className="max-w-full max-h-64 rounded-lg"
+                              />
                             ) : (
                               m.content
                             )}
