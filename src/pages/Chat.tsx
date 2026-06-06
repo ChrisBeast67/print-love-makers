@@ -1081,6 +1081,25 @@ const loadChats = async () => {
                         </Button>
                       )}
                       {activeChat.type === "group" && isAdminHere && (
+                        <>
+                          <input
+                            ref={groupFileRef}
+                            type="file"
+                            accept="image/jpeg,image/png,image/gif,image/webp"
+                            className="hidden"
+                            onChange={handleGroupImageChange}
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={groupUploading}
+                            onClick={() => groupFileRef.current?.click()}
+                          >
+                            <ImagePlus className="h-4 w-4" /> {groupUploading ? "Uploading…" : "Group photo"}
+                          </Button>
+                        </>
+                      )}
+                      {activeChat.type === "group" && isAdminHere && (
                         <div className="flex items-center gap-2">
                           <Lock className="h-4 w-4 text-muted-foreground" />
                           <span className="text-sm">Admin-only chat</span>
