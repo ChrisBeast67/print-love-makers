@@ -49,6 +49,7 @@ interface Chat {
   updated_at: string;
   admin_only?: boolean;
   is_global_announcements?: boolean;
+  avatar_url?: string | null;
 }
 
 interface Member {
