@@ -448,7 +448,21 @@ const loadChats = async () => {
     setSending(false);
     if (error) {
       console.error('Send message error:', error);
-      toast.error("Failed to send message");
+      // Check whether the user is currently banned (e.g. after 3 warnings)
+      const { data: ban } = await supabase
+        .from("banned_users")
+        .select("expires_at, reason")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (ban && (!ban.expires_at || new Date(ban.expires_at) > new Date())) {
+        toast.error(
+          ban.expires_at
+            ? `You are banned until ${new Date(ban.expires_at).toLocaleDateString()} — ${ban.reason ?? "rule violation"}.`
+            : "You are banned from sending messages.",
+        );
+      } else {
+        toast.error("Failed to send message");
+      }
       setInput(content);
       return;
     }
