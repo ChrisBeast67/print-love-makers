@@ -311,6 +311,18 @@ const loadChats = async () => {
       )
       .on(
         "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "messages", filter: `chat_id=eq.${chatId}` },
+        (payload) => {
+          const m = payload.new as Message;
+          setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, ...m } : x)));
+          // Notify the offender that they were warned
+          if (m.user_id === user.id && m.content === MODERATION_NOTICE) {
+            toast.warning("⚠️ Warning issued — watch your language! 3 warnings = a 1 week ban.");
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
         { event: "*", schema: "public", table: "typing_indicators", filter: `chat_id=eq.${chatId}` },
         async () => {
           const { data } = await supabase
