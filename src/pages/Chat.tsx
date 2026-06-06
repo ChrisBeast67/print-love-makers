@@ -851,8 +851,9 @@ const loadChats = async () => {
                     {(() => {
                       const otherId = c.type === "dm" ? allMyMemberships.find(m => m.chat_id === c.id && m.user_id !== user.id)?.user_id : null;
                       const prof = otherId ? profiles[otherId] : null;
-                      return prof?.avatar_url
-                        ? <img src={prof.avatar_url!} alt={getChatName(c)} className="h-full w-full object-cover rounded-full" />
+                      const imgSrc = c.type === "dm" ? prof?.avatar_url : c.avatar_url;
+                      return imgSrc
+                        ? <img src={imgSrc} alt={getChatName(c)} className="h-full w-full object-cover rounded-full" />
                         : <AvatarFallback className="bg-primary/20 text-primary text-xs">
                             {c.type === "dm" ? getChatName(c).slice(0, 2).toUpperCase() : (c.name ?? "G").slice(0, 2).toUpperCase()}
                           </AvatarFallback>;
