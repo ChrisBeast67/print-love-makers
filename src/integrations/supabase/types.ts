@@ -51,18 +51,21 @@ export type Database = {
         Row: {
           banned_at: string
           banned_by: string
+          expires_at: string | null
           reason: string | null
           user_id: string
         }
         Insert: {
           banned_at?: string
           banned_by: string
+          expires_at?: string | null
           reason?: string | null
           user_id: string
         }
         Update: {
           banned_at?: string
           banned_by?: string
+          expires_at?: string | null
           reason?: string | null
           user_id?: string
         }
@@ -665,6 +668,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_warnings: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          reason?: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -743,6 +770,7 @@ export type Database = {
       cancel_trade_offer: { Args: { _id: string }; Returns: undefined }
       claim_daily_credits: { Args: never; Returns: number }
       claim_milestone: { Args: { _milestone_id: string }; Returns: string }
+      contains_bad_word: { Args: { _text: string }; Returns: boolean }
       create_group_chat: { Args: { _name: string }; Returns: string }
       create_or_get_dm: { Args: { _other_user: string }; Returns: string }
       create_trade_offer: {
