@@ -358,6 +358,58 @@ const Shop = () => {
           </Button>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={buyOpen} onOpenChange={setBuyOpen}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-center text-2xl gradient-text">Buy Individual Avatars</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-wrap gap-2 justify-center py-2">
+            {(Object.keys(BUY_PRICES) as BuyRarity[]).map((r) => (
+              <Button
+                key={r}
+                size="sm"
+                variant={buyRarity === r ? "default" : "outline"}
+                className="capitalize"
+                onClick={() => setBuyRarity(r)}
+              >
+                {rarityLabel[r]}
+              </Button>
+            ))}
+          </div>
+          <p className="text-center text-xs text-muted-foreground">
+            Price for {rarityLabel[buyRarity]}:{" "}
+            <span className="text-foreground font-semibold inline-flex items-center gap-1">
+              <Coins className="h-3 w-3 text-primary" /> {BUY_PRICES[buyRarity]}
+            </span>
+          </p>
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 overflow-y-auto py-3">
+            {catalog
+              .filter((a) => a.rarity === buyRarity)
+              .map((a) => (
+                <div
+                  key={a.id}
+                  className={cn(
+                    "rounded-lg border-2 flex flex-col items-center justify-center p-3 text-center bg-gradient-to-br to-transparent",
+                    rarityClass[a.rarity as PullResult["rarity"]],
+                  )}
+                  style={{ boxShadow: `0 0 16px -8px hsl(${a.accent_hsl} / 0.8)` }}
+                >
+                  <div className="text-3xl mb-1">{a.emoji}</div>
+                  <div className="text-xs font-medium truncate w-full mb-2">{a.name}</div>
+                  <Button
+                    size="sm"
+                    className="w-full text-xs"
+                    onClick={() => buyAvatar(a)}
+                    disabled={buyingAvatar !== null || balance < BUY_PRICES[buyRarity]}
+                  >
+                    <Coins className="h-3 w-3 mr-1" /> {BUY_PRICES[buyRarity]}
+                  </Button>
+                </div>
+              ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
