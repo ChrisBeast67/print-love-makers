@@ -467,6 +467,53 @@ const Admin = () => {
           )}
         </section>
       )}
+
+      {tab === "orders" && (
+        <section className="container mx-auto px-6 py-8 max-w-3xl space-y-6">
+          <h2 className="font-bold text-lg flex items-center gap-2">
+            <Receipt className="h-5 w-5 text-primary" /> Premium Orders
+          </h2>
+
+          <div className="space-y-3">
+            <h3 className="font-semibold text-muted-foreground">Pending</h3>
+            {orders.filter((o) => o.status === "pending").length === 0 && (
+              <p className="text-sm text-muted-foreground">No pending orders.</p>
+            )}
+            {orders.filter((o) => o.status === "pending").map((o) => (
+              <div key={o.id} className="rounded-xl border border-amber-500/40 bg-card p-4 flex items-center justify-between">
+                <div>
+                  <span className="font-semibold">{o.username}</span>
+                  <Badge className="ml-2 gap-1 bg-amber-500 text-black"><Crown className="h-3 w-3" /> Premium</Badge>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    €{Number(o.amount_eur).toFixed(2)} · {new Date(o.created_at).toLocaleString()}
+                  </div>
+                </div>
+                <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-black font-bold" onClick={() => handleMarkPaid(o.id, o.username)}>
+                  <CheckCircle2 className="h-4 w-4 mr-1" /> Paid
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          {orders.filter((o) => o.status !== "pending").length > 0 && (
+            <div className="space-y-3">
+              <h3 className="font-semibold text-muted-foreground">Paid</h3>
+              {orders.filter((o) => o.status !== "pending").map((o) => (
+                <div key={o.id} className="rounded-xl border border-border bg-card/50 p-4 flex items-center justify-between opacity-70">
+                  <div>
+                    <span className="font-semibold">{o.username}</span>
+                    <Badge variant="secondary" className="ml-2">Paid</Badge>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      €{Number(o.amount_eur).toFixed(2)} · {new Date(o.created_at).toLocaleString()}
+                    </div>
+                  </div>
+                  <CheckCircle2 className="h-5 w-5 text-primary" />
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 };
