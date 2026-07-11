@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper } from "lucide-react";
+import { Receipt } from "lucide-react";
 import { Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +36,8 @@ const Admin = () => {
   const [avatarItems, setAvatarItems] = useState<{ id: string; name: string; emoji: string; rarity: string }[]>([]);
   const [grantAvatar, setGrantAvatar] = useState<Record<string, string>>({});
   const [removeAvatar, setRemoveAvatar] = useState<Record<string, string>>({});
-  const [tab, setTab] = useState<"users" | "events">("users");
+  const [tab, setTab] = useState<"users" | "events" | "orders">("users");
+  const [orders, setOrders] = useState<{ id: string; user_id: string; username: string; amount_eur: number; status: string; created_at: string }[]>([]);
 
   useEffect(() => {
     document.title = "Admin Panel — PrintChat";
@@ -82,9 +84,22 @@ const Admin = () => {
     setAvatarItems((data as any[]) ?? []);
   }, []);
 
+  const loadOrders = useCallback(async () => {
+    const { data, error } = await supabase.rpc("admin_list_premium_orders");
+    if (error) return toast.error(error.message);
+    setOrders((data as any[]) ?? []);
+  }, []);
+
   useEffect(() => {
-    if (isStaff) { loadEvents(); loadAvatarItems(); }
-  }, [isStaff, loadEvents, loadAvatarItems]);
+    if (isStaff) { loadEvents(); loadAvatarItems(); loadOrders(); }
+  }, [isStaff, loadEvents, loadAvatarItems, loadOrders]);
+
+  const handleMarkPaid = async (orderId: string, username: string) => {
+    const { error } = await supabase.rpc("mark_premium_order_paid", { _order_id: orderId });
+    if (error) return toast.error(error.message);
+    toast.success(`Premium granted to ${username}! ✨`);
+    loadOrders();
+  };
 
   const handleStartEvent = async () => {
     if (!newEvent.name.trim()) return toast.error("Enter event name");
@@ -205,6 +220,12 @@ const Admin = () => {
             <Button size="sm" variant={tab === "users" ? "default" : "outline"} onClick={() => setTab("users")}>Users</Button>
             <Button size="sm" variant={tab === "events" ? "default" : "outline"} onClick={() => setTab("events")}>
               <PartyPopper className="h-4 w-4 mr-1" /> Events
+            </Button>
+            <Button size="sm" variant={tab === "orders" ? "default" : "outline"} onClick={() => setTab("orders")}>
+              <Receipt className="h-4 w-4 mr-1" /> Orders
+              {orders.some((o) => o.status === "pending") && (
+                <Badge className="ml-1 bg-amber-500 text-black">{orders.filter((o) => o.status === "pending").length}</Badge>
+              )}
             </Button>
           </div>
         </div>
@@ -440,6 +461,53 @@ const Admin = () => {
                     {e.luck_multiplier > 1 && <Badge variant="secondary" className="ml-2">{e.luck_multiplier}x</Badge>}
                   </div>
                   <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleDateString()}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {tab === "orders" && (
+        <section className="container mx-auto px-6 py-8 max-w-3xl space-y-6">
+          <h2 className="font-bold text-lg flex items-center gap-2">
+            <Receipt className="h-5 w-5 text-primary" /> Premium Orders
+          </h2>
+
+          <div className="space-y-3">
+            <h3 className="font-semibold text-muted-foreground">Pending</h3>
+            {orders.filter((o) => o.status === "pending").length === 0 && (
+              <p className="text-sm text-muted-foreground">No pending orders.</p>
+            )}
+            {orders.filter((o) => o.status === "pending").map((o) => (
+              <div key={o.id} className="rounded-xl border border-amber-500/40 bg-card p-4 flex items-center justify-between">
+                <div>
+                  <span className="font-semibold">{o.username}</span>
+                  <Badge className="ml-2 gap-1 bg-amber-500 text-black"><Crown className="h-3 w-3" /> Premium</Badge>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    €{Number(o.amount_eur).toFixed(2)} · {new Date(o.created_at).toLocaleString()}
+                  </div>
+                </div>
+                <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-black font-bold" onClick={() => handleMarkPaid(o.id, o.username)}>
+                  <CheckCircle2 className="h-4 w-4 mr-1" /> Paid
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          {orders.filter((o) => o.status !== "pending").length > 0 && (
+            <div className="space-y-3">
+              <h3 className="font-semibold text-muted-foreground">Paid</h3>
+              {orders.filter((o) => o.status !== "pending").map((o) => (
+                <div key={o.id} className="rounded-xl border border-border bg-card/50 p-4 flex items-center justify-between opacity-70">
+                  <div>
+                    <span className="font-semibold">{o.username}</span>
+                    <Badge variant="secondary" className="ml-2">Paid</Badge>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      €{Number(o.amount_eur).toFixed(2)} · {new Date(o.created_at).toLocaleString()}
+                    </div>
+                  </div>
+                  <CheckCircle2 className="h-5 w-5 text-primary" />
                 </div>
               ))}
             </div>
