@@ -234,6 +234,9 @@ const Shop = () => {
             <Button variant="secondary" size="sm" onClick={() => navigate("/backpack")}>
               <BackpackIcon className="h-4 w-4 mr-1" /> Backpack
             </Button>
+            <Button variant="secondary" size="sm" onClick={() => setBuyOpen(true)}>
+              <ShoppingBag className="h-4 w-4 mr-1" /> Buy Avatars
+            </Button>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-primary/20 glow-box">
               <Coins className="h-4 w-4 text-primary" />
               <span className="font-bold">{balance}</span>
