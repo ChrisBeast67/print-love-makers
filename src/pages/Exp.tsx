@@ -27,6 +27,8 @@ const Exp = () => {
   const [claimed, setClaimed] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState(false);
+  const [hasPendingOrder, setHasPendingOrder] = useState(false);
+  const [ordering, setOrdering] = useState(false);
 
   useEffect(() => {
     document.title = "EXP & Milestones — PrintChat";
@@ -50,6 +52,12 @@ const Exp = () => {
     setIsPremium(expRes.data?.is_premium ?? false);
     setMilestones((msRes.data as Milestone[]) ?? []);
     setClaimed(new Set((claimRes.data ?? []).map((c: { milestone_id: string }) => c.milestone_id)));
+    const { data: orders } = await supabase
+      .from("premium_orders")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("status", "pending");
+    setHasPendingOrder((orders ?? []).length > 0);
     setLoading(false);
   }, [user]);
 
@@ -70,6 +78,15 @@ const Exp = () => {
     setBuying(false);
     if (error) return toast.error(error.message);
     toast.success("Premium unlocked! ✨");
+    load();
+  };
+
+  const handleOrderPremium = async () => {
+    setOrdering(true);
+    const { error } = await supabase.rpc("create_premium_order");
+    setOrdering(false);
+    if (error) return toast.error(error.message);
+    toast.success("Order placed! An admin will confirm your payment shortly. 🎉");
     load();
   };
 
@@ -138,13 +155,29 @@ const Exp = () => {
               Premium milestones give <strong>3× more rewards</strong> at every level. 
               Buy for <strong>100,000 credits</strong> or get it granted by an admin.
             </p>
-            <Button
-              onClick={handleBuyPremium}
-              disabled={buying}
-              className="bg-amber-500 hover:bg-amber-600 text-black font-bold"
-            >
-              <Crown className="h-4 w-4 mr-1" /> Buy Premium — 100,000 credits
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button
+                onClick={handleBuyPremium}
+                disabled={buying}
+                className="bg-amber-500 hover:bg-amber-600 text-black font-bold"
+              >
+                <Crown className="h-4 w-4 mr-1" /> Buy Premium — 100,000 credits
+              </Button>
+              {hasPendingOrder ? (
+                <Button disabled variant="outline" className="border-amber-500/50 text-amber-400">
+                  ⏳ Order pending — awaiting admin confirmation
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleOrderPremium}
+                  disabled={ordering}
+                  variant="outline"
+                  className="border-amber-500/60 text-amber-400 hover:bg-amber-500/10 font-bold"
+                >
+                  <Crown className="h-4 w-4 mr-1" /> Buy Premium — €5
+                </Button>
+              )}
+            </div>
           </div>
         )}
 
