@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCredits } from "@/hooks/useCredits";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Coins, ArrowLeft, Sparkles, Backpack as BackpackIcon } from "lucide-react";
+import { Coins, ArrowLeft, Sparkles, Backpack as BackpackIcon, ShoppingBag } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -54,6 +54,25 @@ const themeLabels: Record<Pack["theme"], string> = {
   underwater: "Underwater",
 };
 
+type BuyRarity = "common" | "rare" | "epic" | "legendary" | "mythic";
+
+interface AvatarItem {
+  id: string;
+  name: string;
+  emoji: string;
+  rarity: BuyRarity | "secret";
+  theme: string;
+  accent_hsl: string;
+}
+
+const BUY_PRICES: Record<BuyRarity, number> = {
+  common: 60,
+  rare: 250,
+  epic: 1000,
+  legendary: 4000,
+  mythic: 15000,
+};
+
 const LUCK_TIERS: { tier: 2 | 3 | 5 | 10; price: number }[] = [
   { tier: 2, price: 50 },
   { tier: 3, price: 100 },
@@ -72,10 +91,20 @@ const Shop = () => {
   const [luck, setLuck] = useState<{ multiplier: number; expires_at: string } | null>(null);
   const [luckRemaining, setLuckRemaining] = useState(0);
   const [buyingLuck, setBuyingLuck] = useState<number | null>(null);
+  const [catalog, setCatalog] = useState<AvatarItem[]>([]);
+  const [buyOpen, setBuyOpen] = useState(false);
+  const [buyRarity, setBuyRarity] = useState<BuyRarity>("common");
+  const [buyingAvatar, setBuyingAvatar] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const { data: ps } = await supabase.from("profile_packs").select("*").order("name");
     setPacks((ps ?? []) as Pack[]);
+    const { data: items } = await supabase
+      .from("avatar_items")
+      .select("id, name, emoji, rarity, theme, accent_hsl")
+      .neq("rarity", "secret")
+      .order("name");
+    setCatalog((items ?? []) as AvatarItem[]);
   }, []);
 
   const loadLuck = useCallback(async () => {
@@ -139,6 +168,24 @@ const Shop = () => {
     await Promise.all([refresh(), loadLuck()]);
   };
 
+  const buyAvatar = async (item: AvatarItem) => {
+    const price = BUY_PRICES[item.rarity as BuyRarity];
+    if (balance < price) {
+      toast.error("Not enough credits");
+      return;
+    }
+    setBuyingAvatar(item.id);
+    const { data, error } = await supabase.rpc("buy_avatar", { _avatar_item_id: item.id });
+    setBuyingAvatar(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    const res = data as { is_new?: boolean };
+    toast.success(`${item.emoji} ${item.name} purchased${res?.is_new ? " (NEW!)" : ""}`);
+    refresh();
+  };
+
   const openPack = async (pack: Pack) => {
     if (balance < pack.price) {
       toast.error("Not enough credits");
@@ -186,6 +233,9 @@ const Shop = () => {
           <div className="flex items-center gap-2">
             <Button variant="secondary" size="sm" onClick={() => navigate("/backpack")}>
               <BackpackIcon className="h-4 w-4 mr-1" /> Backpack
+            </Button>
+            <Button variant="secondary" size="sm" onClick={() => setBuyOpen(true)}>
+              <ShoppingBag className="h-4 w-4 mr-1" /> Buy Avatars
             </Button>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-primary/20 glow-box">
               <Coins className="h-4 w-4 text-primary" />
@@ -306,6 +356,58 @@ const Shop = () => {
           <Button onClick={closePulls} className="w-full">
             Awesome
           </Button>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={buyOpen} onOpenChange={setBuyOpen}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-center text-2xl gradient-text">Buy Individual Avatars</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-wrap gap-2 justify-center py-2">
+            {(Object.keys(BUY_PRICES) as BuyRarity[]).map((r) => (
+              <Button
+                key={r}
+                size="sm"
+                variant={buyRarity === r ? "default" : "outline"}
+                className="capitalize"
+                onClick={() => setBuyRarity(r)}
+              >
+                {rarityLabel[r]}
+              </Button>
+            ))}
+          </div>
+          <p className="text-center text-xs text-muted-foreground">
+            Price for {rarityLabel[buyRarity]}:{" "}
+            <span className="text-foreground font-semibold inline-flex items-center gap-1">
+              <Coins className="h-3 w-3 text-primary" /> {BUY_PRICES[buyRarity]}
+            </span>
+          </p>
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 overflow-y-auto py-3">
+            {catalog
+              .filter((a) => a.rarity === buyRarity)
+              .map((a) => (
+                <div
+                  key={a.id}
+                  className={cn(
+                    "rounded-lg border-2 flex flex-col items-center justify-center p-3 text-center bg-gradient-to-br to-transparent",
+                    rarityClass[a.rarity as PullResult["rarity"]],
+                  )}
+                  style={{ boxShadow: `0 0 16px -8px hsl(${a.accent_hsl} / 0.8)` }}
+                >
+                  <div className="text-3xl mb-1">{a.emoji}</div>
+                  <div className="text-xs font-medium truncate w-full mb-2">{a.name}</div>
+                  <Button
+                    size="sm"
+                    className="w-full text-xs"
+                    onClick={() => buyAvatar(a)}
+                    disabled={buyingAvatar !== null || balance < BUY_PRICES[buyRarity]}
+                  >
+                    <Coins className="h-3 w-3 mr-1" /> {BUY_PRICES[buyRarity]}
+                  </Button>
+                </div>
+              ))}
+          </div>
         </DialogContent>
       </Dialog>
     </div>

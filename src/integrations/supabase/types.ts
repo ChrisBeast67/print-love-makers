@@ -768,6 +768,7 @@ export type Database = {
         Args: { _session_id: string; _winner_id: string }
         Returns: undefined
       }
+      buy_avatar: { Args: { _avatar_item_id: string }; Returns: Json }
       buy_luck_boost: { Args: { _tier: number }; Returns: string }
       buy_premium: { Args: never; Returns: undefined }
       cancel_trade_offer: { Args: { _id: string }; Returns: undefined }
