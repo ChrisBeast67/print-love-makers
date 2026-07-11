@@ -91,10 +91,20 @@ const Shop = () => {
   const [luck, setLuck] = useState<{ multiplier: number; expires_at: string } | null>(null);
   const [luckRemaining, setLuckRemaining] = useState(0);
   const [buyingLuck, setBuyingLuck] = useState<number | null>(null);
+  const [catalog, setCatalog] = useState<AvatarItem[]>([]);
+  const [buyOpen, setBuyOpen] = useState(false);
+  const [buyRarity, setBuyRarity] = useState<BuyRarity>("common");
+  const [buyingAvatar, setBuyingAvatar] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const { data: ps } = await supabase.from("profile_packs").select("*").order("name");
     setPacks((ps ?? []) as Pack[]);
+    const { data: items } = await supabase
+      .from("avatar_items")
+      .select("id, name, emoji, rarity, theme, accent_hsl")
+      .neq("rarity", "secret")
+      .order("name");
+    setCatalog((items ?? []) as AvatarItem[]);
   }, []);
 
   const loadLuck = useCallback(async () => {
