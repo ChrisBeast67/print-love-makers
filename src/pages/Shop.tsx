@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCredits } from "@/hooks/useCredits";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Coins, ArrowLeft, Sparkles, Backpack as BackpackIcon } from "lucide-react";
+import { Coins, ArrowLeft, Sparkles, Backpack as BackpackIcon, ShoppingBag } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -52,6 +52,25 @@ const themeLabels: Record<Pack["theme"], string> = {
   animal: "Animal",
   circus: "Circus",
   underwater: "Underwater",
+};
+
+type BuyRarity = "common" | "rare" | "epic" | "legendary" | "mythic";
+
+interface AvatarItem {
+  id: string;
+  name: string;
+  emoji: string;
+  rarity: BuyRarity | "secret";
+  theme: string;
+  accent_hsl: string;
+}
+
+const BUY_PRICES: Record<BuyRarity, number> = {
+  common: 60,
+  rare: 250,
+  epic: 1000,
+  legendary: 4000,
+  mythic: 15000,
 };
 
 const LUCK_TIERS: { tier: 2 | 3 | 5 | 10; price: number }[] = [
