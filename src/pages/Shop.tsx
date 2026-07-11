@@ -168,6 +168,24 @@ const Shop = () => {
     await Promise.all([refresh(), loadLuck()]);
   };
 
+  const buyAvatar = async (item: AvatarItem) => {
+    const price = BUY_PRICES[item.rarity as BuyRarity];
+    if (balance < price) {
+      toast.error("Not enough credits");
+      return;
+    }
+    setBuyingAvatar(item.id);
+    const { data, error } = await supabase.rpc("buy_avatar", { _avatar_item_id: item.id });
+    setBuyingAvatar(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    const res = data as { is_new?: boolean };
+    toast.success(`${item.emoji} ${item.name} purchased${res?.is_new ? " (NEW!)" : ""}`);
+    refresh();
+  };
+
   const openPack = async (pack: Pack) => {
     if (balance < pack.price) {
       toast.error("Not enough credits");
