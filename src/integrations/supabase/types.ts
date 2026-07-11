@@ -349,6 +349,36 @@ export type Database = {
           },
         ]
       }
+      premium_orders: {
+        Row: {
+          amount_eur: number
+          created_at: string
+          id: string
+          paid_at: string | null
+          paid_by: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount_eur?: number
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          paid_by?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount_eur?: number
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          paid_by?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profile_packs: {
         Row: {
           accent_hsl: string
@@ -726,6 +756,17 @@ export type Database = {
         Returns: undefined
       }
       admin_grant_premium: { Args: { _target: string }; Returns: undefined }
+      admin_list_premium_orders: {
+        Args: never
+        Returns: {
+          amount_eur: number
+          created_at: string
+          id: string
+          status: string
+          user_id: string
+          username: string
+        }[]
+      }
       admin_list_users: {
         Args: never
         Returns: {
@@ -777,6 +818,7 @@ export type Database = {
       contains_bad_word: { Args: { _text: string }; Returns: boolean }
       create_group_chat: { Args: { _name: string }; Returns: string }
       create_or_get_dm: { Args: { _other_user: string }; Returns: string }
+      create_premium_order: { Args: never; Returns: string }
       create_trade_offer: {
         Args: {
           _chat_id: string
@@ -812,6 +854,10 @@ export type Database = {
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       join_chat_with_invite: { Args: { _token: string }; Returns: string }
+      mark_premium_order_paid: {
+        Args: { _order_id: string }
+        Returns: undefined
+      }
       open_pack: {
         Args: { _pack_id: string }
         Returns: {
