@@ -356,6 +356,12 @@ const Admin = () => {
                         <Crown className="h-4 w-4 text-amber-500" />
                       </Button>
                     )}
+                    {r.id !== user?.id && (
+                      <Button size="sm" variant="outline" onClick={() => handleRemovePremium(r.id)} title="Remove Premium">
+                        <Crown className="h-4 w-4 text-muted-foreground" />
+                        <X className="h-3 w-3 -ml-1 text-destructive" />
+                      </Button>
+                    )}
                     {r.id !== user?.id &&
                       !r.roles.includes("owner") &&
                       (!r.roles.includes("moderator") || isOwner) &&
