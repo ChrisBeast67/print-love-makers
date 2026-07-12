@@ -135,6 +135,11 @@ const Auth = () => {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Creating account..." : "Create Account"}
                 </Button>
+                {verifySent && (
+                  <p className="text-center text-sm text-primary mt-2">
+                    📧 Please verify your email — we sent a confirmation link to your inbox.
+                  </p>
+                )}
               </form>
             </TabsContent>
           </Tabs>
