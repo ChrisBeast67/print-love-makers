@@ -176,6 +176,24 @@ const Index = () => {
         </>
       )}
 
+      <section className="py-10 px-6 border-t border-border/60">
+        <div className="container mx-auto max-w-4xl text-center">
+          <p className="text-sm text-muted-foreground mb-4 uppercase tracking-widest">Official Partner</p>
+          <a
+            href="https://fidget-forge-craft.lovable.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block rounded-xl border border-primary/20 bg-card p-4 hover:border-primary/50 hover:glow-box transition-all"
+          >
+            <img
+              src={partnerBadge.url}
+              alt="Fidget Forge Craft — Official Partner"
+              className="h-24 w-auto object-contain mx-auto"
+            />
+          </a>
+        </div>
+      </section>
+
       <footer className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
         © {new Date().getFullYear()} PrintChat
       </footer>
