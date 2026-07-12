@@ -782,6 +782,7 @@ export type Database = {
         Args: { _avatar_item_id: string; _target: string }
         Returns: undefined
       }
+      admin_remove_premium: { Args: { _target: string }; Returns: undefined }
       admin_remove_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
