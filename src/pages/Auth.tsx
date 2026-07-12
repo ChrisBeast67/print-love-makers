@@ -20,6 +20,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [verifySent, setVerifySent] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   useEffect(() => {
     if (session) navigate(redirect, { replace: true });
@@ -47,6 +48,22 @@ const Auth = () => {
         setVerifySent(true);
         toast.success("Account created! Check your email to verify.");
       }
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email) return;
+    setResendLoading(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: `${window.location.origin}${redirect}` },
+    });
+    setResendLoading(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Verification email resent — check your inbox.");
     }
   };
 
@@ -136,9 +153,20 @@ const Auth = () => {
                   {loading ? "Creating account..." : "Create Account"}
                 </Button>
                 {verifySent && (
-                  <p className="text-center text-sm text-primary mt-2">
-                    📧 Please verify your email — we sent a confirmation link to your inbox.
-                  </p>
+                  <div className="text-center space-y-2 mt-2">
+                    <p className="text-sm text-primary">
+                      📧 Please verify your email — we sent a confirmation link to your inbox.
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleResendVerification}
+                      disabled={resendLoading || !email}
+                    >
+                      {resendLoading ? "Sending..." : "Resend verification email"}
+                    </Button>
+                  </div>
                 )}
               </form>
             </TabsContent>
