@@ -190,6 +190,12 @@ const Admin = () => {
     toast.success("Premium granted! ✨");
   };
 
+  const handleRemovePremium = async (id: string) => {
+    const { error } = await supabase.rpc("admin_remove_premium", { _target: id });
+    if (error) return toast.error(error.message);
+    toast.success("Premium removed");
+  };
+
   const handleDelete = async (id: string, username: string) => {
     if (!confirm(`Permanently delete "${username}"? This wipes their account, messages, credits and inventory. This cannot be undone.`)) return;
     const { data, error } = await supabase.functions.invoke("admin-delete-user", {
@@ -348,6 +354,12 @@ const Admin = () => {
                     {r.id !== user?.id && (
                       <Button size="sm" variant="outline" onClick={() => handleGrantPremium(r.id)} title="Grant Premium">
                         <Crown className="h-4 w-4 text-amber-500" />
+                      </Button>
+                    )}
+                    {r.id !== user?.id && (
+                      <Button size="sm" variant="outline" onClick={() => handleRemovePremium(r.id)} title="Remove Premium">
+                        <Crown className="h-4 w-4 text-muted-foreground" />
+                        <X className="h-3 w-3 -ml-1 text-destructive" />
                       </Button>
                     )}
                     {r.id !== user?.id &&
