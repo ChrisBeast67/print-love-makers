@@ -153,9 +153,20 @@ const Auth = () => {
                   {loading ? "Creating account..." : "Create Account"}
                 </Button>
                 {verifySent && (
-                  <p className="text-center text-sm text-primary mt-2">
-                    📧 Please verify your email — we sent a confirmation link to your inbox.
-                  </p>
+                  <div className="text-center space-y-2 mt-2">
+                    <p className="text-sm text-primary">
+                      📧 Please verify your email — we sent a confirmation link to your inbox.
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleResendVerification}
+                      disabled={resendLoading || !email}
+                    >
+                      {resendLoading ? "Sending..." : "Resend verification email"}
+                    </Button>
+                  </div>
                 )}
               </form>
             </TabsContent>
