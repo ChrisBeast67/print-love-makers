@@ -19,6 +19,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [verifySent, setVerifySent] = useState(false);
 
   useEffect(() => {
     if (session) navigate(redirect, { replace: true });
@@ -28,7 +29,7 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     const redirectUrl = `${window.location.origin}${redirect}`;
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -40,7 +41,12 @@ const Auth = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("Account created! Welcome.");
+      if (data.session) {
+        toast.success("Account created! Welcome.");
+      } else {
+        setVerifySent(true);
+        toast.success("Account created! Check your email to verify.");
+      }
     }
   };
 
