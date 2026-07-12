@@ -51,6 +51,22 @@ const Auth = () => {
     }
   };
 
+  const handleResendVerification = async () => {
+    if (!email) return;
+    setResendLoading(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: `${window.location.origin}${redirect}` },
+    });
+    setResendLoading(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Verification email resent — check your inbox.");
+    }
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
