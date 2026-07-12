@@ -190,6 +190,12 @@ const Admin = () => {
     toast.success("Premium granted! ✨");
   };
 
+  const handleRemovePremium = async (id: string) => {
+    const { error } = await supabase.rpc("admin_remove_premium", { _target: id });
+    if (error) return toast.error(error.message);
+    toast.success("Premium removed");
+  };
+
   const handleDelete = async (id: string, username: string) => {
     if (!confirm(`Permanently delete "${username}"? This wipes their account, messages, credits and inventory. This cannot be undone.`)) return;
     const { data, error } = await supabase.functions.invoke("admin-delete-user", {
