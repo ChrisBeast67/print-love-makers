@@ -10,6 +10,7 @@ import { FriendsCard } from "@/components/hub/FriendsCard";
 import { CreditsCard } from "@/components/hub/CreditsCard";
 import { Tutorial } from "@/components/Tutorial";
 import printchatLogo from "/printchat-logo.png";
+import partnerBadge from "@/assets/fidget-forge-partner.png.asset.json";
 import {
   DropdownMenu,
   DropdownMenuContent,
