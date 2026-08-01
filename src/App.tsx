@@ -17,6 +17,8 @@ import { LanguageProvider } from "@/hooks/useLanguage";
 import { HackerModeProvider } from "@/hooks/useHackerMode";
 import { HackerTheme } from "@/components/HackerTheme";
 import { HackerCodeInput } from "@/components/HackerCodeInput";
+import { CallProvider } from "@/hooks/useCalls";
+import { CallLayer } from "@/components/call/CallLayer";
 
 const queryClient = new QueryClient();
 
@@ -29,8 +31,10 @@ const App = () => (
         <AuthProvider>
           <HackerModeProvider>
             <LanguageProvider>
+              <CallProvider>
               <HackerTheme />
               <HackerCodeInput />
+              <CallLayer />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
@@ -44,6 +48,7 @@ const App = () => (
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              </CallProvider>
             </LanguageProvider>
           </HackerModeProvider>
         </AuthProvider>

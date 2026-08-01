@@ -71,6 +71,82 @@ export type Database = {
         }
         Relationships: []
       }
+      call_participants: {
+        Row: {
+          call_id: string
+          created_at: string
+          joined_at: string | null
+          left_at: string | null
+          state: string
+          user_id: string
+        }
+        Insert: {
+          call_id: string
+          created_at?: string
+          joined_at?: string | null
+          left_at?: string | null
+          state?: string
+          user_id: string
+        }
+        Update: {
+          call_id?: string
+          created_at?: string
+          joined_at?: string | null
+          left_at?: string | null
+          state?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_participants_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calls: {
+        Row: {
+          answered_at: string | null
+          chat_id: string
+          created_at: string
+          ended_at: string | null
+          id: string
+          kind: string
+          started_by: string
+          status: string
+        }
+        Insert: {
+          answered_at?: string | null
+          chat_id: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          kind?: string
+          started_by: string
+          status?: string
+        }
+        Update: {
+          answered_at?: string | null
+          chat_id?: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          kind?: string
+          started_by?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calls_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_invites: {
         Row: {
           chat_id: string
@@ -806,6 +882,7 @@ export type Database = {
         Returns: string
       }
       admin_unban_user: { Args: { _target: string }; Returns: undefined }
+      answer_call: { Args: { _call_id: string }; Returns: undefined }
       award_game_credits: {
         Args: { _session_id: string; _winner_id: string }
         Returns: undefined
@@ -831,6 +908,7 @@ export type Database = {
         }
         Returns: string
       }
+      decline_call: { Args: { _call_id: string }; Returns: undefined }
       decline_trade_offer: { Args: { _id: string }; Returns: undefined }
       earn_exp: {
         Args: { _amount: number; _user_id: string }
@@ -855,6 +933,7 @@ export type Database = {
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       join_chat_with_invite: { Args: { _token: string }; Returns: string }
+      leave_call: { Args: { _call_id: string }; Returns: undefined }
       mark_premium_order_paid: {
         Args: { _order_id: string }
         Returns: undefined
@@ -882,6 +961,7 @@ export type Database = {
         Returns: undefined
       }
       staff_join_as_admin: { Args: { _chat_id: string }; Returns: undefined }
+      start_call: { Args: { _chat_id: string; _kind: string }; Returns: string }
       unequip_avatar: { Args: never; Returns: undefined }
     }
     Enums: {
