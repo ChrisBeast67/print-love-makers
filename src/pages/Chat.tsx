@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon, Shield, Lock, Smile, ImagePlus, Gamepad2, Crown } from "lucide-react";
+import { LogOut, MessageCircle, Send, Trash2, Plus, Users, UserPlus, Link2, Pencil, LogOut as LeaveIcon, X, Check, ShoppingBag, Home, ArrowLeftRight, Coins, Backpack as BackpackIcon, Shield, Lock, Smile, ImagePlus, Gamepad2, Crown, Phone, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCredits } from "@/hooks/useCredits";
@@ -966,6 +966,28 @@ const loadChats = async () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                {activeChat.id !== GLOBAL_ANNOUNCEMENTS_ID && (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={!!activeCall || callConnecting}
+                      onClick={() => startCall(activeChat.id, "audio")}
+                      aria-label="Start voice call"
+                    >
+                      <Phone className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={!!activeCall || callConnecting}
+                      onClick={() => startCall(activeChat.id, "video")}
+                      aria-label="Start video call"
+                    >
+                      <Video className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
                 {activeChat.type === "group" && user && (
                   <GamesLauncher
                     chatId={activeChat.id}
