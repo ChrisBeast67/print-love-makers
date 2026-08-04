@@ -8,7 +8,9 @@ const VideoTile = ({ stream, muted, label }: { stream: MediaStream; muted?: bool
   const hasVideo = stream.getVideoTracks().some((t) => t.enabled);
 
   useEffect(() => {
-    if (ref.current) ref.current.srcObject = stream;
+    if (!ref.current) return;
+    ref.current.srcObject = stream;
+    ref.current.play().catch(() => undefined);
   }, [stream]);
 
   return (
@@ -30,6 +32,18 @@ const VideoTile = ({ stream, muted, label }: { stream: MediaStream; muted?: bool
       <span className="absolute bottom-2 left-2 rounded bg-background/70 px-2 py-0.5 text-xs">{label}</span>
     </div>
   );
+};
+
+/** Dedicated audio sink so remote voice is always heard, even with no video track. */
+const RemoteAudio = ({ stream }: { stream: MediaStream }) => {
+  const ref = useRef<HTMLAudioElement>(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    ref.current.srcObject = stream;
+    ref.current.volume = 1;
+    ref.current.play().catch(() => undefined);
+  }, [stream]);
+  return <audio ref={ref} autoPlay playsInline className="hidden" />;
 };
 
 /** Quiet ringback tone for the caller while the call is ringing. */
@@ -93,6 +107,9 @@ export const CallOverlay = ({ nameFor }: { nameFor?: (userId: string) => string 
       </div>
 
       <div className="flex-1 overflow-auto">
+        {remotes.map(([id, stream]) => (
+          <RemoteAudio key={`a-${id}`} stream={stream} />
+        ))}
         <div className={`grid gap-3 ${remotes.length > 1 ? "grid-cols-2" : "grid-cols-1"} max-w-3xl mx-auto`}>
           {remotes.map(([id, stream]) => (
             <VideoTile key={id} stream={stream} label={nameFor?.(id) ?? "Peer"} />
