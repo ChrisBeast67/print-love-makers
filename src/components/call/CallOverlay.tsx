@@ -32,9 +32,45 @@ const VideoTile = ({ stream, muted, label }: { stream: MediaStream; muted?: bool
   );
 };
 
+/** Quiet ringback tone for the caller while the call is ringing. */
+function useRingback(active: boolean) {
+  useEffect(() => {
+    if (!active) return;
+    const AudioCtx =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    ctx.resume().catch(() => undefined);
+
+    const beep = () => {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = 420;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.12, now + 0.05);
+      gain.gain.setValueAtTime(0.12, now + 0.9);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 1);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 1.05);
+    };
+
+    beep();
+    const t = setInterval(beep, 3000);
+    return () => {
+      clearInterval(t);
+      ctx.close().catch(() => undefined);
+    };
+  }, [active]);
+}
+
 export const CallOverlay = ({ nameFor }: { nameFor?: (userId: string) => string }) => {
   const { activeCall, localStream, remoteStreams, micOn, camOn, toggleMic, toggleCam, hangUp } = useCalls();
   const [seconds, setSeconds] = useState(0);
+  useRingback(activeCall?.status === "ringing");
 
   useEffect(() => {
     if (!activeCall) { setSeconds(0); return; }
