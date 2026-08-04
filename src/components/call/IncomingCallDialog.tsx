@@ -3,39 +3,67 @@ import { Phone, PhoneOff, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCalls } from "@/hooks/useCalls";
 
-/** Simple looping ringtone using WebAudio (no asset required). */
+/** Loud looping ringtone using WebAudio (no asset required). */
 function useRingtone(active: boolean) {
   const ctxRef = useRef<AudioContext | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (!active) return;
-    const AudioCtx = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const AudioCtx =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
     ctxRef.current = ctx;
 
-    const beep = () => {
-      const now = ctx.currentTime;
-      [0, 0.4].forEach((offset) => {
+    // Compressor keeps the loud output from clipping.
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -12;
+    comp.ratio.value = 12;
+    const master = ctx.createGain();
+    master.gain.value = 1;
+    comp.connect(master).connect(ctx.destination);
+
+    const unlock = () => { ctx.resume().catch(() => undefined); };
+    unlock();
+    window.addEventListener("pointerdown", unlock, { once: true });
+    window.addEventListener("keydown", unlock, { once: true });
+
+    const tone = (start: number, dur: number) => {
+      [
+        { f: 440, type: "square" as OscillatorType, g: 0.9 },
+        { f: 880, type: "sawtooth" as OscillatorType, g: 0.45 },
+      ].forEach(({ f, type, g }) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.type = "sine";
-        osc.frequency.value = 480;
-        gain.gain.setValueAtTime(0.0001, now + offset);
-        gain.gain.exponentialRampToValueAtTime(0.15, now + offset + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.3);
-        osc.connect(gain).connect(ctx.destination);
-        osc.start(now + offset);
-        osc.stop(now + offset + 0.35);
+        osc.type = type;
+        osc.frequency.value = f;
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(g, start + 0.02);
+        gain.gain.setValueAtTime(g, start + dur - 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+        osc.connect(gain).connect(comp);
+        osc.start(start);
+        osc.stop(start + dur + 0.02);
       });
     };
 
-    beep();
-    timerRef.current = setInterval(beep, 2000);
+    const ring = () => {
+      const now = ctx.currentTime;
+      tone(now, 0.4);
+      tone(now + 0.5, 0.4);
+      navigator.vibrate?.([400, 100, 400, 600]);
+    };
+
+    ring();
+    timerRef.current = setInterval(ring, 1500);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+      navigator.vibrate?.(0);
       ctx.close().catch(() => undefined);
       ctxRef.current = null;
     };
