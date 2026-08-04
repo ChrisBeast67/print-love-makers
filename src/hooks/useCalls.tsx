@@ -51,6 +51,8 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
   const [camOn, setCamOn] = useState(true);
 
   const peers = useRef<Record<string, RTCPeerConnection>>({});
+  const pendingIce = useRef<Record<string, RTCIceCandidateInit[]>>({});
+  const makingOffer = useRef<Record<string, boolean>>({});
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const signalRef = useRef<any>(null);
   const localRef = useRef<MediaStream | null>(null);
@@ -62,6 +64,8 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
       try { pc.close(); } catch { /* noop */ }
     });
     peers.current = {};
+    pendingIce.current = {};
+    makingOffer.current = {};
     if (signalRef.current) {
       supabase.removeChannel(signalRef.current);
       signalRef.current = null;
@@ -93,6 +97,12 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
     peers.current[peerId] = pc;
 
     localRef.current?.getTracks().forEach((t) => pc.addTrack(t, localRef.current!));
+    // Always be ready to receive both media kinds, even on audio-only calls.
+    try {
+      if (pc.getTransceivers().length === 0) {
+        pc.addTransceiver("audio", { direction: "recvonly" });
+      }
+    } catch { /* noop */ }
 
     pc.onicecandidate = (e) => {
       if (e.candidate && signalRef.current) {
@@ -105,7 +115,7 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
     };
 
     pc.ontrack = (e) => {
-      const [stream] = e.streams;
+      const stream = e.streams[0] ?? new MediaStream([e.track]);
       setRemoteStreams((prev) => ({ ...prev, [peerId]: stream }));
     };
 
@@ -136,7 +146,17 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
       const pc = createPeer(p.from, call.id);
       try {
         if (p.kind === "offer") {
+          const polite = user.id > p.from;
+          const collision = makingOffer.current[p.from] || pc.signalingState !== "stable";
+          if (collision && !polite) return;
+          if (collision) {
+            await pc.setLocalDescription({ type: "rollback" } as RTCSessionDescriptionInit);
+          }
           await pc.setRemoteDescription(new RTCSessionDescription(p.data));
+          for (const c of pendingIce.current[p.from] ?? []) {
+            await pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => undefined);
+          }
+          pendingIce.current[p.from] = [];
           const answerDesc = await pc.createAnswer();
           await pc.setLocalDescription(answerDesc);
           channel.send({
@@ -145,9 +165,18 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
             payload: { to: p.from, from: user.id, kind: "answer", data: answerDesc, callId: call.id },
           });
         } else if (p.kind === "answer") {
+          if (pc.signalingState !== "have-local-offer") return;
           await pc.setRemoteDescription(new RTCSessionDescription(p.data));
+          for (const c of pendingIce.current[p.from] ?? []) {
+            await pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => undefined);
+          }
+          pendingIce.current[p.from] = [];
         } else if (p.kind === "ice") {
-          await pc.addIceCandidate(new RTCIceCandidate(p.data));
+          if (!pc.remoteDescription) {
+            pendingIce.current[p.from] = [...(pendingIce.current[p.from] ?? []), p.data];
+          } else {
+            await pc.addIceCandidate(new RTCIceCandidate(p.data));
+          }
         }
       } catch (err) {
         console.error("signal error", err);
@@ -161,13 +190,18 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
         // Deterministic initiator: lower uuid creates the offer
         if (user.id < peerId) {
           const pc = createPeer(peerId, call.id);
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          channel.send({
-            type: "broadcast",
-            event: "signal",
-            payload: { to: peerId, from: user.id, kind: "offer", data: offer, callId: call.id },
-          });
+          try {
+            makingOffer.current[peerId] = true;
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            channel.send({
+              type: "broadcast",
+              event: "signal",
+              payload: { to: peerId, from: user.id, kind: "offer", data: offer, callId: call.id },
+            });
+          } finally {
+            makingOffer.current[peerId] = false;
+          }
         }
       });
     });
