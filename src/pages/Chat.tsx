@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCredits } from "@/hooks/useCredits";
 import { useStaffRole } from "@/hooks/useStaffRole";
 import { useCalls } from "@/hooks/useCalls";
+import { MissedCallsDialog } from "@/components/call/MissedCallsDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
