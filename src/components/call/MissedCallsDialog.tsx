@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { PhoneMissed } from "lucide-react";
+import { PhoneMissed, Phone, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useCalls } from "@/hooks/useCalls";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sb = supabase as any;
@@ -16,12 +17,14 @@ interface MissedCall {
   created_at: string;
   callerName: string;
   chatName: string;
+  chat_id: string;
 }
 
 const SEEN_KEY = "missedCallsSeenAt";
 
 export const MissedCallsDialog = () => {
   const { user } = useAuth();
+  const { startCall, activeCall, connecting } = useCalls();
   const [open, setOpen] = useState(false);
   const [calls, setCalls] = useState<MissedCall[]>([]);
   const [unseen, setUnseen] = useState(0);
@@ -68,6 +71,7 @@ export const MissedCallsDialog = () => {
       created_at: c.created_at,
       callerName: nameById[c.started_by] ?? "Someone",
       chatName: chatById[c.chat_id]?.type === "dm" ? "Direct message" : (chatById[c.chat_id]?.name ?? "Group"),
+      chat_id: c.chat_id,
     }));
     setCalls(mapped);
 
@@ -85,6 +89,11 @@ export const MissedCallsDialog = () => {
   }, [open, load]);
 
   if (!user) return null;
+
+  const callBack = async (chatId: string, kind: "audio" | "video") => {
+    setOpen(false);
+    await startCall(chatId, kind);
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -116,9 +125,31 @@ export const MissedCallsDialog = () => {
                   {c.kind === "video" ? "Video call" : "Voice call"} · {c.chatName}
                 </p>
               </div>
-              <span className="text-xs text-muted-foreground shrink-0">
-                {new Date(c.created_at).toLocaleString()}
-              </span>
+              <div className="flex items-center gap-1 shrink-0">
+                <span className="text-xs text-muted-foreground hidden sm:inline">
+                  {new Date(c.created_at).toLocaleString()}
+                </span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 p-0"
+                  title="Call back (voice)"
+                  disabled={!!activeCall || connecting}
+                  onClick={() => callBack(c.chat_id, "audio")}
+                >
+                  <Phone className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 p-0"
+                  title="Call back (video)"
+                  disabled={!!activeCall || connecting}
+                  onClick={() => callBack(c.chat_id, "video")}
+                >
+                  <Video className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>
