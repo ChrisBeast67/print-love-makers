@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper } from "lucide-react";
 import { Receipt } from "lucide-react";
 import { Minus } from "lucide-react";
+import { Music, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -36,8 +37,10 @@ const Admin = () => {
   const [avatarItems, setAvatarItems] = useState<{ id: string; name: string; emoji: string; rarity: string }[]>([]);
   const [grantAvatar, setGrantAvatar] = useState<Record<string, string>>({});
   const [removeAvatar, setRemoveAvatar] = useState<Record<string, string>>({});
-  const [tab, setTab] = useState<"users" | "events" | "orders">("users");
+  const [tab, setTab] = useState<"users" | "events" | "orders" | "music">("users");
   const [orders, setOrders] = useState<{ id: string; user_id: string; username: string; amount_eur: number; status: string; created_at: string }[]>([]);
+  const [music, setMusic] = useState<{ url: string | null; title: string | null; playing: boolean } | null>(null);
+  const [musicForm, setMusicForm] = useState({ url: "", title: "" });
 
   useEffect(() => {
     document.title = "Admin Panel — PrintChat";
@@ -90,9 +93,34 @@ const Admin = () => {
     setOrders((data as any[]) ?? []);
   }, []);
 
+  const loadMusic = useCallback(async () => {
+    const { data } = await supabase.from("global_music").select("url,title,playing").eq("id", 1).maybeSingle();
+    if (data) {
+      setMusic(data as any);
+      setMusicForm({ url: (data as any).url ?? "", title: (data as any).title ?? "" });
+    }
+  }, []);
+
   useEffect(() => {
-    if (isStaff) { loadEvents(); loadAvatarItems(); loadOrders(); }
-  }, [isStaff, loadEvents, loadAvatarItems, loadOrders]);
+    if (isStaff) { loadEvents(); loadAvatarItems(); loadOrders(); loadMusic(); }
+  }, [isStaff, loadEvents, loadAvatarItems, loadOrders, loadMusic]);
+
+  const handleStartMusic = async () => {
+    const { error } = await supabase.rpc("admin_set_global_music", {
+      _url: musicForm.url.trim(),
+      _title: musicForm.title.trim(),
+    });
+    if (error) return toast.error(error.message);
+    toast.success("Music is now playing for everyone");
+    loadMusic();
+  };
+
+  const handleStopMusic = async () => {
+    const { error } = await supabase.rpc("admin_stop_global_music");
+    if (error) return toast.error(error.message);
+    toast.success("Music stopped");
+    loadMusic();
+  };
 
   const handleMarkPaid = async (orderId: string, username: string) => {
     const { error } = await supabase.rpc("mark_premium_order_paid", { _order_id: orderId });
@@ -232,6 +260,10 @@ const Admin = () => {
               {orders.some((o) => o.status === "pending") && (
                 <Badge className="ml-1 bg-amber-500 text-black">{orders.filter((o) => o.status === "pending").length}</Badge>
               )}
+            </Button>
+            <Button size="sm" variant={tab === "music" ? "default" : "outline"} onClick={() => setTab("music")}>
+              <Music className="h-4 w-4 mr-1" /> Music
+              {music?.playing && <Badge className="ml-1 bg-primary">Live</Badge>}
             </Button>
           </div>
         </div>
@@ -524,6 +556,50 @@ const Admin = () => {
               ))}
             </div>
           )}
+        </section>
+      )}
+
+      {tab === "music" && (
+        <section className="container mx-auto px-6 py-8 max-w-2xl space-y-6">
+          <h2 className="font-bold text-lg flex items-center gap-2">
+            <Music className="h-5 w-5 text-primary" /> Site-wide Music
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Paste a direct audio link (an https link ending in .mp3, .ogg or .m4a). It starts playing for
+            everyone on the site instantly. Listeners can mute it on their side.
+          </p>
+
+          <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+            <Input
+              placeholder="https://example.com/song.mp3"
+              value={musicForm.url}
+              onChange={(e) => setMusicForm((f) => ({ ...f, url: e.target.value }))}
+            />
+            <Input
+              placeholder="Track title (optional)"
+              value={musicForm.title}
+              onChange={(e) => setMusicForm((f) => ({ ...f, title: e.target.value }))}
+            />
+            <div className="flex gap-2">
+              <Button onClick={handleStartMusic} disabled={!musicForm.url.trim()}>
+                <Music className="h-4 w-4 mr-1" /> Play for everyone
+              </Button>
+              <Button variant="destructive" onClick={handleStopMusic} disabled={!music?.playing}>
+                <Square className="h-4 w-4 mr-1" /> Stop
+              </Button>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card/50 p-4 text-sm">
+            {music?.playing ? (
+              <span className="flex items-center gap-2">
+                <Badge className="bg-primary">Live</Badge>
+                Now playing: <strong>{music.title || music.url}</strong>
+              </span>
+            ) : (
+              <span className="text-muted-foreground">Nothing is playing right now.</span>
+            )}
+          </div>
         </section>
       )}
     </div>
