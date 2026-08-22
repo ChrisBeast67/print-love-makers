@@ -92,9 +92,34 @@ const Admin = () => {
     setOrders((data as any[]) ?? []);
   }, []);
 
+  const loadMusic = useCallback(async () => {
+    const { data } = await supabase.from("global_music").select("url,title,playing").eq("id", 1).maybeSingle();
+    if (data) {
+      setMusic(data as any);
+      setMusicForm({ url: (data as any).url ?? "", title: (data as any).title ?? "" });
+    }
+  }, []);
+
   useEffect(() => {
-    if (isStaff) { loadEvents(); loadAvatarItems(); loadOrders(); }
-  }, [isStaff, loadEvents, loadAvatarItems, loadOrders]);
+    if (isStaff) { loadEvents(); loadAvatarItems(); loadOrders(); loadMusic(); }
+  }, [isStaff, loadEvents, loadAvatarItems, loadOrders, loadMusic]);
+
+  const handleStartMusic = async () => {
+    const { error } = await supabase.rpc("admin_set_global_music", {
+      _url: musicForm.url.trim(),
+      _title: musicForm.title.trim(),
+    });
+    if (error) return toast.error(error.message);
+    toast.success("Music is now playing for everyone");
+    loadMusic();
+  };
+
+  const handleStopMusic = async () => {
+    const { error } = await supabase.rpc("admin_stop_global_music");
+    if (error) return toast.error(error.message);
+    toast.success("Music stopped");
+    loadMusic();
+  };
 
   const handleMarkPaid = async (orderId: string, username: string) => {
     const { error } = await supabase.rpc("mark_premium_order_paid", { _order_id: orderId });
