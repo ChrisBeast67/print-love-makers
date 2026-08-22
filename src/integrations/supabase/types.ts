@@ -393,6 +393,33 @@ export type Database = {
         }
         Relationships: []
       }
+      global_music: {
+        Row: {
+          id: number
+          playing: boolean
+          started_at: string | null
+          title: string | null
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          id?: number
+          playing?: boolean
+          started_at?: string | null
+          title?: string | null
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          id?: number
+          playing?: boolean
+          started_at?: string | null
+          title?: string | null
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           chat_id: string | null
@@ -866,6 +893,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_set_global_music: {
+        Args: { _title: string; _url: string }
+        Returns: undefined
+      }
       admin_set_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -881,6 +912,7 @@ export type Database = {
         }
         Returns: string
       }
+      admin_stop_global_music: { Args: never; Returns: undefined }
       admin_unban_user: { Args: { _target: string }; Returns: undefined }
       answer_call: { Args: { _call_id: string }; Returns: undefined }
       award_game_credits: {
