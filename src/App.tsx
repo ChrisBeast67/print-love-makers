@@ -19,6 +19,7 @@ import { HackerTheme } from "@/components/HackerTheme";
 import { HackerCodeInput } from "@/components/HackerCodeInput";
 import { CallProvider } from "@/hooks/useCalls";
 import { CallLayer } from "@/components/call/CallLayer";
+import { GlobalMusic } from "@/components/GlobalMusic";
 
 const queryClient = new QueryClient();
 
