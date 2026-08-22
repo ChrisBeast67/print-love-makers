@@ -565,16 +565,18 @@ const Admin = () => {
             <Music className="h-5 w-5 text-primary" /> Site-wide Music
           </h2>
           <p className="text-sm text-muted-foreground">
-            Paste a direct audio link (an https link ending in .mp3, .ogg or .m4a). It starts playing for
-            everyone on the site instantly. Listeners can mute it on their side.
+            Paste a YouTube link (video or Short) or a direct audio link (.mp3, .ogg, .m4a). It starts for
+            everyone on the site instantly. YouTube starts muted until each listener taps "Tap to listen"
+            (browsers block auto-sound), then they can mute it again anytime.
           </p>
 
           <div className="rounded-xl border border-border bg-card p-4 space-y-3">
             <Input
-              placeholder="https://example.com/song.mp3"
+              placeholder="https://youtube.com/watch?v=... or https://example.com/song.mp3"
               value={musicForm.url}
               onChange={(e) => setMusicForm((f) => ({ ...f, url: e.target.value }))}
             />
+
             <Input
               placeholder="Track title (optional)"
               value={musicForm.title}
