@@ -36,6 +36,7 @@ const App = () => (
               <HackerTheme />
               <HackerCodeInput />
               <CallLayer />
+              <GlobalMusic />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
