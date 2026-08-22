@@ -558,6 +558,50 @@ const Admin = () => {
           )}
         </section>
       )}
+
+      {tab === "music" && (
+        <section className="container mx-auto px-6 py-8 max-w-2xl space-y-6">
+          <h2 className="font-bold text-lg flex items-center gap-2">
+            <Music className="h-5 w-5 text-primary" /> Site-wide Music
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Paste a direct audio link (an https link ending in .mp3, .ogg or .m4a). It starts playing for
+            everyone on the site instantly. Listeners can mute it on their side.
+          </p>
+
+          <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+            <Input
+              placeholder="https://example.com/song.mp3"
+              value={musicForm.url}
+              onChange={(e) => setMusicForm((f) => ({ ...f, url: e.target.value }))}
+            />
+            <Input
+              placeholder="Track title (optional)"
+              value={musicForm.title}
+              onChange={(e) => setMusicForm((f) => ({ ...f, title: e.target.value }))}
+            />
+            <div className="flex gap-2">
+              <Button onClick={handleStartMusic} disabled={!musicForm.url.trim()}>
+                <Music className="h-4 w-4 mr-1" /> Play for everyone
+              </Button>
+              <Button variant="destructive" onClick={handleStopMusic} disabled={!music?.playing}>
+                <Square className="h-4 w-4 mr-1" /> Stop
+              </Button>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card/50 p-4 text-sm">
+            {music?.playing ? (
+              <span className="flex items-center gap-2">
+                <Badge className="bg-primary">Live</Badge>
+                Now playing: <strong>{music.title || music.url}</strong>
+              </span>
+            ) : (
+              <span className="text-muted-foreground">Nothing is playing right now.</span>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 };
