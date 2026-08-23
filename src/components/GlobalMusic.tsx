@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Music, Volume2, VolumeX } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useStaffRole } from "@/hooks/useStaffRole";
 
 type Track = {
   url: string | null;
@@ -23,6 +24,7 @@ const youtubeId = (url: string): string | null => {
 };
 
 export const GlobalMusic = () => {
+  const { isActualOwner } = useStaffRole();
   const audioRef = useRef<HTMLAudioElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [track, setTrack] = useState<Track | null>(null);
@@ -54,7 +56,7 @@ export const GlobalMusic = () => {
   }, [fetchTrack]);
 
   const ytId = track?.url ? youtubeId(track.url) : null;
-  const active = Boolean(track?.playing && track?.url);
+  const active = Boolean(isActualOwner && track?.playing && track?.url);
 
   const startOffset = useMemo(() => {
     if (!track?.started_at) return 0;
