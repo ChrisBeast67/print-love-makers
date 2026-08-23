@@ -298,6 +298,7 @@ const loadChats = async () => {
         { event: "INSERT", schema: "public", table: "messages", filter: `chat_id=eq.${chatId}` },
         async (payload) => {
           const m = payload.new as Message;
+          if (m.user_id !== user.id) playMessageSound();
           setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
           await loadProfiles([m.user_id]);
           // Mark as read immediately if our window is open
