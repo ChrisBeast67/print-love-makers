@@ -7,6 +7,8 @@ import { useCredits } from "@/hooks/useCredits";
 import { useStaffRole } from "@/hooks/useStaffRole";
 import { useCalls } from "@/hooks/useCalls";
 import { MissedCallsDialog } from "@/components/call/MissedCallsDialog";
+import { RingtonePicker } from "@/components/chat/RingtonePicker";
+import { playMessageSound } from "@/lib/messageSound";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -766,6 +768,7 @@ const loadChats = async () => {
             <span className="text-sm font-semibold">Chats</span>
             <div className="flex items-center gap-1">
               <MissedCallsDialog />
+              <RingtonePicker />
               <Dialog open={newChatOpen} onOpenChange={setNewChatOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm" variant="ghost" className="h-8 px-2">
