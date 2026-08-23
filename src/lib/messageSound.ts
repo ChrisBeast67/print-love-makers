@@ -79,6 +79,7 @@ const PATTERNS: Record<Exclude<RingtoneId, "off">, Note[]> = {
 export const playMessageSound = (idIn: RingtoneId = getRingtone()) => {
   if (idIn === "off") return;
   const id = idIn;
+  unlock();
   const c = getCtx();
   if (!c) return;
   if (c.state !== "running") {
