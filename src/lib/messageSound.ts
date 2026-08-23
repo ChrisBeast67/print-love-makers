@@ -27,9 +27,33 @@ const getCtx = () => {
     (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   if (!AudioCtx) return null;
   if (!ctx) ctx = new AudioCtx();
-  ctx.resume().catch(() => undefined);
   return ctx;
 };
+
+/** Browsers block audio until a user gesture — unlock the context on the first interaction. */
+const unlock = () => {
+  const c = getCtx();
+  if (!c) return;
+  c.resume().catch(() => undefined);
+  // Play a silent blip to fully unlock on iOS/Safari
+  try {
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    gain.gain.setValueAtTime(0.0001, c.currentTime);
+    osc.connect(gain).connect(c.destination);
+    osc.start();
+    osc.stop(c.currentTime + 0.02);
+  } catch { /* noop */ }
+};
+
+if (typeof window !== "undefined") {
+  const events = ["pointerdown", "keydown", "touchstart"] as const;
+  const handler = () => {
+    unlock();
+    events.forEach((e) => window.removeEventListener(e, handler));
+  };
+  events.forEach((e) => window.addEventListener(e, handler, { passive: true }));
+}
 
 type Note = { f: number; t: number; d: number; type?: OscillatorType; g?: number };
 
@@ -52,10 +76,19 @@ const PATTERNS: Record<Exclude<RingtoneId, "off">, Note[]> = {
 };
 
 /** Play the user's selected message notification sound. */
-export const playMessageSound = (id: RingtoneId = getRingtone()) => {
-  if (id === "off") return;
+export const playMessageSound = (idIn: RingtoneId = getRingtone()) => {
+  if (idIn === "off") return;
+  const id = idIn;
   const c = getCtx();
   if (!c) return;
+  if (c.state !== "running") {
+    c.resume().then(() => schedule(c, id)).catch(() => undefined);
+    return;
+  }
+  schedule(c, id);
+};
+
+const schedule = (c: AudioContext, id: Exclude<RingtoneId, "off">) => {
   const now = c.currentTime + 0.01;
   PATTERNS[id].forEach(({ f, t, d, type = "sine", g = 0.3 }) => {
     const osc = c.createOscillator();
