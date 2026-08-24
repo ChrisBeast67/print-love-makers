@@ -261,10 +261,13 @@ const Admin = () => {
                 <Badge className="ml-1 bg-amber-500 text-black">{orders.filter((o) => o.status === "pending").length}</Badge>
               )}
             </Button>
-            <Button size="sm" variant={tab === "music" ? "default" : "outline"} onClick={() => setTab("music")}>
-              <Music className="h-4 w-4 mr-1" /> Music
-              {music?.playing && <Badge className="ml-1 bg-primary">Live</Badge>}
-            </Button>
+            {isActualOwner && (
+              <Button size="sm" variant={tab === "music" ? "default" : "outline"} onClick={() => setTab("music")}>
+                <Music className="h-4 w-4 mr-1" /> Music
+                {music?.playing && <Badge className="ml-1 bg-primary">Live</Badge>}
+              </Button>
+            )}
+
           </div>
         </div>
       </nav>
