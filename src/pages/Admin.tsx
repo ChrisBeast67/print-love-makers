@@ -562,7 +562,7 @@ const Admin = () => {
         </section>
       )}
 
-      {tab === "music" && (
+      {tab === "music" && isActualOwner && (
         <section className="container mx-auto px-6 py-8 max-w-2xl space-y-6">
           <h2 className="font-bold text-lg flex items-center gap-2">
             <Music className="h-5 w-5 text-primary" /> Site-wide Music
