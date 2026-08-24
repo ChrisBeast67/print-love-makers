@@ -9,6 +9,8 @@ import { CreateChatCard } from "@/components/hub/CreateChatCard";
 import { FriendsCard } from "@/components/hub/FriendsCard";
 import { CreditsCard } from "@/components/hub/CreditsCard";
 import { Tutorial } from "@/components/Tutorial";
+import { InstallApp } from "@/components/InstallApp";
+
 import printchatLogo from "/printchat-logo.png";
 import partnerBadge from "@/assets/fidget-forge-partner.png.asset.json";
 import {
