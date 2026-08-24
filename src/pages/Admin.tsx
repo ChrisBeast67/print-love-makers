@@ -261,10 +261,13 @@ const Admin = () => {
                 <Badge className="ml-1 bg-amber-500 text-black">{orders.filter((o) => o.status === "pending").length}</Badge>
               )}
             </Button>
-            <Button size="sm" variant={tab === "music" ? "default" : "outline"} onClick={() => setTab("music")}>
-              <Music className="h-4 w-4 mr-1" /> Music
-              {music?.playing && <Badge className="ml-1 bg-primary">Live</Badge>}
-            </Button>
+            {isActualOwner && (
+              <Button size="sm" variant={tab === "music" ? "default" : "outline"} onClick={() => setTab("music")}>
+                <Music className="h-4 w-4 mr-1" /> Music
+                {music?.playing && <Badge className="ml-1 bg-primary">Live</Badge>}
+              </Button>
+            )}
+
           </div>
         </div>
       </nav>
@@ -559,7 +562,7 @@ const Admin = () => {
         </section>
       )}
 
-      {tab === "music" && (
+      {tab === "music" && isActualOwner && (
         <section className="container mx-auto px-6 py-8 max-w-2xl space-y-6">
           <h2 className="font-bold text-lg flex items-center gap-2">
             <Music className="h-5 w-5 text-primary" /> Site-wide Music
