@@ -58,20 +58,6 @@ export function HackerCodeInput({ className = "" }: HackerCodeInputProps) {
     }
   };
 
-  // Owner panel to undo hacks
-  if (isOwner) {
-    return (
-      <div className={`hacker-owner-panel ${className}`}>
-        <button
-          onClick={undoHack}
-          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-        >
-          🔓 Undo All Hacks
-        </button>
-      </div>
-    );
-  }
-
   if (!showInput) return null;
 
   return (
