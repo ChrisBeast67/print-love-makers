@@ -164,7 +164,7 @@ const Admin = () => {
   const handleEndEvent = async (id: string) => {
     const { error } = await supabase.rpc("admin_end_event", { _event_id: id });
     if (error) return toast.error(error.message);
-    await logAction("Ended event", null, { event_id: id });
+    if (isActualOwner) loadAudit();
     toast.success("Event ended");
     loadEvents();
   };
