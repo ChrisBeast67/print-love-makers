@@ -104,9 +104,35 @@ const Admin = () => {
     }
   }, []);
 
+  const loadAudit = useCallback(async () => {
+    const { data } = await supabase
+      .from("admin_audit_log")
+      .select("id, actor_username, action, target_username, details, created_at")
+      .order("created_at", { ascending: false })
+      .limit(300);
+    setAudit((data as any[]) ?? []);
+  }, []);
+
+  const logAction = useCallback(
+    async (action: string, target?: string | null, details?: Record<string, unknown>) => {
+      await supabase.rpc("log_admin_action", {
+        _action: action,
+        _target: target ?? null,
+        _details: (details ?? {}) as any,
+      });
+      if (isActualOwner) loadAudit();
+    },
+    [isActualOwner, loadAudit],
+  );
+
   useEffect(() => {
     if (isStaff) { loadEvents(); loadAvatarItems(); loadOrders(); loadMusic(); }
   }, [isStaff, loadEvents, loadAvatarItems, loadOrders, loadMusic]);
+
+  useEffect(() => {
+    if (isActualOwner) loadAudit();
+  }, [isActualOwner, loadAudit]);
+
 
   const handleStartMusic = async () => {
     const { error } = await supabase.rpc("admin_set_global_music", {
