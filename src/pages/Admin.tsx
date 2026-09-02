@@ -37,10 +37,13 @@ const Admin = () => {
   const [avatarItems, setAvatarItems] = useState<{ id: string; name: string; emoji: string; rarity: string }[]>([]);
   const [grantAvatar, setGrantAvatar] = useState<Record<string, string>>({});
   const [removeAvatar, setRemoveAvatar] = useState<Record<string, string>>({});
-  const [tab, setTab] = useState<"users" | "events" | "orders" | "music">("users");
+  const [tab, setTab] = useState<"users" | "events" | "orders" | "music" | "audit">("users");
   const [orders, setOrders] = useState<{ id: string; user_id: string; username: string; amount_eur: number; status: string; created_at: string }[]>([]);
   const [music, setMusic] = useState<{ url: string | null; title: string | null; playing: boolean } | null>(null);
   const [musicForm, setMusicForm] = useState({ url: "", title: "" });
+  const [audit, setAudit] = useState<{ id: string; actor_username: string | null; action: string; target_username: string | null; details: Record<string, unknown> | null; created_at: string }[]>([]);
+  const [auditQ, setAuditQ] = useState("");
+
 
   useEffect(() => {
     document.title = "Admin Panel — PrintChat";
