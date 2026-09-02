@@ -140,6 +140,7 @@ const Admin = () => {
       _title: musicForm.title.trim(),
     });
     if (error) return toast.error(error.message);
+    await logAction("Started global music", null, { title: musicForm.title.trim(), url: musicForm.url.trim() });
     toast.success("Music is now playing for everyone");
     loadMusic();
   };
@@ -147,6 +148,7 @@ const Admin = () => {
   const handleStopMusic = async () => {
     const { error } = await supabase.rpc("admin_stop_global_music");
     if (error) return toast.error(error.message);
+    await logAction("Stopped global music");
     toast.success("Music stopped");
     loadMusic();
   };
@@ -154,6 +156,7 @@ const Admin = () => {
   const handleMarkPaid = async (orderId: string, username: string) => {
     const { error } = await supabase.rpc("mark_premium_order_paid", { _order_id: orderId });
     if (error) return toast.error(error.message);
+    await logAction("Marked premium order paid", null, { order_id: orderId, username });
     toast.success(`Premium granted to ${username}! ✨`);
     loadOrders();
   };
@@ -161,8 +164,9 @@ const Admin = () => {
   const handleStartEvent = async () => {
     if (!newEvent.name.trim()) return toast.error("Enter event name");
     const luck = parseFloat(newEvent.luck) || 1;
-    const { error } = await supabase.rpc("admin_start_event", { _name: newEvent.name.trim(), _type: newEvent.type as any, _luck_multiplier: luck });
+    const { data, error } = await supabase.rpc("admin_start_event", { _name: newEvent.name.trim(), _type: newEvent.type as any, _luck_multiplier: luck });
     if (error) return toast.error(error.message);
+    await logAction("Started event", null, { event_id: data, name: newEvent.name.trim(), type: newEvent.type, luck_multiplier: luck });
     toast.success("Event started!");
     setNewEvent({ name: "", type: "custom", luck: "1" });
     loadEvents();
@@ -171,6 +175,7 @@ const Admin = () => {
   const handleEndEvent = async (id: string) => {
     const { error } = await supabase.rpc("admin_end_event", { _event_id: id });
     if (error) return toast.error(error.message);
+    await logAction("Ended event", null, { event_id: id });
     toast.success("Event ended");
     loadEvents();
   };
