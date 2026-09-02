@@ -155,7 +155,7 @@ const Admin = () => {
     const luck = parseFloat(newEvent.luck) || 1;
     const { data, error } = await supabase.rpc("admin_start_event", { _name: newEvent.name.trim(), _type: newEvent.type as any, _luck_multiplier: luck });
     if (error) return toast.error(error.message);
-    await logAction("Started event", null, { event_id: data, name: newEvent.name.trim(), type: newEvent.type, luck_multiplier: luck });
+    if (isActualOwner) loadAudit();
     toast.success("Event started!");
     setNewEvent({ name: "", type: "custom", luck: "1" });
     loadEvents();
