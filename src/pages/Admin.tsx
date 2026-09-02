@@ -129,7 +129,7 @@ const Admin = () => {
       _title: musicForm.title.trim(),
     });
     if (error) return toast.error(error.message);
-    await logAction("Started global music", null, { title: musicForm.title.trim(), url: musicForm.url.trim() });
+    if (isActualOwner) loadAudit();
     toast.success("Music is now playing for everyone");
     loadMusic();
   };
