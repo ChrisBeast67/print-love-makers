@@ -113,17 +113,6 @@ const Admin = () => {
     setAudit((data as any[]) ?? []);
   }, []);
 
-  const logAction = useCallback(
-    async (action: string, target?: string | null, details?: Record<string, unknown>) => {
-      await supabase.rpc("log_admin_action", {
-        _action: action,
-        _target: target ?? null,
-        _details: (details ?? {}) as any,
-      });
-      if (isActualOwner) loadAudit();
-    },
-    [isActualOwner, loadAudit],
-  );
 
   useEffect(() => {
     if (isStaff) { loadEvents(); loadAvatarItems(); loadOrders(); loadMusic(); }
