@@ -137,7 +137,7 @@ const Admin = () => {
   const handleStopMusic = async () => {
     const { error } = await supabase.rpc("admin_stop_global_music");
     if (error) return toast.error(error.message);
-    await logAction("Stopped global music");
+    if (isActualOwner) loadAudit();
     toast.success("Music stopped");
     loadMusic();
   };
