@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper } from "lucide-react";
+import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper, ScrollText } from "lucide-react";
 import { Receipt } from "lucide-react";
 import { Minus } from "lucide-react";
 import { Music, Square } from "lucide-react";
@@ -192,6 +192,16 @@ const Admin = () => {
     [rows, q],
   );
 
+  const filteredAudit = useMemo(() => {
+    const term = auditQ.trim().toLowerCase();
+    if (!term) return audit;
+    return audit.filter((entry) =>
+      [entry.actor_username, entry.target_username, entry.action, JSON.stringify(entry.details ?? {})]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(term)),
+    );
+  }, [audit, auditQ]);
+
   const handleGrant = async (id: string) => {
     const amount = parseInt(grant[id] || "0", 10);
     if (!amount) return toast.error("Enter an amount");
@@ -285,10 +295,15 @@ const Admin = () => {
               )}
             </Button>
             {isActualOwner && (
-              <Button size="sm" variant={tab === "music" ? "default" : "outline"} onClick={() => setTab("music")}>
-                <Music className="h-4 w-4 mr-1" /> Music
-                {music?.playing && <Badge className="ml-1 bg-primary">Live</Badge>}
-              </Button>
+              <>
+                <Button size="sm" variant={tab === "audit" ? "default" : "outline"} onClick={() => setTab("audit")}>
+                  <ScrollText className="h-4 w-4 mr-1" /> Audit Log
+                </Button>
+                <Button size="sm" variant={tab === "music" ? "default" : "outline"} onClick={() => setTab("music")}>
+                  <Music className="h-4 w-4 mr-1" /> Music
+                  {music?.playing && <Badge className="ml-1 bg-primary">Live</Badge>}
+                </Button>
+              </>
             )}
 
           </div>
@@ -582,6 +597,39 @@ const Admin = () => {
               ))}
             </div>
           )}
+        </section>
+      )}
+
+      {tab === "audit" && isActualOwner && (
+        <section className="container mx-auto px-6 py-8 max-w-5xl space-y-5">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <h2 className="font-bold text-lg flex items-center gap-2"><ScrollText className="h-5 w-5 text-primary" /> Admin Audit Log</h2>
+              <p className="text-sm text-muted-foreground mt-1">Every staff action recorded by the backend.</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={loadAudit}>Refresh</Button>
+          </div>
+          <Input placeholder="Search administrator, target, action, or details…" value={auditQ} onChange={(e) => setAuditQ(e.target.value)} />
+          <div className="space-y-3">
+            {filteredAudit.map((entry) => (
+              <div key={entry.id} className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <div>
+                    <p className="font-semibold">{entry.action}</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      By <span className="text-foreground">{entry.actor_username || "Unknown admin"}</span>
+                      {entry.target_username && <> · Target: <span className="text-foreground">{entry.target_username}</span></>}
+                    </p>
+                  </div>
+                  <time className="text-xs text-muted-foreground" dateTime={entry.created_at}>{new Date(entry.created_at).toLocaleString()}</time>
+                </div>
+                {entry.details && Object.keys(entry.details).length > 0 && (
+                  <p className="mt-3 text-xs text-muted-foreground break-words">{Object.entries(entry.details).map(([key, value]) => `${key}: ${typeof value === "object" ? JSON.stringify(value) : String(value)}`).join(" · ")}</p>
+                )}
+              </div>
+            ))}
+            {filteredAudit.length === 0 && <p className="text-center text-muted-foreground py-10">No audit entries found.</p>}
+          </div>
         </section>
       )}
 
