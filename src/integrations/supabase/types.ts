@@ -1000,7 +1000,12 @@ export type Database = {
       join_chat_with_invite: { Args: { _token: string }; Returns: string }
       leave_call: { Args: { _call_id: string }; Returns: undefined }
       log_admin_action: {
-        Args: { _action: string; _details?: Json; _target?: string }
+        Args: {
+          _action: string
+          _actor: string
+          _details?: Json
+          _target?: string
+        }
         Returns: undefined
       }
       mark_premium_order_paid: {
