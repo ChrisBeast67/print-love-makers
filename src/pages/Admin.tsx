@@ -145,7 +145,7 @@ const Admin = () => {
   const handleMarkPaid = async (orderId: string, username: string) => {
     const { error } = await supabase.rpc("mark_premium_order_paid", { _order_id: orderId });
     if (error) return toast.error(error.message);
-    await logAction("Marked premium order paid", null, { order_id: orderId, username });
+    if (isActualOwner) loadAudit();
     toast.success(`Premium granted to ${username}! ✨`);
     loadOrders();
   };
