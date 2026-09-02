@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper } from "lucide-react";
+import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper, ScrollText } from "lucide-react";
 import { Receipt } from "lucide-react";
 import { Minus } from "lucide-react";
 import { Music, Square } from "lucide-react";
@@ -37,10 +37,13 @@ const Admin = () => {
   const [avatarItems, setAvatarItems] = useState<{ id: string; name: string; emoji: string; rarity: string }[]>([]);
   const [grantAvatar, setGrantAvatar] = useState<Record<string, string>>({});
   const [removeAvatar, setRemoveAvatar] = useState<Record<string, string>>({});
-  const [tab, setTab] = useState<"users" | "events" | "orders" | "music">("users");
+  const [tab, setTab] = useState<"users" | "events" | "orders" | "music" | "audit">("users");
   const [orders, setOrders] = useState<{ id: string; user_id: string; username: string; amount_eur: number; status: string; created_at: string }[]>([]);
   const [music, setMusic] = useState<{ url: string | null; title: string | null; playing: boolean } | null>(null);
   const [musicForm, setMusicForm] = useState({ url: "", title: "" });
+  const [audit, setAudit] = useState<{ id: string; actor_username: string | null; action: string; target_username: string | null; details: Record<string, unknown> | null; created_at: string }[]>([]);
+  const [auditQ, setAuditQ] = useState("");
+
 
   useEffect(() => {
     document.title = "Admin Panel — PrintChat";
@@ -101,9 +104,24 @@ const Admin = () => {
     }
   }, []);
 
+  const loadAudit = useCallback(async () => {
+    const { data } = await supabase
+      .from("admin_audit_log")
+      .select("id, actor_username, action, target_username, details, created_at")
+      .order("created_at", { ascending: false })
+      .limit(300);
+    setAudit((data as any[]) ?? []);
+  }, []);
+
+
   useEffect(() => {
     if (isStaff) { loadEvents(); loadAvatarItems(); loadOrders(); loadMusic(); }
   }, [isStaff, loadEvents, loadAvatarItems, loadOrders, loadMusic]);
+
+  useEffect(() => {
+    if (isActualOwner) loadAudit();
+  }, [isActualOwner, loadAudit]);
+
 
   const handleStartMusic = async () => {
     const { error } = await supabase.rpc("admin_set_global_music", {
@@ -111,6 +129,7 @@ const Admin = () => {
       _title: musicForm.title.trim(),
     });
     if (error) return toast.error(error.message);
+    if (isActualOwner) loadAudit();
     toast.success("Music is now playing for everyone");
     loadMusic();
   };
@@ -118,6 +137,7 @@ const Admin = () => {
   const handleStopMusic = async () => {
     const { error } = await supabase.rpc("admin_stop_global_music");
     if (error) return toast.error(error.message);
+    if (isActualOwner) loadAudit();
     toast.success("Music stopped");
     loadMusic();
   };
@@ -125,6 +145,7 @@ const Admin = () => {
   const handleMarkPaid = async (orderId: string, username: string) => {
     const { error } = await supabase.rpc("mark_premium_order_paid", { _order_id: orderId });
     if (error) return toast.error(error.message);
+    if (isActualOwner) loadAudit();
     toast.success(`Premium granted to ${username}! ✨`);
     loadOrders();
   };
@@ -132,8 +153,9 @@ const Admin = () => {
   const handleStartEvent = async () => {
     if (!newEvent.name.trim()) return toast.error("Enter event name");
     const luck = parseFloat(newEvent.luck) || 1;
-    const { error } = await supabase.rpc("admin_start_event", { _name: newEvent.name.trim(), _type: newEvent.type as any, _luck_multiplier: luck });
+    const { data, error } = await supabase.rpc("admin_start_event", { _name: newEvent.name.trim(), _type: newEvent.type as any, _luck_multiplier: luck });
     if (error) return toast.error(error.message);
+    if (isActualOwner) loadAudit();
     toast.success("Event started!");
     setNewEvent({ name: "", type: "custom", luck: "1" });
     loadEvents();
@@ -142,6 +164,7 @@ const Admin = () => {
   const handleEndEvent = async (id: string) => {
     const { error } = await supabase.rpc("admin_end_event", { _event_id: id });
     if (error) return toast.error(error.message);
+    if (isActualOwner) loadAudit();
     toast.success("Event ended");
     loadEvents();
   };
@@ -168,6 +191,16 @@ const Admin = () => {
     () => rows.filter((r) => r.username.toLowerCase().includes(q.toLowerCase()) || r.email.toLowerCase().includes(q.toLowerCase())),
     [rows, q],
   );
+
+  const filteredAudit = useMemo(() => {
+    const term = auditQ.trim().toLowerCase();
+    if (!term) return audit;
+    return audit.filter((entry) =>
+      [entry.actor_username, entry.target_username, entry.action, JSON.stringify(entry.details ?? {})]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(term)),
+    );
+  }, [audit, auditQ]);
 
   const handleGrant = async (id: string) => {
     const amount = parseInt(grant[id] || "0", 10);
@@ -262,10 +295,15 @@ const Admin = () => {
               )}
             </Button>
             {isActualOwner && (
-              <Button size="sm" variant={tab === "music" ? "default" : "outline"} onClick={() => setTab("music")}>
-                <Music className="h-4 w-4 mr-1" /> Music
-                {music?.playing && <Badge className="ml-1 bg-primary">Live</Badge>}
-              </Button>
+              <>
+                <Button size="sm" variant={tab === "audit" ? "default" : "outline"} onClick={() => setTab("audit")}>
+                  <ScrollText className="h-4 w-4 mr-1" /> Audit Log
+                </Button>
+                <Button size="sm" variant={tab === "music" ? "default" : "outline"} onClick={() => setTab("music")}>
+                  <Music className="h-4 w-4 mr-1" /> Music
+                  {music?.playing && <Badge className="ml-1 bg-primary">Live</Badge>}
+                </Button>
+              </>
             )}
 
           </div>
@@ -559,6 +597,39 @@ const Admin = () => {
               ))}
             </div>
           )}
+        </section>
+      )}
+
+      {tab === "audit" && isActualOwner && (
+        <section className="container mx-auto px-6 py-8 max-w-5xl space-y-5">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <h2 className="font-bold text-lg flex items-center gap-2"><ScrollText className="h-5 w-5 text-primary" /> Admin Audit Log</h2>
+              <p className="text-sm text-muted-foreground mt-1">Every staff action recorded by the backend.</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={loadAudit}>Refresh</Button>
+          </div>
+          <Input placeholder="Search administrator, target, action, or details…" value={auditQ} onChange={(e) => setAuditQ(e.target.value)} />
+          <div className="space-y-3">
+            {filteredAudit.map((entry) => (
+              <div key={entry.id} className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <div>
+                    <p className="font-semibold">{entry.action}</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      By <span className="text-foreground">{entry.actor_username || "Unknown admin"}</span>
+                      {entry.target_username && <> · Target: <span className="text-foreground">{entry.target_username}</span></>}
+                    </p>
+                  </div>
+                  <time className="text-xs text-muted-foreground" dateTime={entry.created_at}>{new Date(entry.created_at).toLocaleString()}</time>
+                </div>
+                {entry.details && Object.keys(entry.details).length > 0 && (
+                  <p className="mt-3 text-xs text-muted-foreground break-words">{Object.entries(entry.details).map(([key, value]) => `${key}: ${typeof value === "object" ? JSON.stringify(value) : String(value)}`).join(" · ")}</p>
+                )}
+              </div>
+            ))}
+            {filteredAudit.length === 0 && <p className="text-center text-muted-foreground py-10">No audit entries found.</p>}
+          </div>
         </section>
       )}
 
