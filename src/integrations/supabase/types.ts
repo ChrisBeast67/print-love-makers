@@ -485,6 +485,48 @@ export type Database = {
           },
         ]
       }
+      moderation_requests: {
+        Row: {
+          action: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          reason: string
+          requested_by: string
+          requester_username: string | null
+          status: string
+          target_id: string
+          target_username: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          reason: string
+          requested_by: string
+          requester_username?: string | null
+          status?: string
+          target_id: string
+          target_username?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          reason?: string
+          requested_by?: string
+          requester_username?: string | null
+          status?: string
+          target_id?: string
+          target_username?: string | null
+        }
+        Relationships: []
+      }
       premium_orders: {
         Row: {
           amount_eur: number
@@ -591,6 +633,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      purchase_log: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          item_name: string
+          item_type: string
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          item_name: string
+          item_type: string
+          user_id: string
+          username?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          item_name?: string
+          item_type?: string
+          user_id?: string
+          username?: string | null
+        }
+        Relationships: []
       }
       trade_offers: {
         Row: {
@@ -839,25 +914,31 @@ export type Database = {
       }
       user_warnings: {
         Row: {
+          chat_id: string | null
           content: string | null
           created_at: string
           id: string
           reason: string
           user_id: string
+          username: string | null
         }
         Insert: {
+          chat_id?: string | null
           content?: string | null
           created_at?: string
           id?: string
           reason?: string
           user_id: string
+          username?: string | null
         }
         Update: {
+          chat_id?: string | null
           content?: string | null
           created_at?: string
           id?: string
           reason?: string
           user_id?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -973,6 +1054,14 @@ export type Database = {
         }
         Returns: string
       }
+      decide_moderation_request: {
+        Args: { _approve: boolean; _id: string }
+        Returns: {
+          action: string
+          target_id: string
+          target_username: string
+        }[]
+      }
       decline_call: { Args: { _call_id: string }; Returns: undefined }
       decline_trade_offer: { Args: { _id: string }; Returns: undefined }
       earn_exp: {
@@ -1024,6 +1113,20 @@ export type Database = {
         }[]
       }
       purchase_pack: { Args: { _pack_id: string }; Returns: undefined }
+      record_purchase: {
+        Args: {
+          _amount: number
+          _currency?: string
+          _name: string
+          _type: string
+          _user: string
+        }
+        Returns: undefined
+      }
+      request_moderation_action: {
+        Args: { _action: string; _reason: string; _target: string }
+        Returns: string
+      }
       respond_friend_request: {
         Args: { _accept: boolean; _id: string }
         Returns: undefined

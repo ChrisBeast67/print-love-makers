@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper, ScrollText } from "lucide-react";
+import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper, ScrollText, ShieldAlert, ShoppingCart, AlertTriangle } from "lucide-react";
 import { Receipt } from "lucide-react";
 import { Minus } from "lucide-react";
 import { Music, Square } from "lucide-react";
@@ -37,12 +37,15 @@ const Admin = () => {
   const [avatarItems, setAvatarItems] = useState<{ id: string; name: string; emoji: string; rarity: string }[]>([]);
   const [grantAvatar, setGrantAvatar] = useState<Record<string, string>>({});
   const [removeAvatar, setRemoveAvatar] = useState<Record<string, string>>({});
-  const [tab, setTab] = useState<"users" | "events" | "orders" | "music" | "audit">("users");
+  const [tab, setTab] = useState<"users" | "events" | "orders" | "music" | "audit" | "requests" | "purchases" | "alerts">("users");
   const [orders, setOrders] = useState<{ id: string; user_id: string; username: string; amount_eur: number; status: string; created_at: string }[]>([]);
   const [music, setMusic] = useState<{ url: string | null; title: string | null; playing: boolean } | null>(null);
   const [musicForm, setMusicForm] = useState({ url: "", title: "" });
   const [audit, setAudit] = useState<{ id: string; actor_username: string | null; action: string; target_username: string | null; details: Record<string, unknown> | null; created_at: string }[]>([]);
   const [auditQ, setAuditQ] = useState("");
+  const [requests, setRequests] = useState<{ id: string; requester_username: string | null; target_id: string; target_username: string | null; action: string; reason: string; status: string; created_at: string }[]>([]);
+  const [purchases, setPurchases] = useState<{ id: string; username: string | null; item_type: string; item_name: string; amount: number; currency: string; created_at: string }[]>([]);
+  const [alerts, setAlerts] = useState<{ id: string; user_id: string; username: string | null; reason: string; content: string | null; created_at: string }[]>([]);
 
 
   useEffect(() => {
@@ -113,14 +116,66 @@ const Admin = () => {
     setAudit((data as any[]) ?? []);
   }, []);
 
+  const loadRequests = useCallback(async () => {
+    const { data } = await supabase
+      .from("moderation_requests")
+      .select("id, requester_username, target_id, target_username, action, reason, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    setRequests((data as any[]) ?? []);
+  }, []);
+
+  const loadPurchases = useCallback(async () => {
+    const { data } = await supabase
+      .from("purchase_log")
+      .select("id, username, item_type, item_name, amount, currency, created_at")
+      .order("created_at", { ascending: false })
+      .limit(300);
+    setPurchases((data as any[]) ?? []);
+  }, []);
+
+  const loadAlerts = useCallback(async () => {
+    const { data } = await supabase
+      .from("user_warnings")
+      .select("id, user_id, username, reason, content, created_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    setAlerts((data as any[]) ?? []);
+  }, []);
 
   useEffect(() => {
-    if (isStaff) { loadEvents(); loadAvatarItems(); loadOrders(); loadMusic(); }
-  }, [isStaff, loadEvents, loadAvatarItems, loadOrders, loadMusic]);
+    if (isStaff) { loadEvents(); loadAvatarItems(); loadOrders(); loadMusic(); loadRequests(); loadPurchases(); }
+  }, [isStaff, loadEvents, loadAvatarItems, loadOrders, loadMusic, loadRequests, loadPurchases]);
 
   useEffect(() => {
-    if (isActualOwner) loadAudit();
-  }, [isActualOwner, loadAudit]);
+    if (isActualOwner) { loadAudit(); loadAlerts(); }
+  }, [isActualOwner, loadAudit, loadAlerts]);
+
+  // Live owner notifications for bad language and new moderation requests.
+  useEffect(() => {
+    if (!isActualOwner) return;
+    const channel = supabase
+      .channel("owner-alerts")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "user_warnings" }, (payload) => {
+        const row = payload.new as { username: string | null; content: string | null };
+        toast.warning(`${row.username ?? "A user"} used inappropriate language`, {
+          description: row.content ?? undefined,
+          duration: 10000,
+        });
+        loadAlerts();
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "moderation_requests" }, (payload) => {
+        const row = payload.new as { requester_username: string | null; action: string; target_username: string | null };
+        toast.info(`${row.requester_username ?? "An admin"} requests to ${row.action} ${row.target_username ?? "a user"}`, {
+          duration: 10000,
+        });
+        loadRequests();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [isActualOwner, loadAlerts, loadRequests]);
+
+
 
 
   const handleStartMusic = async () => {
