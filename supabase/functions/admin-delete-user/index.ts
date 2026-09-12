@@ -44,6 +44,14 @@ Deno.serve(async (req) => {
     }
     if (targetId === callerId) return json({ error: "Cannot delete your own account" }, 400);
 
+    // Record who deleted whom while the profile still exists.
+    await admin.rpc("log_admin_action", {
+      _actor: callerId,
+      _action: "delete_account",
+      _target: targetId,
+      _details: {},
+    });
+
     // Wipe app data first (also enforces role checks).
     const { error: wipeErr } = await admin.rpc("admin_delete_user_data", { _target: targetId, _caller: callerId });
     if (wipeErr) return json({ error: wipeErr.message }, 400);
