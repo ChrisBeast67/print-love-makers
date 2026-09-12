@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper, ScrollText } from "lucide-react";
+import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper, ScrollText, ShieldAlert, ShoppingCart, AlertTriangle } from "lucide-react";
 import { Receipt } from "lucide-react";
 import { Minus } from "lucide-react";
 import { Music, Square } from "lucide-react";
@@ -37,12 +37,15 @@ const Admin = () => {
   const [avatarItems, setAvatarItems] = useState<{ id: string; name: string; emoji: string; rarity: string }[]>([]);
   const [grantAvatar, setGrantAvatar] = useState<Record<string, string>>({});
   const [removeAvatar, setRemoveAvatar] = useState<Record<string, string>>({});
-  const [tab, setTab] = useState<"users" | "events" | "orders" | "music" | "audit">("users");
+  const [tab, setTab] = useState<"users" | "events" | "orders" | "music" | "audit" | "requests" | "purchases" | "alerts">("users");
   const [orders, setOrders] = useState<{ id: string; user_id: string; username: string; amount_eur: number; status: string; created_at: string }[]>([]);
   const [music, setMusic] = useState<{ url: string | null; title: string | null; playing: boolean } | null>(null);
   const [musicForm, setMusicForm] = useState({ url: "", title: "" });
   const [audit, setAudit] = useState<{ id: string; actor_username: string | null; action: string; target_username: string | null; details: Record<string, unknown> | null; created_at: string }[]>([]);
   const [auditQ, setAuditQ] = useState("");
+  const [requests, setRequests] = useState<{ id: string; requester_username: string | null; target_id: string; target_username: string | null; action: string; reason: string; status: string; created_at: string }[]>([]);
+  const [purchases, setPurchases] = useState<{ id: string; username: string | null; item_type: string; item_name: string; amount: number; currency: string; created_at: string }[]>([]);
+  const [alerts, setAlerts] = useState<{ id: string; user_id: string; username: string | null; reason: string; content: string | null; created_at: string }[]>([]);
 
 
   useEffect(() => {
