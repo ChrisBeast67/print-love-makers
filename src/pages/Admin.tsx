@@ -25,7 +25,7 @@ type Row = {
 
 const Admin = () => {
   const { user, loading: authLoading } = useAuth();
-  const { isStaff, isOwner, isActualOwner, loading: roleLoading } = useStaffRole();
+  const { isStaff, isOwner, isActualOwner, isDeputy, loading: roleLoading } = useStaffRole();
   const navigate = useNavigate();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -148,12 +148,13 @@ const Admin = () => {
   }, [isStaff, loadEvents, loadAvatarItems, loadOrders, loadMusic, loadRequests, loadPurchases]);
 
   useEffect(() => {
-    if (isActualOwner) { loadAudit(); loadAlerts(); }
-  }, [isActualOwner, loadAudit, loadAlerts]);
+    if (isActualOwner) loadAudit();
+    if (isDeputy) loadAlerts();
+  }, [isActualOwner, isDeputy, loadAudit, loadAlerts]);
 
-  // Live owner notifications for bad language and new moderation requests.
+  // Live owner/deputy notifications for bad language and new moderation requests.
   useEffect(() => {
-    if (!isActualOwner) return;
+    if (!isDeputy) return;
     const channel = supabase
       .channel("owner-alerts")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "user_warnings" }, (payload) => {
@@ -173,7 +174,7 @@ const Admin = () => {
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [isActualOwner, loadAlerts, loadRequests]);
+  }, [isDeputy, loadAlerts, loadRequests]);
 
 
 
@@ -417,12 +418,14 @@ const Admin = () => {
             <Button size="sm" variant={tab === "purchases" ? "default" : "outline"} onClick={() => setTab("purchases")}>
               <ShoppingCart className="h-4 w-4 mr-1" /> Purchases
             </Button>
+            {isDeputy && (
+              <Button size="sm" variant={tab === "alerts" ? "default" : "outline"} onClick={() => setTab("alerts")}>
+                <AlertTriangle className="h-4 w-4 mr-1" /> Language Alerts
+                {alerts.length > 0 && <Badge className="ml-1 bg-destructive">{alerts.length}</Badge>}
+              </Button>
+            )}
             {isActualOwner && (
               <>
-                <Button size="sm" variant={tab === "alerts" ? "default" : "outline"} onClick={() => setTab("alerts")}>
-                  <AlertTriangle className="h-4 w-4 mr-1" /> Language Alerts
-                  {alerts.length > 0 && <Badge className="ml-1 bg-destructive">{alerts.length}</Badge>}
-                </Button>
                 <Button size="sm" variant={tab === "audit" ? "default" : "outline"} onClick={() => setTab("audit")}>
                   <ScrollText className="h-4 w-4 mr-1" /> Audit Log
                 </Button>
