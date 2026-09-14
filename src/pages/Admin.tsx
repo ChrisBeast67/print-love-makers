@@ -556,7 +556,7 @@ const Admin = () => {
                         <Button
                           size="sm"
                           variant={r.banned ? "outline" : "destructive"}
-                          onClick={() => handleBan(r.id, r.banned)}
+                          onClick={() => handleBan(r.id, r.banned, r.username)}
                         >
                           {r.banned ? <CheckCircle2 className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
                         </Button>
