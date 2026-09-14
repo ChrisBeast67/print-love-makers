@@ -276,13 +276,38 @@ const Admin = () => {
     setExpGrant((g) => ({ ...g, [id]: "" }));
   };
 
-  const handleBan = async (id: string, banned: boolean) => {
-    const { error } = banned
-      ? await supabase.rpc("admin_unban_user", { _target: id })
-      : await supabase.rpc("admin_ban_user", { _target: id, _reason: "Banned by staff" });
+  const askReason = (what: string, username: string) => {
+    const reason = window.prompt(`Why do you want to ${what} "${username}"? (at least 5 characters)`)?.trim();
+    if (!reason) return null;
+    if (reason.length < 5) {
+      toast.error("Please write a longer reason");
+      return null;
+    }
+    return reason;
+  };
+
+  const handleBan = async (id: string, banned: boolean, username: string) => {
+    if (banned) {
+      const { error } = await supabase.rpc("admin_unban_user", { _target: id });
+      if (error) return toast.error(error.message);
+      toast.success("Unbanned");
+      return load();
+    }
+
+    const reason = askReason("ban", username);
+    if (!reason) return;
+
+    if (isActualOwner) {
+      const { error } = await supabase.rpc("admin_ban_user", { _target: id, _reason: reason });
+      if (error) return toast.error(error.message);
+      toast.success("Banned");
+      return load();
+    }
+
+    const { error } = await supabase.rpc("request_moderation_action", { _target: id, _action: "ban", _reason: reason });
     if (error) return toast.error(error.message);
-    toast.success(banned ? "Unbanned" : "Banned");
-    load();
+    toast.success("Request sent to the owner for approval");
+    loadRequests();
   };
 
   const handleRole = async (id: string, role: "moderator" | "owner", remove: boolean) => {
@@ -312,8 +337,7 @@ const Admin = () => {
     toast.success("Premium removed");
   };
 
-  const handleDelete = async (id: string, username: string) => {
-    if (!confirm(`Permanently delete "${username}"? This wipes their account, messages, credits and inventory. This cannot be undone.`)) return;
+  const runDelete = async (id: string, username: string) => {
     const { data, error } = await supabase.functions.invoke("admin-delete-user", {
       body: { user_id: id },
     });
@@ -322,6 +346,41 @@ const Admin = () => {
     }
     toast.success(`Deleted ${username}`);
     load();
+    loadRequests();
+  };
+
+  const handleDelete = async (id: string, username: string) => {
+    const reason = askReason("delete", username);
+    if (!reason) return;
+
+    if (isActualOwner) {
+      if (!confirm(`Permanently delete "${username}"? This wipes their account, messages, credits and inventory. This cannot be undone.`)) return;
+      await runDelete(id, username);
+      return;
+    }
+
+    const { error } = await supabase.rpc("request_moderation_action", { _target: id, _action: "delete", _reason: reason });
+    if (error) return toast.error(error.message);
+    toast.success("Request sent to the owner for approval");
+    loadRequests();
+  };
+
+  const handleDecide = async (
+    reqId: string,
+    approve: boolean,
+    action: string,
+    targetId: string,
+    targetUsername: string | null,
+  ) => {
+    const { error } = await supabase.rpc("decide_moderation_request", { _id: reqId, _approve: approve });
+    if (error) return toast.error(error.message);
+    toast.success(approve ? "Approved" : "Rejected");
+    if (approve && action === "delete") {
+      await runDelete(targetId, targetUsername ?? "user");
+    }
+    loadRequests();
+    load();
+    loadAudit();
   };
 
   if (authLoading || roleLoading) return null;
