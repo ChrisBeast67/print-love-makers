@@ -408,8 +408,21 @@ const Admin = () => {
                 <Badge className="ml-1 bg-amber-500 text-black">{orders.filter((o) => o.status === "pending").length}</Badge>
               )}
             </Button>
+            <Button size="sm" variant={tab === "requests" ? "default" : "outline"} onClick={() => setTab("requests")}>
+              <ShieldAlert className="h-4 w-4 mr-1" /> Requests
+              {requests.some((r) => r.status === "pending") && (
+                <Badge className="ml-1 bg-amber-500 text-black">{requests.filter((r) => r.status === "pending").length}</Badge>
+              )}
+            </Button>
+            <Button size="sm" variant={tab === "purchases" ? "default" : "outline"} onClick={() => setTab("purchases")}>
+              <ShoppingCart className="h-4 w-4 mr-1" /> Purchases
+            </Button>
             {isActualOwner && (
               <>
+                <Button size="sm" variant={tab === "alerts" ? "default" : "outline"} onClick={() => setTab("alerts")}>
+                  <AlertTriangle className="h-4 w-4 mr-1" /> Language Alerts
+                  {alerts.length > 0 && <Badge className="ml-1 bg-destructive">{alerts.length}</Badge>}
+                </Button>
                 <Button size="sm" variant={tab === "audit" ? "default" : "outline"} onClick={() => setTab("audit")}>
                   <ScrollText className="h-4 w-4 mr-1" /> Audit Log
                 </Button>
