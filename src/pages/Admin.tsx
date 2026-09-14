@@ -805,6 +805,106 @@ const Admin = () => {
           </div>
         </section>
       )}
+
+      {tab === "requests" && (
+        <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <h2 className="font-bold text-lg flex items-center gap-2"><ShieldAlert className="h-5 w-5 text-primary" /> Ban &amp; delete requests</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {isActualOwner
+                  ? "Approve or reject what your admins asked to do."
+                  : "Your requests wait here until the owner approves them."}
+              </p>
+            </div>
+            <Button variant="outline" size="sm" onClick={loadRequests}>Refresh</Button>
+          </div>
+          <div className="space-y-3">
+            {requests.map((r) => (
+              <div key={r.id} className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <div>
+                    <p className="font-semibold capitalize">
+                      {r.action} {r.target_username || "user"}
+                      <Badge className="ml-2" variant={r.status === "pending" ? "secondary" : r.status === "rejected" ? "destructive" : "outline"}>
+                        {r.status}
+                      </Badge>
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">Asked by {r.requester_username || "an admin"}</p>
+                    <p className="text-sm mt-2">Reason: <span className="text-muted-foreground">{r.reason}</span></p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <time className="text-xs text-muted-foreground" dateTime={r.created_at}>{new Date(r.created_at).toLocaleString()}</time>
+                    {isActualOwner && r.status === "pending" && (
+                      <>
+                        <Button size="sm" onClick={() => handleDecide(r.id, true, r.action, r.target_id, r.target_username)}>
+                          <CheckCircle2 className="h-4 w-4 mr-1" /> Approve
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => handleDecide(r.id, false, r.action, r.target_id, r.target_username)}>
+                          <X className="h-4 w-4 mr-1" /> Reject
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {requests.length === 0 && <p className="text-center text-muted-foreground py-10">No requests yet.</p>}
+          </div>
+        </section>
+      )}
+
+      {tab === "purchases" && (
+        <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <h2 className="font-bold text-lg flex items-center gap-2"><ShoppingCart className="h-5 w-5 text-primary" /> Purchases</h2>
+              <p className="text-sm text-muted-foreground mt-1">Who bought what, and how much they paid.</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={loadPurchases}>Refresh</Button>
+          </div>
+          <div className="space-y-2">
+            {purchases.map((p) => (
+              <div key={p.id} className="rounded-xl border border-border bg-card p-3 flex items-center justify-between gap-4 flex-wrap">
+                <div>
+                  <p className="font-semibold">{p.username || "Unknown"} bought {p.item_name}</p>
+                  <p className="text-xs text-muted-foreground mt-1 capitalize">{p.item_type.replace("_", " ")}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-primary">{p.amount.toLocaleString()} {p.currency}</p>
+                  <time className="text-xs text-muted-foreground" dateTime={p.created_at}>{new Date(p.created_at).toLocaleString()}</time>
+                </div>
+              </div>
+            ))}
+            {purchases.length === 0 && <p className="text-center text-muted-foreground py-10">No purchases recorded yet.</p>}
+          </div>
+        </section>
+      )}
+
+      {tab === "alerts" && isActualOwner && (
+        <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <h2 className="font-bold text-lg flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-destructive" /> Inappropriate language</h2>
+              <p className="text-sm text-muted-foreground mt-1">Every flagged message, who said it and what they said.</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={loadAlerts}>Refresh</Button>
+          </div>
+          <div className="space-y-3">
+            {alerts.map((a) => (
+              <div key={a.id} className="rounded-xl border border-destructive/40 bg-card p-4">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <p className="font-semibold">{a.username || "Unknown user"}</p>
+                  <time className="text-xs text-muted-foreground" dateTime={a.created_at}>{new Date(a.created_at).toLocaleString()}</time>
+                </div>
+                <p className="mt-2 text-sm break-words">“{a.content}”</p>
+                <p className="mt-1 text-xs text-muted-foreground">{a.reason}</p>
+              </div>
+            ))}
+            {alerts.length === 0 && <p className="text-center text-muted-foreground py-10">No flagged messages.</p>}
+          </div>
+        </section>
+      )}
     </div>
   );
 };
