@@ -8,6 +8,13 @@
       "when": 1789225522107,
       "tag": "0000_moderation_requests_purchase_log_owner_alerts",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789407243241,
+      "tag": "0001_realtime_for_owner_alerts",
+      "breakpoints": true
     }
   ]
 }
