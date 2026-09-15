@@ -15,6 +15,13 @@
       "when": 1789407243241,
       "tag": "0001_realtime_for_owner_alerts",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789482750805,
+      "tag": "0002_owner_cannot_be_autobanned",
+      "breakpoints": true
     }
   ]
 }
