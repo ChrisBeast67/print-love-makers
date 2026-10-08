@@ -20,12 +20,6 @@ import { TradeOffersList } from "@/components/trade/TradeOffersList";
 import { Switch } from "@/components/ui/switch";
 import EmojiPicker, { Theme } from "emoji-picker-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface Message {
   id: string;

@@ -13,12 +13,6 @@ import { InstallApp } from "@/components/InstallApp";
 
 import printchatLogo from "/printchat-logo.png";
 import partnerBadge from "@/assets/fidget-forge-partner.png.asset.json";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 const features = [
   { icon: Zap, title: "Real-time", desc: "Messages appear instantly for everyone in the chat." },
