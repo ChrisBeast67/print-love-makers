@@ -22,6 +22,13 @@
       "when": 1789482750805,
       "tag": "0002_owner_cannot_be_autobanned",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791487262865,
+      "tag": "0003_school_safety",
+      "breakpoints": true
     }
   ]
 }

@@ -1186,15 +1186,35 @@ const loadChats = async () => {
                                 : "bg-secondary text-secondary-foreground rounded-bl-sm"
                             )}
                           >
-                            {m.content?.startsWith("__img__:") ? (
-                              <img
-                                src={m.content.slice(8)}
-                                alt="Shared image"
-                                className="max-w-full max-h-64 rounded-lg cursor-pointer object-contain"
-                                loading="lazy"
-                                onClick={() => window.open(m.content.slice(8), "_blank")}
-                              />
-                            ) : m.content?.startsWith("__vid__:") ? (
+                            {m.content?.startsWith("__img__:") || m.content?.startsWith("__vid__:") ? (
+                              <div>
+                                {m.content.startsWith("__img__:") ? (
+                                  <img
+                                    src={m.content.slice(8)}
+                                    alt="Shared image"
+                                    className="max-w-full max-h-64 rounded-lg cursor-pointer object-contain"
+                                    loading="lazy"
+                                    onClick={() => window.open(m.content.slice(8), "_blank")}
+                                  />
+                                ) : (
+                                  <video src={m.content.slice(8)} controls preload="metadata" className="max-w-full max-h-64 rounded-lg" />
+                                )}
+                                {!isMine && (
+                                  <button
+                                    type="button"
+                                    className="mt-1 text-[11px] underline opacity-70 hover:opacity-100"
+                                    onClick={async () => {
+                                      const reason = window.prompt("Why are you reporting this? (optional)") ;
+                                      if (reason === null) return;
+                                      const { error } = await (supabase as any).rpc("report_message", { _message_id: m.id, _reason: reason });
+                                      if (error) toast.error(error.message); else toast.success("Reported — staff will review it.");
+                                    }}
+                                  >
+                                    Report
+                                  </button>
+                                )}
+                              </div>
+                            ) : false ? (
                               <video
                                 src={m.content.slice(8)}
                                 controls

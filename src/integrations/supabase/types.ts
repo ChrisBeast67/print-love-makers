@@ -453,6 +453,48 @@ export type Database = {
         }
         Relationships: []
       }
+      message_reports: {
+        Row: {
+          author_id: string | null
+          author_username: string | null
+          chat_id: string | null
+          content: string
+          created_at: string
+          id: string
+          message_id: string | null
+          reason: string | null
+          reported_by: string
+          reporter_username: string | null
+          status: string
+        }
+        Insert: {
+          author_id?: string | null
+          author_username?: string | null
+          chat_id?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          message_id?: string | null
+          reason?: string | null
+          reported_by: string
+          reporter_username?: string | null
+          status?: string
+        }
+        Update: {
+          author_id?: string | null
+          author_username?: string | null
+          chat_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          message_id?: string | null
+          reason?: string | null
+          reported_by?: string
+          reporter_username?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           chat_id: string | null
@@ -1123,9 +1165,17 @@ export type Database = {
         }
         Returns: undefined
       }
+      report_message: {
+        Args: { _message_id: string; _reason: string }
+        Returns: undefined
+      }
       request_moderation_action: {
         Args: { _action: string; _reason: string; _target: string }
         Returns: string
+      }
+      resolve_message_report: {
+        Args: { _id: string; _remove: boolean }
+        Returns: undefined
       }
       respond_friend_request: {
         Args: { _accept: boolean; _id: string }
