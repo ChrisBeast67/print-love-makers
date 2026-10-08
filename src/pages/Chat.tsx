@@ -15,7 +15,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { GamesLauncher } from "@/components/games/GamesLauncher";
 import { TradeDialog } from "@/components/trade/TradeDialog";
 import { TradeOffersList } from "@/components/trade/TradeOffersList";
 import { Switch } from "@/components/ui/switch";
@@ -995,12 +994,6 @@ const loadChats = async () => {
                       <Video className="h-4 w-4" />
                     </Button>
                   </>
-                )}
-                {activeChat.type === "group" && user && (
-                  <GamesLauncher
-                    chatId={activeChat.id}
-                    username={profiles[user.id]?.username ?? "Player"}
-                  />
                 )}
                 {activeChat.type === "group" && (
                   <Button size="sm" variant="outline" onClick={() => setTradeOpen(true)}>
