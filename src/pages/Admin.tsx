@@ -37,7 +37,7 @@ const Admin = () => {
   const [avatarItems, setAvatarItems] = useState<{ id: string; name: string; emoji: string; rarity: string }[]>([]);
   const [grantAvatar, setGrantAvatar] = useState<Record<string, string>>({});
   const [removeAvatar, setRemoveAvatar] = useState<Record<string, string>>({});
-  const [tab, setTab] = useState<"users" | "events" | "orders" | "music" | "audit" | "requests" | "purchases" | "alerts">("users");
+  const [tab, setTab] = useState<"users" | "events" | "orders" | "music" | "audit" | "requests" | "purchases" | "alerts" | "reports">("users");
   const [orders, setOrders] = useState<{ id: string; user_id: string; username: string; amount_eur: number; status: string; created_at: string }[]>([]);
   const [music, setMusic] = useState<{ url: string | null; title: string | null; playing: boolean } | null>(null);
   const [musicForm, setMusicForm] = useState({ url: "", title: "" });
@@ -143,9 +143,23 @@ const Admin = () => {
     setAlerts((data as any[]) ?? []);
   }, []);
 
+  const [reports, setReports] = useState<any[]>([]);
+  const loadReports = useCallback(async () => {
+    const { data } = await (supabase as any)
+      .from("message_reports")
+      .select("id, content, author_username, reporter_username, reason, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    setReports((data as any[]) ?? []);
+  }, []);
+  const resolveReport = async (id: string, remove: boolean) => {
+    const { error } = await (supabase as any).rpc("resolve_message_report", { _id: id, _remove: remove });
+    if (error) toast.error(error.message); else { toast.success(remove ? "Removed" : "Dismissed"); loadReports(); }
+  };
+
   useEffect(() => {
-    if (isStaff) { loadEvents(); loadAvatarItems(); loadOrders(); loadMusic(); loadRequests(); loadPurchases(); }
-  }, [isStaff, loadEvents, loadAvatarItems, loadOrders, loadMusic, loadRequests, loadPurchases]);
+    if (isStaff) { loadEvents(); loadAvatarItems(); loadOrders(); loadMusic(); loadRequests(); loadPurchases(); loadReports(); }
+  }, [isStaff, loadEvents, loadAvatarItems, loadOrders, loadMusic, loadRequests, loadPurchases, loadReports]);
 
   useEffect(() => {
     if (isActualOwner) loadAudit();
@@ -417,6 +431,10 @@ const Admin = () => {
             </Button>
             <Button size="sm" variant={tab === "purchases" ? "default" : "outline"} onClick={() => setTab("purchases")}>
               <ShoppingCart className="h-4 w-4 mr-1" /> Purchases
+            </Button>
+            <Button size="sm" variant={tab === "reports" ? "default" : "outline"} onClick={() => setTab("reports")}>
+              Reports
+              {reports.filter((r) => r.status === "open").length > 0 && <Badge className="ml-1 bg-destructive">{reports.filter((r) => r.status === "open").length}</Badge>}
             </Button>
             {isDeputy && (
               <Button size="sm" variant={tab === "alerts" ? "default" : "outline"} onClick={() => setTab("alerts")}>
@@ -905,6 +923,41 @@ const Admin = () => {
               </div>
             ))}
             {alerts.length === 0 && <p className="text-center text-muted-foreground py-10">No flagged messages.</p>}
+          </div>
+        </section>
+      )}
+
+      {tab === "reports" && isStaff && (
+        <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <h2 className="font-bold text-lg">Reported photos & videos</h2>
+              <p className="text-sm text-muted-foreground mt-1">Remove anything that isn't school-appropriate.</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={loadReports}>Refresh</Button>
+          </div>
+          <div className="space-y-3">
+            {reports.map((r) => {
+              const url = r.content?.slice(8);
+              const isImg = r.content?.startsWith("__img__:");
+              return (
+                <div key={r.id} className="rounded-xl border border-border bg-card p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-4 flex-wrap text-sm">
+                    <p><span className="font-semibold">{r.author_username || "Unknown"}</span> posted · reported by {r.reporter_username || "someone"}</p>
+                    <Badge variant="outline">{r.status}</Badge>
+                  </div>
+                  {isImg ? <img src={url} alt="Reported" className="max-h-48 rounded-lg" /> : <video src={url} controls className="max-h-48 rounded-lg" />}
+                  {r.reason && <p className="text-xs text-muted-foreground">Reason: {r.reason}</p>}
+                  {r.status === "open" && (
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="destructive" onClick={() => resolveReport(r.id, true)}>Remove from chat</Button>
+                      <Button size="sm" variant="outline" onClick={() => resolveReport(r.id, false)}>Dismiss</Button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {reports.length === 0 && <p className="text-center text-muted-foreground py-10">No reports.</p>}
           </div>
         </section>
       )}
