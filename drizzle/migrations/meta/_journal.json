@@ -36,6 +36,13 @@
       "when": 1791571948429,
       "tag": "0004_reports_realtime",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791572299420,
+      "tag": "0005_fix_audit_trigger_field_errors",
+      "breakpoints": true
     }
   ]
 }
