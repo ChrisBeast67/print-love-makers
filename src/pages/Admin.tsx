@@ -953,7 +953,7 @@ const Admin = () => {
                     <p><span className="font-semibold">{r.author_username || "Unknown"}</span> posted · reported by {r.reporter_username || "someone"}</p>
                     <Badge variant="outline">{r.status}</Badge>
                   </div>
-                  {isImg ? <img src={url} alt="Reported" className="max-h-48 rounded-lg" /> : <video src={url} controls className="max-h-48 rounded-lg" />}
+                  {isImg ? <img src={url} alt="Reported" className="max-h-48 rounded-lg" /> : r.content?.startsWith("__vid__:") ? <video src={url} controls className="max-h-48 rounded-lg" /> : <p className="text-sm break-words">“{r.content}”</p>}
                   {r.reason && <p className="text-xs text-muted-foreground">Reason: {r.reason}</p>}
                   {r.status === "open" && (
                     <div className="flex gap-2">
