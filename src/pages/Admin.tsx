@@ -186,9 +186,16 @@ const Admin = () => {
         });
         loadRequests();
       })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "message_reports" }, (payload) => {
+        const row = payload.new as { author_username: string | null; content: string; reporter_username: string | null };
+        toast.warning(`${row.reporter_username ?? "Someone"} reported ${row.author_username ?? "a user"}`, {
+          description: row.content?.startsWith("__") ? "Photo/video" : row.content, duration: 10000,
+        });
+        loadReports();
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [isDeputy, loadAlerts, loadRequests]);
+  }, [isDeputy, loadAlerts, loadRequests, loadReports]);
 
 
 

@@ -29,6 +29,13 @@
       "when": 1791487262865,
       "tag": "0003_school_safety",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791571948429,
+      "tag": "0004_reports_realtime",
+      "breakpoints": true
     }
   ]
 }
