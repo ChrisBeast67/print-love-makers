@@ -186,9 +186,16 @@ const Admin = () => {
         });
         loadRequests();
       })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "message_reports" }, (payload) => {
+        const row = payload.new as { author_username: string | null; content: string; reporter_username: string | null };
+        toast.warning(`${row.reporter_username ?? "Someone"} reported ${row.author_username ?? "a user"}`, {
+          description: row.content?.startsWith("__") ? "Photo/video" : row.content, duration: 10000,
+        });
+        loadReports();
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [isDeputy, loadAlerts, loadRequests]);
+  }, [isDeputy, loadAlerts, loadRequests, loadReports]);
 
 
 
@@ -946,7 +953,7 @@ const Admin = () => {
                     <p><span className="font-semibold">{r.author_username || "Unknown"}</span> posted · reported by {r.reporter_username || "someone"}</p>
                     <Badge variant="outline">{r.status}</Badge>
                   </div>
-                  {isImg ? <img src={url} alt="Reported" className="max-h-48 rounded-lg" /> : <video src={url} controls className="max-h-48 rounded-lg" />}
+                  {isImg ? <img src={url} alt="Reported" className="max-h-48 rounded-lg" /> : r.content?.startsWith("__vid__:") ? <video src={url} controls className="max-h-48 rounded-lg" /> : <p className="text-sm break-words">“{r.content}”</p>}
                   {r.reason && <p className="text-xs text-muted-foreground">Reason: {r.reason}</p>}
                   {r.status === "open" && (
                     <div className="flex gap-2">

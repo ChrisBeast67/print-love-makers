@@ -470,8 +470,9 @@ const loadChats = async () => {
     setSending(true);
     const content = input.trim();
     setInput("");
-    const { error } = await supabase.from("messages").insert({ content, user_id: user.id, chat_id: chatId });
+    const { data: sent, error } = await supabase.from("messages").insert({ content, user_id: user.id, chat_id: chatId }).select("id").maybeSingle();
     setSending(false);
+    if (sent?.id) supabase.functions.invoke("ai-mean-check", { body: { message_id: sent.id } }).catch(() => {});
     if (error) {
       console.error('Send message error:', error);
       // Check whether the user is currently banned (e.g. after 3 warnings)
