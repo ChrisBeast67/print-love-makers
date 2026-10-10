@@ -200,6 +200,10 @@ const Admin = () => {
 
 
 
+  const refreshTab = async (fn: () => Promise<void> | void) => {
+    try { await fn(); toast.success("Refreshed"); } catch (e: any) { toast.error(e?.message ?? "Could not refresh"); }
+  };
+
   const handleStartMusic = async () => {
     const { error } = await supabase.rpc("admin_set_global_music", {
       _url: musicForm.url.trim(),
@@ -424,6 +428,7 @@ const Admin = () => {
             <Button size="sm" variant={tab === "events" ? "default" : "outline"} onClick={() => setTab("events")}>
               <PartyPopper className="h-4 w-4 mr-1" /> Events
             </Button>
+            {isDeputy && (<>
             <Button size="sm" variant={tab === "orders" ? "default" : "outline"} onClick={() => setTab("orders")}>
               <Receipt className="h-4 w-4 mr-1" /> Orders
               {orders.some((o) => o.status === "pending") && (
@@ -443,6 +448,7 @@ const Admin = () => {
               Reports
               {reports.filter((r) => r.status === "open").length > 0 && <Badge className="ml-1 bg-destructive">{reports.filter((r) => r.status === "open").length}</Badge>}
             </Button>
+            </>)}
             {isDeputy && (
               <Button size="sm" variant={tab === "alerts" ? "default" : "outline"} onClick={() => setTab("alerts")}>
                 <AlertTriangle className="h-4 w-4 mr-1" /> Language Alerts
@@ -708,7 +714,7 @@ const Admin = () => {
         </section>
       )}
 
-      {tab === "orders" && (
+      {tab === "orders" && isDeputy && (
         <section className="container mx-auto px-6 py-8 max-w-3xl space-y-6">
           <h2 className="font-bold text-lg flex items-center gap-2">
             <Receipt className="h-5 w-5 text-primary" /> Premium Orders
@@ -762,7 +768,7 @@ const Admin = () => {
               <h2 className="font-bold text-lg flex items-center gap-2"><ScrollText className="h-5 w-5 text-primary" /> Admin Audit Log</h2>
               <p className="text-sm text-muted-foreground mt-1">Every staff action recorded by the backend.</p>
             </div>
-            <Button variant="outline" size="sm" onClick={loadAudit}>Refresh</Button>
+            <Button variant="outline" size="sm" onClick={() => refreshTab(loadAudit)}>Refresh</Button>
           </div>
           <Input placeholder="Search administrator, target, action, or details…" value={auditQ} onChange={(e) => setAuditQ(e.target.value)} />
           <div className="space-y-3">
@@ -834,7 +840,7 @@ const Admin = () => {
         </section>
       )}
 
-      {tab === "requests" && (
+      {tab === "requests" && isDeputy && (
         <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
@@ -845,7 +851,7 @@ const Admin = () => {
                   : "Your requests wait here until the owner approves them."}
               </p>
             </div>
-            <Button variant="outline" size="sm" onClick={loadRequests}>Refresh</Button>
+            <Button variant="outline" size="sm" onClick={() => refreshTab(loadRequests)}>Refresh</Button>
           </div>
           <div className="space-y-3">
             {requests.map((r) => (
@@ -882,14 +888,14 @@ const Admin = () => {
         </section>
       )}
 
-      {tab === "purchases" && (
+      {tab === "purchases" && isDeputy && (
         <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
               <h2 className="font-bold text-lg flex items-center gap-2"><ShoppingCart className="h-5 w-5 text-primary" /> Purchases</h2>
               <p className="text-sm text-muted-foreground mt-1">Who bought what, and how much they paid.</p>
             </div>
-            <Button variant="outline" size="sm" onClick={loadPurchases}>Refresh</Button>
+            <Button variant="outline" size="sm" onClick={() => refreshTab(loadPurchases)}>Refresh</Button>
           </div>
           <div className="space-y-2">
             {purchases.map((p) => (
@@ -916,7 +922,7 @@ const Admin = () => {
               <h2 className="font-bold text-lg flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-destructive" /> Inappropriate language</h2>
               <p className="text-sm text-muted-foreground mt-1">Every flagged message, who said it and what they said.</p>
             </div>
-            <Button variant="outline" size="sm" onClick={loadAlerts}>Refresh</Button>
+            <Button variant="outline" size="sm" onClick={() => refreshTab(loadAlerts)}>Refresh</Button>
           </div>
           <div className="space-y-3">
             {alerts.map((a) => (
@@ -934,14 +940,14 @@ const Admin = () => {
         </section>
       )}
 
-      {tab === "reports" && isStaff && (
+      {tab === "reports" && isDeputy && (
         <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
               <h2 className="font-bold text-lg">Reported photos & videos</h2>
               <p className="text-sm text-muted-foreground mt-1">Remove anything that isn't school-appropriate.</p>
             </div>
-            <Button variant="outline" size="sm" onClick={loadReports}>Refresh</Button>
+            <Button variant="outline" size="sm" onClick={() => refreshTab(loadReports)}>Refresh</Button>
           </div>
           <div className="space-y-3">
             {reports.map((r) => {
