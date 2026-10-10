@@ -1106,6 +1106,7 @@ export type Database = {
       }
       decline_call: { Args: { _call_id: string }; Returns: undefined }
       decline_trade_offer: { Args: { _id: string }; Returns: undefined }
+      delete_user_warning: { Args: { _id: string }; Returns: undefined }
       earn_exp: {
         Args: { _amount: number; _user_id: string }
         Returns: undefined

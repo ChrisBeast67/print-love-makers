@@ -43,6 +43,13 @@
       "when": 1791572299420,
       "tag": "0005_fix_audit_trigger_field_errors",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791619612933,
+      "tag": "0006_delete_user_warning_rpc",
+      "breakpoints": true
     }
   ]
 }
