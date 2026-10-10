@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper, ScrollText, ShieldAlert, ShoppingCart, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper, ScrollText, ShieldAlert, ShoppingCart } from "lucide-react";
 import { Receipt } from "lucide-react";
 import { Minus } from "lucide-react";
 import { Music, Square } from "lucide-react";
@@ -178,7 +178,7 @@ const Admin = () => {
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [isDeputy, loadAlerts, loadRequests, loadReports]);
+  }, [isDeputy, loadRequests, loadReports]);
 
 
 
@@ -432,12 +432,6 @@ const Admin = () => {
               {reports.filter((r) => r.status === "open").length > 0 && <Badge className="ml-1 bg-destructive">{reports.filter((r) => r.status === "open").length}</Badge>}
             </Button>
             </>)}
-            {isDeputy && (
-              <Button size="sm" variant={tab === "alerts" ? "default" : "outline"} onClick={() => setTab("alerts")}>
-                <AlertTriangle className="h-4 w-4 mr-1" /> Language Alerts
-                {alerts.length > 0 && <Badge className="ml-1 bg-destructive">{alerts.length}</Badge>}
-              </Button>
-            )}
             {isActualOwner && (
               <>
                 <Button size="sm" variant={tab === "audit" ? "default" : "outline"} onClick={() => setTab("audit")}>
@@ -898,30 +892,6 @@ const Admin = () => {
         </section>
       )}
 
-      {tab === "alerts" && isDeputy && (
-        <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <h2 className="font-bold text-lg flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-destructive" /> Inappropriate language</h2>
-              <p className="text-sm text-muted-foreground mt-1">Every flagged message, who said it and what they said.</p>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => refreshTab(loadAlerts)}>Refresh</Button>
-          </div>
-          <div className="space-y-3">
-            {alerts.map((a) => (
-              <div key={a.id} className="rounded-xl border border-destructive/40 bg-card p-4">
-                <div className="flex items-start justify-between gap-4 flex-wrap">
-                  <p className="font-semibold">{a.username || "Unknown user"}</p>
-                  <time className="text-xs text-muted-foreground" dateTime={a.created_at}>{new Date(a.created_at).toLocaleString()}</time>
-                </div>
-                <p className="mt-2 text-sm break-words">“{a.content}”</p>
-                <p className="mt-1 text-xs text-muted-foreground">{a.reason}</p>
-              </div>
-            ))}
-            {alerts.length === 0 && <p className="text-center text-muted-foreground py-10">No flagged messages.</p>}
-          </div>
-        </section>
-      )}
 
       {tab === "reports" && isDeputy && (
         <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
