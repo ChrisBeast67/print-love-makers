@@ -120,6 +120,7 @@ const Admin = () => {
     const { data } = await supabase
       .from("moderation_requests")
       .select("id, requester_username, target_id, target_username, action, reason, status, created_at")
+      .eq("status", "pending")
       .order("created_at", { ascending: false })
       .limit(200);
     setRequests((data as any[]) ?? []);
@@ -148,6 +149,7 @@ const Admin = () => {
     const { data } = await (supabase as any)
       .from("message_reports")
       .select("id, content, author_username, reporter_username, reason, status, created_at")
+      .eq("status", "open")
       .order("created_at", { ascending: false })
       .limit(200);
     setReports((data as any[]) ?? []);
