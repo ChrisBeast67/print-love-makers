@@ -37,7 +37,7 @@ const Admin = () => {
   const [avatarItems, setAvatarItems] = useState<{ id: string; name: string; emoji: string; rarity: string }[]>([]);
   const [grantAvatar, setGrantAvatar] = useState<Record<string, string>>({});
   const [removeAvatar, setRemoveAvatar] = useState<Record<string, string>>({});
-  const [tab, setTab] = useState<"users" | "events" | "orders" | "music" | "audit" | "requests" | "purchases" | "alerts" | "reports">("users");
+  const [tab, setTab] = useState<"users" | "events" | "orders" | "music" | "audit" | "requests" | "purchases" | "reports">("users");
   const [orders, setOrders] = useState<{ id: string; user_id: string; username: string; amount_eur: number; status: string; created_at: string }[]>([]);
   const [music, setMusic] = useState<{ url: string | null; title: string | null; playing: boolean } | null>(null);
   const [musicForm, setMusicForm] = useState({ url: "", title: "" });
@@ -45,7 +45,6 @@ const Admin = () => {
   const [auditQ, setAuditQ] = useState("");
   const [requests, setRequests] = useState<{ id: string; requester_username: string | null; target_id: string; target_username: string | null; action: string; reason: string; status: string; created_at: string }[]>([]);
   const [purchases, setPurchases] = useState<{ id: string; username: string | null; item_type: string; item_name: string; amount: number; currency: string; created_at: string }[]>([]);
-  const [alerts, setAlerts] = useState<{ id: string; user_id: string; username: string | null; reason: string; content: string | null; created_at: string }[]>([]);
 
 
   useEffect(() => {
