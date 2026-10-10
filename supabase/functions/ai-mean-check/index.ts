@@ -42,15 +42,17 @@ Deno.serve(async (req) => {
         model: "openai/gpt-6-astra",
         reasoning_effort: "low",
         messages: [
-          { role: "system", content: "You moderate a school chat for kids. Decide if the message is mean: bullying, insults, threats, harassment, hateful or rude toward someone. Friendly teasing between friends or normal talk is NOT mean. Reply in JSON." },
+          { role: "system", content: "You are the safety system of a school chat for kids. Decide if the message is bullying, harassment, or mean teasing. Bullying = attacking, insulting, threatening, excluding or ganging up on someone. Harassment = repeated or unwanted targeting, pressuring, or making someone uncomfortable. Mean teasing = mocking, name-calling, or joking at someone's expense in a hurtful way. Friendly jokes between friends and normal talk are NOT a problem. Reply in JSON with the category." },
           { role: "user", content: msg.content.slice(0, 2000) },
         ],
         response_format: {
           type: "json_schema",
           json_schema: {
             name: "verdict", strict: true,
-            schema: { type: "object", additionalProperties: false, required: ["mean", "reason"],
-              properties: { mean: { type: "boolean" }, reason: { type: "string" } } },
+            schema: { type: "object", additionalProperties: false, required: ["mean", "category", "reason"],
+              properties: { mean: { type: "boolean" },
+                category: { type: "string", enum: ["bullying", "harassment", "teasing", "none"] },
+                reason: { type: "string" } } },
           },
         },
       }),
@@ -66,8 +68,8 @@ Deno.serve(async (req) => {
     const { data: prof } = await admin.from("profiles").select("username").eq("id", msg.user_id).maybeSingle();
     await admin.from("message_reports").insert({
       message_id: msg.id, chat_id: msg.chat_id, content: msg.content, author_id: msg.user_id,
-      author_username: prof?.username ?? null, reported_by: BOT_ID, reporter_username: "🤖 Kindness Bot",
-      reason: String(verdict.reason ?? "Mean message").slice(0, 300),
+      author_username: prof?.username ?? null, reported_by: BOT_ID, reporter_username: "🛡️ Safety Bot",
+      reason: `${verdict.category && verdict.category !== "none" ? `[${verdict.category}] ` : ""}${String(verdict.reason ?? "Mean message")}`.slice(0, 300),
     });
     return json({ mean: true });
   } catch (e) {

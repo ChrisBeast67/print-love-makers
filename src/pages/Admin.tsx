@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper, ScrollText, ShieldAlert, ShoppingCart, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper, ScrollText, ShieldAlert, ShoppingCart } from "lucide-react";
 import { Receipt } from "lucide-react";
 import { Minus } from "lucide-react";
 import { Music, Square } from "lucide-react";
@@ -37,7 +37,7 @@ const Admin = () => {
   const [avatarItems, setAvatarItems] = useState<{ id: string; name: string; emoji: string; rarity: string }[]>([]);
   const [grantAvatar, setGrantAvatar] = useState<Record<string, string>>({});
   const [removeAvatar, setRemoveAvatar] = useState<Record<string, string>>({});
-  const [tab, setTab] = useState<"users" | "events" | "orders" | "music" | "audit" | "requests" | "purchases" | "alerts" | "reports">("users");
+  const [tab, setTab] = useState<"users" | "events" | "orders" | "music" | "audit" | "requests" | "purchases" | "reports">("users");
   const [orders, setOrders] = useState<{ id: string; user_id: string; username: string; amount_eur: number; status: string; created_at: string }[]>([]);
   const [music, setMusic] = useState<{ url: string | null; title: string | null; playing: boolean } | null>(null);
   const [musicForm, setMusicForm] = useState({ url: "", title: "" });
@@ -45,7 +45,6 @@ const Admin = () => {
   const [auditQ, setAuditQ] = useState("");
   const [requests, setRequests] = useState<{ id: string; requester_username: string | null; target_id: string; target_username: string | null; action: string; reason: string; status: string; created_at: string }[]>([]);
   const [purchases, setPurchases] = useState<{ id: string; username: string | null; item_type: string; item_name: string; amount: number; currency: string; created_at: string }[]>([]);
-  const [alerts, setAlerts] = useState<{ id: string; user_id: string; username: string | null; reason: string; content: string | null; created_at: string }[]>([]);
 
 
   useEffect(() => {
@@ -135,15 +134,6 @@ const Admin = () => {
     setPurchases((data as any[]) ?? []);
   }, []);
 
-  const loadAlerts = useCallback(async () => {
-    const { data } = await supabase
-      .from("user_warnings")
-      .select("id, user_id, username, reason, content, created_at")
-      .order("created_at", { ascending: false })
-      .limit(200);
-    setAlerts((data as any[]) ?? []);
-  }, []);
-
   const [reports, setReports] = useState<any[]>([]);
   const loadReports = useCallback(async () => {
     const { data } = await (supabase as any)
@@ -165,22 +155,13 @@ const Admin = () => {
 
   useEffect(() => {
     if (isActualOwner) loadAudit();
-    if (isDeputy) loadAlerts();
-  }, [isActualOwner, isDeputy, loadAudit, loadAlerts]);
+  }, [isActualOwner, loadAudit]);
 
-  // Live owner/deputy notifications for bad language and new moderation requests.
+  // Live owner/deputy notifications for new moderation requests and safety reports.
   useEffect(() => {
     if (!isDeputy) return;
     const channel = supabase
       .channel("owner-alerts")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "user_warnings" }, (payload) => {
-        const row = payload.new as { username: string | null; content: string | null };
-        toast.warning(`${row.username ?? "A user"} used inappropriate language`, {
-          description: row.content ?? undefined,
-          duration: 10000,
-        });
-        loadAlerts();
-      })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "moderation_requests" }, (payload) => {
         const row = payload.new as { requester_username: string | null; action: string; target_username: string | null };
         toast.info(`${row.requester_username ?? "An admin"} requests to ${row.action} ${row.target_username ?? "a user"}`, {
@@ -197,7 +178,7 @@ const Admin = () => {
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [isDeputy, loadAlerts, loadRequests, loadReports]);
+  }, [isDeputy, loadRequests, loadReports]);
 
 
 
@@ -451,12 +432,6 @@ const Admin = () => {
               {reports.filter((r) => r.status === "open").length > 0 && <Badge className="ml-1 bg-destructive">{reports.filter((r) => r.status === "open").length}</Badge>}
             </Button>
             </>)}
-            {isDeputy && (
-              <Button size="sm" variant={tab === "alerts" ? "default" : "outline"} onClick={() => setTab("alerts")}>
-                <AlertTriangle className="h-4 w-4 mr-1" /> Language Alerts
-                {alerts.length > 0 && <Badge className="ml-1 bg-destructive">{alerts.length}</Badge>}
-              </Button>
-            )}
             {isActualOwner && (
               <>
                 <Button size="sm" variant={tab === "audit" ? "default" : "outline"} onClick={() => setTab("audit")}>
@@ -917,30 +892,6 @@ const Admin = () => {
         </section>
       )}
 
-      {tab === "alerts" && isDeputy && (
-        <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <h2 className="font-bold text-lg flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-destructive" /> Inappropriate language</h2>
-              <p className="text-sm text-muted-foreground mt-1">Every flagged message, who said it and what they said.</p>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => refreshTab(loadAlerts)}>Refresh</Button>
-          </div>
-          <div className="space-y-3">
-            {alerts.map((a) => (
-              <div key={a.id} className="rounded-xl border border-destructive/40 bg-card p-4">
-                <div className="flex items-start justify-between gap-4 flex-wrap">
-                  <p className="font-semibold">{a.username || "Unknown user"}</p>
-                  <time className="text-xs text-muted-foreground" dateTime={a.created_at}>{new Date(a.created_at).toLocaleString()}</time>
-                </div>
-                <p className="mt-2 text-sm break-words">“{a.content}”</p>
-                <p className="mt-1 text-xs text-muted-foreground">{a.reason}</p>
-              </div>
-            ))}
-            {alerts.length === 0 && <p className="text-center text-muted-foreground py-10">No flagged messages.</p>}
-          </div>
-        </section>
-      )}
 
       {tab === "reports" && isDeputy && (
         <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
