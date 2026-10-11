@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper, ScrollText, ShieldAlert, ShoppingCart, AlertTriangle } from "lucide-react";
-import { Receipt } from "lucide-react";
+import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper, ScrollText, ShieldAlert, AlertTriangle } from "lucide-react";
 import { Minus } from "lucide-react";
 import { Music, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
