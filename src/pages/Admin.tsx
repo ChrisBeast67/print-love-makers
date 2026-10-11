@@ -201,7 +201,7 @@ const Admin = () => {
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [isDeputy, loadRequests, loadReports]);
+  }, [isDeputy, loadAlerts, loadRequests, loadReports]);
 
 
 
@@ -455,6 +455,12 @@ const Admin = () => {
               {reports.filter((r) => r.status === "open").length > 0 && <Badge className="ml-1 bg-destructive">{reports.filter((r) => r.status === "open").length}</Badge>}
             </Button>
             </>)}
+            {isDeputy && (
+              <Button size="sm" variant={tab === "alerts" ? "default" : "outline"} onClick={() => setTab("alerts")}>
+                <AlertTriangle className="h-4 w-4 mr-1" /> Language Alerts
+                {alerts.length > 0 && <Badge className="ml-1 bg-destructive">{alerts.length}</Badge>}
+              </Button>
+            )}
             {isActualOwner && (
               <>
                 <Button size="sm" variant={tab === "audit" ? "default" : "outline"} onClick={() => setTab("audit")}>
