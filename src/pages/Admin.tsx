@@ -688,53 +688,6 @@ const Admin = () => {
         </section>
       )}
 
-      {tab === "orders" && isDeputy && (
-        <section className="container mx-auto px-6 py-8 max-w-3xl space-y-6">
-          <h2 className="font-bold text-lg flex items-center gap-2">
-            <Receipt className="h-5 w-5 text-primary" /> Premium Orders
-          </h2>
-
-          <div className="space-y-3">
-            <h3 className="font-semibold text-muted-foreground">Pending</h3>
-            {orders.filter((o) => o.status === "pending").length === 0 && (
-              <p className="text-sm text-muted-foreground">No pending orders.</p>
-            )}
-            {orders.filter((o) => o.status === "pending").map((o) => (
-              <div key={o.id} className="rounded-xl border border-amber-500/40 bg-card p-4 flex items-center justify-between">
-                <div>
-                  <span className="font-semibold">{o.username}</span>
-                  <Badge className="ml-2 gap-1 bg-amber-500 text-black"><Crown className="h-3 w-3" /> Premium</Badge>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    €{Number(o.amount_eur).toFixed(2)} · {new Date(o.created_at).toLocaleString()}
-                  </div>
-                </div>
-                <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-black font-bold" onClick={() => handleMarkPaid(o.id, o.username)}>
-                  <CheckCircle2 className="h-4 w-4 mr-1" /> Paid
-                </Button>
-              </div>
-            ))}
-          </div>
-
-          {orders.filter((o) => o.status !== "pending").length > 0 && (
-            <div className="space-y-3">
-              <h3 className="font-semibold text-muted-foreground">Paid</h3>
-              {orders.filter((o) => o.status !== "pending").map((o) => (
-                <div key={o.id} className="rounded-xl border border-border bg-card/50 p-4 flex items-center justify-between opacity-70">
-                  <div>
-                    <span className="font-semibold">{o.username}</span>
-                    <Badge variant="secondary" className="ml-2">Paid</Badge>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      €{Number(o.amount_eur).toFixed(2)} · {new Date(o.created_at).toLocaleString()}
-                    </div>
-                  </div>
-                  <CheckCircle2 className="h-5 w-5 text-primary" />
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-
       {tab === "audit" && isActualOwner && (
         <section className="container mx-auto px-6 py-8 max-w-5xl space-y-5">
           <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -861,34 +814,6 @@ const Admin = () => {
           </div>
         </section>
       )}
-
-      {tab === "purchases" && isDeputy && (
-        <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <h2 className="font-bold text-lg flex items-center gap-2"><ShoppingCart className="h-5 w-5 text-primary" /> Purchases</h2>
-              <p className="text-sm text-muted-foreground mt-1">Who bought what, and how much they paid.</p>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => refreshTab(loadPurchases)}>Refresh</Button>
-          </div>
-          <div className="space-y-2">
-            {purchases.map((p) => (
-              <div key={p.id} className="rounded-xl border border-border bg-card p-3 flex items-center justify-between gap-4 flex-wrap">
-                <div>
-                  <p className="font-semibold">{p.username || "Unknown"} bought {p.item_name}</p>
-                  <p className="text-xs text-muted-foreground mt-1 capitalize">{p.item_type.replace("_", " ")}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-primary">{p.amount.toLocaleString()} {p.currency}</p>
-                  <time className="text-xs text-muted-foreground" dateTime={p.created_at}>{new Date(p.created_at).toLocaleString()}</time>
-                </div>
-              </div>
-            ))}
-            {purchases.length === 0 && <p className="text-center text-muted-foreground py-10">No purchases recorded yet.</p>}
-          </div>
-        </section>
-      )}
-
 
       {tab === "alerts" && isDeputy && (
         <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
