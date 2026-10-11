@@ -922,6 +922,36 @@ const Admin = () => {
       )}
 
 
+      {tab === "alerts" && isDeputy && (
+        <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <h2 className="font-bold text-lg flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-destructive" /> Inappropriate language</h2>
+              <p className="text-sm text-muted-foreground mt-1">Every flagged message, who said it and what they said. Delete an alert once you've handled it.</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => refreshTab(loadAlerts)}>Refresh</Button>
+          </div>
+          <div className="space-y-3">
+            {alerts.map((a) => (
+              <div key={a.id} className="rounded-xl border border-destructive/40 bg-card p-4">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <p className="font-semibold">{a.username || "Unknown user"}</p>
+                  <div className="flex items-center gap-2">
+                    <time className="text-xs text-muted-foreground" dateTime={a.created_at}>{new Date(a.created_at).toLocaleString()}</time>
+                    <Button variant="destructive" size="sm" onClick={() => deleteAlert(a.id)}>
+                      <Trash2 className="h-4 w-4 mr-1" /> Delete
+                    </Button>
+                  </div>
+                </div>
+                <p className="mt-2 text-sm break-words">“{a.content}”</p>
+                <p className="mt-1 text-xs text-muted-foreground">{a.reason}</p>
+              </div>
+            ))}
+            {alerts.length === 0 && <p className="text-center text-muted-foreground py-10">No flagged messages.</p>}
+          </div>
+        </section>
+      )}
+
       {tab === "reports" && isDeputy && (
         <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
           <div className="flex items-center justify-between gap-4 flex-wrap">
