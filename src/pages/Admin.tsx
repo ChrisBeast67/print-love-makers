@@ -149,8 +149,8 @@ const Admin = () => {
   };
 
   useEffect(() => {
-    if (isStaff) { loadEvents(); loadAvatarItems(); loadOrders(); loadMusic(); loadRequests(); loadPurchases(); loadReports(); }
-  }, [isStaff, loadEvents, loadAvatarItems, loadOrders, loadMusic, loadRequests, loadPurchases, loadReports]);
+    if (isStaff) { loadEvents(); loadAvatarItems(); loadMusic(); loadRequests(); loadReports(); }
+  }, [isStaff, loadEvents, loadAvatarItems, loadMusic, loadRequests, loadReports]);
 
   useEffect(() => {
     if (isActualOwner) loadAudit();
@@ -214,13 +214,6 @@ const Admin = () => {
     loadMusic();
   };
 
-  const handleMarkPaid = async (orderId: string, username: string) => {
-    const { error } = await supabase.rpc("mark_premium_order_paid", { _order_id: orderId });
-    if (error) return toast.error(error.message);
-    if (isActualOwner) loadAudit();
-    toast.success(`Premium granted to ${username}! ✨`);
-    loadOrders();
-  };
 
   const handleStartEvent = async () => {
     if (!newEvent.name.trim()) return toast.error("Enter event name");
@@ -420,12 +413,6 @@ const Admin = () => {
               <PartyPopper className="h-4 w-4 mr-1" /> Events
             </Button>
             {isDeputy && (<>
-            <Button size="sm" variant={tab === "orders" ? "default" : "outline"} onClick={() => setTab("orders")}>
-              <Receipt className="h-4 w-4 mr-1" /> Orders
-              {orders.some((o) => o.status === "pending") && (
-                <Badge className="ml-1 bg-amber-500 text-black">{orders.filter((o) => o.status === "pending").length}</Badge>
-              )}
-            </Button>
             <Button size="sm" variant={tab === "requests" ? "default" : "outline"} onClick={() => setTab("requests")}>
               <ShieldAlert className="h-4 w-4 mr-1" /> Requests
               {requests.some((r) => r.status === "pending") && (
