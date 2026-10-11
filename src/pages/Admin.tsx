@@ -419,9 +419,6 @@ const Admin = () => {
                 <Badge className="ml-1 bg-amber-500 text-black">{requests.filter((r) => r.status === "pending").length}</Badge>
               )}
             </Button>
-            <Button size="sm" variant={tab === "purchases" ? "default" : "outline"} onClick={() => setTab("purchases")}>
-              <ShoppingCart className="h-4 w-4 mr-1" /> Purchases
-            </Button>
             <Button size="sm" variant={tab === "reports" ? "default" : "outline"} onClick={() => setTab("reports")}>
               Reports
               {reports.filter((r) => r.status === "open").length > 0 && <Badge className="ml-1 bg-destructive">{reports.filter((r) => r.status === "open").length}</Badge>}
