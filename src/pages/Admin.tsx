@@ -134,6 +134,20 @@ const Admin = () => {
     setPurchases((data as any[]) ?? []);
   }, []);
 
+  const [alerts, setAlerts] = useState<{ id: string; user_id: string; username: string | null; reason: string; content: string | null; created_at: string }[]>([]);
+  const loadAlerts = useCallback(async () => {
+    const { data } = await supabase
+      .from("user_warnings")
+      .select("id, user_id, username, reason, content, created_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    setAlerts((data as any[]) ?? []);
+  }, []);
+  const deleteAlert = async (id: string) => {
+    const { error } = await (supabase as any).rpc("delete_user_warning", { _id: id });
+    if (error) toast.error(error.message); else { toast.success("Deleted"); loadAlerts(); }
+  };
+
   const [reports, setReports] = useState<any[]>([]);
   const loadReports = useCallback(async () => {
     const { data } = await (supabase as any)
@@ -155,13 +169,22 @@ const Admin = () => {
 
   useEffect(() => {
     if (isActualOwner) loadAudit();
-  }, [isActualOwner, loadAudit]);
+    if (isDeputy) loadAlerts();
+  }, [isActualOwner, isDeputy, loadAudit, loadAlerts]);
 
-  // Live owner/deputy notifications for new moderation requests and safety reports.
+  // Live owner/deputy notifications for bad language, new moderation requests and safety reports.
   useEffect(() => {
     if (!isDeputy) return;
     const channel = supabase
       .channel("owner-alerts")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "user_warnings" }, (payload) => {
+        const row = payload.new as { username: string | null; content: string | null };
+        toast.warning(`${row.username ?? "A user"} used inappropriate language`, {
+          description: row.content ?? undefined,
+          duration: 10000,
+        });
+        loadAlerts();
+      })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "moderation_requests" }, (payload) => {
         const row = payload.new as { requester_username: string | null; action: string; target_username: string | null };
         toast.info(`${row.requester_username ?? "An admin"} requests to ${row.action} ${row.target_username ?? "a user"}`, {
