@@ -37,14 +37,12 @@ const Admin = () => {
   const [avatarItems, setAvatarItems] = useState<{ id: string; name: string; emoji: string; rarity: string }[]>([]);
   const [grantAvatar, setGrantAvatar] = useState<Record<string, string>>({});
   const [removeAvatar, setRemoveAvatar] = useState<Record<string, string>>({});
-  const [tab, setTab] = useState<"users" | "events" | "orders" | "music" | "audit" | "requests" | "purchases" | "alerts" | "reports">("users");
-  const [orders, setOrders] = useState<{ id: string; user_id: string; username: string; amount_eur: number; status: string; created_at: string }[]>([]);
+  const [tab, setTab] = useState<"users" | "events" | "music" | "audit" | "requests" | "alerts" | "reports">("users");
   const [music, setMusic] = useState<{ url: string | null; title: string | null; playing: boolean } | null>(null);
   const [musicForm, setMusicForm] = useState({ url: "", title: "" });
   const [audit, setAudit] = useState<{ id: string; actor_username: string | null; action: string; target_username: string | null; details: Record<string, unknown> | null; created_at: string }[]>([]);
   const [auditQ, setAuditQ] = useState("");
   const [requests, setRequests] = useState<{ id: string; requester_username: string | null; target_id: string; target_username: string | null; action: string; reason: string; status: string; created_at: string }[]>([]);
-  const [purchases, setPurchases] = useState<{ id: string; username: string | null; item_type: string; item_name: string; amount: number; currency: string; created_at: string }[]>([]);
 
 
   useEffect(() => {
@@ -92,11 +90,6 @@ const Admin = () => {
     setAvatarItems((data as any[]) ?? []);
   }, []);
 
-  const loadOrders = useCallback(async () => {
-    const { data, error } = await supabase.rpc("admin_list_premium_orders");
-    if (error) return toast.error(error.message);
-    setOrders((data as any[]) ?? []);
-  }, []);
 
   const loadMusic = useCallback(async () => {
     const { data } = await supabase.from("global_music").select("url,title,playing").eq("id", 1).maybeSingle();
@@ -125,14 +118,6 @@ const Admin = () => {
     setRequests((data as any[]) ?? []);
   }, []);
 
-  const loadPurchases = useCallback(async () => {
-    const { data } = await supabase
-      .from("purchase_log")
-      .select("id, username, item_type, item_name, amount, currency, created_at")
-      .order("created_at", { ascending: false })
-      .limit(300);
-    setPurchases((data as any[]) ?? []);
-  }, []);
 
   const [alerts, setAlerts] = useState<{ id: string; user_id: string; username: string | null; reason: string; content: string | null; created_at: string }[]>([]);
   const loadAlerts = useCallback(async () => {
