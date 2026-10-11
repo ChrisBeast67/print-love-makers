@@ -27,8 +27,6 @@ const Exp = () => {
   const [claimed, setClaimed] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState(false);
-  const [hasPendingOrder, setHasPendingOrder] = useState(false);
-  const [ordering, setOrdering] = useState(false);
 
   useEffect(() => {
     document.title = "EXP & Milestones — PrintChat";
@@ -52,12 +50,6 @@ const Exp = () => {
     setIsPremium(expRes.data?.is_premium ?? false);
     setMilestones((msRes.data as Milestone[]) ?? []);
     setClaimed(new Set((claimRes.data ?? []).map((c: { milestone_id: string }) => c.milestone_id)));
-    const { data: orders } = await supabase
-      .from("premium_orders")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("status", "pending");
-    setHasPendingOrder((orders ?? []).length > 0);
     setLoading(false);
   }, [user]);
 
@@ -81,14 +73,6 @@ const Exp = () => {
     load();
   };
 
-  const handleOrderPremium = async () => {
-    setOrdering(true);
-    const { error } = await supabase.rpc("create_premium_order");
-    setOrdering(false);
-    if (error) return toast.error(error.message);
-    toast.success("Order placed! An admin will confirm your payment shortly. 🎉");
-    load();
-  };
 
   const freeMilestones = milestones.filter((m) => !m.is_premium);
   const premiumMilestones = milestones.filter((m) => m.is_premium);
@@ -163,20 +147,6 @@ const Exp = () => {
               >
                 <Crown className="h-4 w-4 mr-1" /> Buy Premium — 100,000 credits
               </Button>
-              {hasPendingOrder ? (
-                <Button disabled variant="outline" className="border-amber-500/50 text-amber-400">
-                  ⏳ Order pending — awaiting admin confirmation
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleOrderPremium}
-                  disabled={ordering}
-                  variant="outline"
-                  className="border-amber-500/60 text-amber-400 hover:bg-amber-500/10 font-bold"
-                >
-                  <Crown className="h-4 w-4 mr-1" /> Buy Premium — €5
-                </Button>
-              )}
             </div>
           </div>
         )}

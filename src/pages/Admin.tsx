@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper, ScrollText, ShieldAlert, ShoppingCart, AlertTriangle } from "lucide-react";
-import { Receipt } from "lucide-react";
+import { ArrowLeft, Shield, Ban, CheckCircle2, Coins, MessageCircle, Crown, UserCog, Trash2, Mail, Sparkles, Gift, X, Zap, PartyPopper, ScrollText, ShieldAlert, AlertTriangle } from "lucide-react";
 import { Minus } from "lucide-react";
 import { Music, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -37,14 +36,12 @@ const Admin = () => {
   const [avatarItems, setAvatarItems] = useState<{ id: string; name: string; emoji: string; rarity: string }[]>([]);
   const [grantAvatar, setGrantAvatar] = useState<Record<string, string>>({});
   const [removeAvatar, setRemoveAvatar] = useState<Record<string, string>>({});
-  const [tab, setTab] = useState<"users" | "events" | "orders" | "music" | "audit" | "requests" | "purchases" | "alerts" | "reports">("users");
-  const [orders, setOrders] = useState<{ id: string; user_id: string; username: string; amount_eur: number; status: string; created_at: string }[]>([]);
+  const [tab, setTab] = useState<"users" | "events" | "music" | "audit" | "requests" | "alerts" | "reports">("users");
   const [music, setMusic] = useState<{ url: string | null; title: string | null; playing: boolean } | null>(null);
   const [musicForm, setMusicForm] = useState({ url: "", title: "" });
   const [audit, setAudit] = useState<{ id: string; actor_username: string | null; action: string; target_username: string | null; details: Record<string, unknown> | null; created_at: string }[]>([]);
   const [auditQ, setAuditQ] = useState("");
   const [requests, setRequests] = useState<{ id: string; requester_username: string | null; target_id: string; target_username: string | null; action: string; reason: string; status: string; created_at: string }[]>([]);
-  const [purchases, setPurchases] = useState<{ id: string; username: string | null; item_type: string; item_name: string; amount: number; currency: string; created_at: string }[]>([]);
 
 
   useEffect(() => {
@@ -92,11 +89,6 @@ const Admin = () => {
     setAvatarItems((data as any[]) ?? []);
   }, []);
 
-  const loadOrders = useCallback(async () => {
-    const { data, error } = await supabase.rpc("admin_list_premium_orders");
-    if (error) return toast.error(error.message);
-    setOrders((data as any[]) ?? []);
-  }, []);
 
   const loadMusic = useCallback(async () => {
     const { data } = await supabase.from("global_music").select("url,title,playing").eq("id", 1).maybeSingle();
@@ -125,14 +117,6 @@ const Admin = () => {
     setRequests((data as any[]) ?? []);
   }, []);
 
-  const loadPurchases = useCallback(async () => {
-    const { data } = await supabase
-      .from("purchase_log")
-      .select("id, username, item_type, item_name, amount, currency, created_at")
-      .order("created_at", { ascending: false })
-      .limit(300);
-    setPurchases((data as any[]) ?? []);
-  }, []);
 
   const [alerts, setAlerts] = useState<{ id: string; user_id: string; username: string | null; reason: string; content: string | null; created_at: string }[]>([]);
   const loadAlerts = useCallback(async () => {
@@ -164,8 +148,8 @@ const Admin = () => {
   };
 
   useEffect(() => {
-    if (isStaff) { loadEvents(); loadAvatarItems(); loadOrders(); loadMusic(); loadRequests(); loadPurchases(); loadReports(); }
-  }, [isStaff, loadEvents, loadAvatarItems, loadOrders, loadMusic, loadRequests, loadPurchases, loadReports]);
+    if (isStaff) { loadEvents(); loadAvatarItems(); loadMusic(); loadRequests(); loadReports(); }
+  }, [isStaff, loadEvents, loadAvatarItems, loadMusic, loadRequests, loadReports]);
 
   useEffect(() => {
     if (isActualOwner) loadAudit();
@@ -229,13 +213,6 @@ const Admin = () => {
     loadMusic();
   };
 
-  const handleMarkPaid = async (orderId: string, username: string) => {
-    const { error } = await supabase.rpc("mark_premium_order_paid", { _order_id: orderId });
-    if (error) return toast.error(error.message);
-    if (isActualOwner) loadAudit();
-    toast.success(`Premium granted to ${username}! ✨`);
-    loadOrders();
-  };
 
   const handleStartEvent = async () => {
     if (!newEvent.name.trim()) return toast.error("Enter event name");
@@ -435,20 +412,11 @@ const Admin = () => {
               <PartyPopper className="h-4 w-4 mr-1" /> Events
             </Button>
             {isDeputy && (<>
-            <Button size="sm" variant={tab === "orders" ? "default" : "outline"} onClick={() => setTab("orders")}>
-              <Receipt className="h-4 w-4 mr-1" /> Orders
-              {orders.some((o) => o.status === "pending") && (
-                <Badge className="ml-1 bg-amber-500 text-black">{orders.filter((o) => o.status === "pending").length}</Badge>
-              )}
-            </Button>
             <Button size="sm" variant={tab === "requests" ? "default" : "outline"} onClick={() => setTab("requests")}>
               <ShieldAlert className="h-4 w-4 mr-1" /> Requests
               {requests.some((r) => r.status === "pending") && (
                 <Badge className="ml-1 bg-amber-500 text-black">{requests.filter((r) => r.status === "pending").length}</Badge>
               )}
-            </Button>
-            <Button size="sm" variant={tab === "purchases" ? "default" : "outline"} onClick={() => setTab("purchases")}>
-              <ShoppingCart className="h-4 w-4 mr-1" /> Purchases
             </Button>
             <Button size="sm" variant={tab === "reports" ? "default" : "outline"} onClick={() => setTab("reports")}>
               Reports
@@ -720,53 +688,6 @@ const Admin = () => {
         </section>
       )}
 
-      {tab === "orders" && isDeputy && (
-        <section className="container mx-auto px-6 py-8 max-w-3xl space-y-6">
-          <h2 className="font-bold text-lg flex items-center gap-2">
-            <Receipt className="h-5 w-5 text-primary" /> Premium Orders
-          </h2>
-
-          <div className="space-y-3">
-            <h3 className="font-semibold text-muted-foreground">Pending</h3>
-            {orders.filter((o) => o.status === "pending").length === 0 && (
-              <p className="text-sm text-muted-foreground">No pending orders.</p>
-            )}
-            {orders.filter((o) => o.status === "pending").map((o) => (
-              <div key={o.id} className="rounded-xl border border-amber-500/40 bg-card p-4 flex items-center justify-between">
-                <div>
-                  <span className="font-semibold">{o.username}</span>
-                  <Badge className="ml-2 gap-1 bg-amber-500 text-black"><Crown className="h-3 w-3" /> Premium</Badge>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    €{Number(o.amount_eur).toFixed(2)} · {new Date(o.created_at).toLocaleString()}
-                  </div>
-                </div>
-                <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-black font-bold" onClick={() => handleMarkPaid(o.id, o.username)}>
-                  <CheckCircle2 className="h-4 w-4 mr-1" /> Paid
-                </Button>
-              </div>
-            ))}
-          </div>
-
-          {orders.filter((o) => o.status !== "pending").length > 0 && (
-            <div className="space-y-3">
-              <h3 className="font-semibold text-muted-foreground">Paid</h3>
-              {orders.filter((o) => o.status !== "pending").map((o) => (
-                <div key={o.id} className="rounded-xl border border-border bg-card/50 p-4 flex items-center justify-between opacity-70">
-                  <div>
-                    <span className="font-semibold">{o.username}</span>
-                    <Badge variant="secondary" className="ml-2">Paid</Badge>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      €{Number(o.amount_eur).toFixed(2)} · {new Date(o.created_at).toLocaleString()}
-                    </div>
-                  </div>
-                  <CheckCircle2 className="h-5 w-5 text-primary" />
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-
       {tab === "audit" && isActualOwner && (
         <section className="container mx-auto px-6 py-8 max-w-5xl space-y-5">
           <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -893,34 +814,6 @@ const Admin = () => {
           </div>
         </section>
       )}
-
-      {tab === "purchases" && isDeputy && (
-        <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <h2 className="font-bold text-lg flex items-center gap-2"><ShoppingCart className="h-5 w-5 text-primary" /> Purchases</h2>
-              <p className="text-sm text-muted-foreground mt-1">Who bought what, and how much they paid.</p>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => refreshTab(loadPurchases)}>Refresh</Button>
-          </div>
-          <div className="space-y-2">
-            {purchases.map((p) => (
-              <div key={p.id} className="rounded-xl border border-border bg-card p-3 flex items-center justify-between gap-4 flex-wrap">
-                <div>
-                  <p className="font-semibold">{p.username || "Unknown"} bought {p.item_name}</p>
-                  <p className="text-xs text-muted-foreground mt-1 capitalize">{p.item_type.replace("_", " ")}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-primary">{p.amount.toLocaleString()} {p.currency}</p>
-                  <time className="text-xs text-muted-foreground" dateTime={p.created_at}>{new Date(p.created_at).toLocaleString()}</time>
-                </div>
-              </div>
-            ))}
-            {purchases.length === 0 && <p className="text-center text-muted-foreground py-10">No purchases recorded yet.</p>}
-          </div>
-        </section>
-      )}
-
 
       {tab === "alerts" && isDeputy && (
         <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
