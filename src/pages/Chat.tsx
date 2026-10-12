@@ -206,11 +206,15 @@ const loadChats = async () => {
     }
   }, [chatId, chats, navigate]);
 
+  const [ranks, setRanks] = useState<Record<string, string>>({});
   const loadProfiles = async (userIds: string[]) => {
     const unique = Array.from(new Set(userIds)).filter((id) => id && !profiles[id]);
     if (unique.length === 0) return;
     const { data } = await supabase.from("profiles").select("*").in("id", unique);
     if (data) {
+      supabase.rpc("get_user_ranks", { _ids: unique }).then(({ data: rk }) => {
+        if (rk) setRanks((prev) => ({ ...prev, ...Object.fromEntries(rk.map((r: any) => [r.user_id, r.rank])) }));
+      });
       setProfiles((prev) => {
         const next = { ...prev };
         data.forEach((p) => (next[p.id] = p));
@@ -1174,6 +1178,9 @@ const loadChats = async () => {
                         <div className={cn("flex flex-col max-w-[75%]", isMine && "items-end")}>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                             <span className="font-medium text-foreground/80">{name}</span>
+                            {ranks[m.user_id] && (
+                              <span className="text-[10px] uppercase font-bold px-1.5 rounded border border-primary/40 text-primary">{ranks[m.user_id]}</span>
+                            )}
                             {profile?.title && (
                               <span className="text-[10px] text-primary font-medium">{profile.title}</span>
                             )}

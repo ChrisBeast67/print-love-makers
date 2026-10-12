@@ -24,7 +24,8 @@ type Row = {
 
 const Admin = () => {
   const { user, loading: authLoading } = useAuth();
-  const { isStaff, isOwner, isActualOwner, isDeputy, loading: roleLoading } = useStaffRole();
+  const { isStaff, isOwner, isActualOwner, isDeputy, isTeacher, loading: roleLoading } = useStaffRole();
+  const canSafety = isDeputy || isTeacher;
   const navigate = useNavigate();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -153,12 +154,12 @@ const Admin = () => {
 
   useEffect(() => {
     if (isActualOwner) loadAudit();
-    if (isDeputy) loadAlerts();
-  }, [isActualOwner, isDeputy, loadAudit, loadAlerts]);
+    if (canSafety) loadAlerts();
+  }, [isActualOwner, canSafety, loadAudit, loadAlerts]);
 
   // Live owner/deputy notifications for bad language, new moderation requests and safety reports.
   useEffect(() => {
-    if (!isDeputy) return;
+    if (!canSafety) return;
     const channel = supabase
       .channel("owner-alerts")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "user_warnings" }, (payload) => {
@@ -185,7 +186,7 @@ const Admin = () => {
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [isDeputy, loadAlerts, loadRequests, loadReports]);
+  }, [canSafety, loadAlerts, loadRequests, loadReports]);
 
 
 
@@ -404,26 +405,27 @@ const Admin = () => {
           <div className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" />
             <span className="font-bold gradient-text">Admin Panel</span>
-            <Badge variant="outline" className="ml-2">{isOwner ? "Owner" : "Moderator"}</Badge>
+            <Badge variant="outline" className="ml-2">{isOwner ? "Owner" : isTeacher ? "Teacher" : isDeputy ? "Deputy" : "Moderator"}</Badge>
           </div>
           <div className="flex gap-2">
             <Button size="sm" variant={tab === "users" ? "default" : "outline"} onClick={() => setTab("users")}>Users</Button>
-            <Button size="sm" variant={tab === "events" ? "default" : "outline"} onClick={() => setTab("events")}>
+            {!isTeacher && (<Button size="sm" variant={tab === "events" ? "default" : "outline"} onClick={() => setTab("events")}>
               <PartyPopper className="h-4 w-4 mr-1" /> Events
-            </Button>
-            {isDeputy && (<>
+            </Button>)}
+            {isDeputy && (
             <Button size="sm" variant={tab === "requests" ? "default" : "outline"} onClick={() => setTab("requests")}>
               <ShieldAlert className="h-4 w-4 mr-1" /> Requests
               {requests.some((r) => r.status === "pending") && (
                 <Badge className="ml-1 bg-amber-500 text-black">{requests.filter((r) => r.status === "pending").length}</Badge>
               )}
-            </Button>
+            </Button>)}
+            {canSafety && (<>
             <Button size="sm" variant={tab === "reports" ? "default" : "outline"} onClick={() => setTab("reports")}>
               Reports
               {reports.filter((r) => r.status === "open").length > 0 && <Badge className="ml-1 bg-destructive">{reports.filter((r) => r.status === "open").length}</Badge>}
             </Button>
             </>)}
-            {isDeputy && (
+            {canSafety && (
               <Button size="sm" variant={tab === "alerts" ? "default" : "outline"} onClick={() => setTab("alerts")}>
                 <AlertTriangle className="h-4 w-4 mr-1" /> Language Alerts
                 {alerts.length > 0 && <Badge className="ml-1 bg-destructive">{alerts.length}</Badge>}
@@ -592,6 +594,15 @@ const Admin = () => {
                         {r.roles.includes("moderator") ? "Demote" : "Mod"}
                       </Button>
                     )}
+                    {isDeputy && r.id !== user?.id && !r.roles.includes("owner") && (
+                      <Button
+                        size="sm"
+                        variant={r.roles.includes("teacher") ? "destructive" : "outline"}
+                        onClick={() => handleRole(r.id, "teacher" as any, r.roles.includes("teacher"))}
+                      >
+                        {r.roles.includes("teacher") ? "Remove Teacher" : "Teacher"}
+                      </Button>
+                    )}
                     {isActualOwner && r.id !== user?.id && !r.roles.includes("owner") && (
                       <Button
                         size="sm"
@@ -626,7 +637,7 @@ const Admin = () => {
         </section>
       )}
 
-      {tab === "events" && (
+      {tab === "events" && !isTeacher && (
         <section className="container mx-auto px-6 py-8 max-w-3xl space-y-6">
           {/* Create event */}
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
@@ -815,7 +826,7 @@ const Admin = () => {
         </section>
       )}
 
-      {tab === "alerts" && isDeputy && (
+      {tab === "alerts" && canSafety && (
         <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
@@ -845,7 +856,7 @@ const Admin = () => {
         </section>
       )}
 
-      {tab === "reports" && isDeputy && (
+      {tab === "reports" && canSafety && (
         <section className="container mx-auto px-6 py-8 max-w-4xl space-y-5">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
