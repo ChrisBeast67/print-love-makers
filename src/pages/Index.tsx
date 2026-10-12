@@ -33,33 +33,33 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background hi-tech-grid">
       <nav className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-        <div className="container mx-auto flex items-center justify-between px-6 py-3">
-          <Link to="/" className="flex items-center gap-2 text-xl font-bold">
+        <div className="container mx-auto flex items-center justify-between gap-2 px-3 sm:px-6 py-3">
+          <Link to="/" className="flex shrink-0 items-center gap-2 text-xl font-bold">
             <img src={printchatLogo} alt="PrintChat" className="h-8 w-8 object-contain" />
-            <span className="gradient-text">PrintChat</span>
+            <span className="gradient-text hidden sm:inline">PrintChat</span>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-0.5 sm:gap-2">
             <Button size="sm" variant="ghost" onClick={() => setShowTutorial(true)}>
-              <BookOpen className="h-4 w-4 mr-1" /> Tutorial
+              <BookOpen className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Tutorial</span>
             </Button>
             {user ? (
               <>
                 {isStaff && (
                   <Button size="sm" variant="ghost" onClick={() => navigate("/admin")}>
-                    <Shield className="h-4 w-4 mr-1" /> Admin
+                    <Shield className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Admin</span>
                   </Button>
                 )}
                 <Button size="sm" variant="ghost" onClick={() => navigate("/shop")}>
-                  <ShoppingBag className="h-4 w-4 mr-1" /> Shop
+                  <ShoppingBag className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Shop</span>
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => navigate("/backpack")}>
-                  <BackpackIcon className="h-4 w-4 mr-1" /> Backpack
+                  <BackpackIcon className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Backpack</span>
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => navigate("/exp")}>
-                  <Star className="h-4 w-4 mr-1" /> EXP
+                  <Star className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">EXP</span>
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => navigate("/chat")}>
-                  Chats
+                  <MessageCircle className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Chats</span>
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => signOut()}>
                   <LogOut className="h-4 w-4" />
