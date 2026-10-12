@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-export type StaffRole = "owner" | "deputy" | "admin" | "moderator" | null;
+export type StaffRole = "owner" | "deputy" | "admin" | "moderator" | "teacher" | null;
 
 export function useStaffRole() {
   const { user } = useAuth();
@@ -29,6 +29,7 @@ export function useStaffRole() {
         else if (roles.includes("deputy")) { setRole("deputy"); setIsActualOwner(false); }
         else if (roles.includes("admin")) { setRole("deputy"); setIsActualOwner(false); } // legacy admins act as deputies
         else if (roles.includes("moderator")) setRole("moderator");
+        else if (roles.includes("teacher")) setRole("teacher");
         else setRole(null);
         setLoading(false);
       });
@@ -37,8 +38,9 @@ export function useStaffRole() {
     };
   }, [user]);
 
-  const isStaff = role === "owner" || role === "deputy" || role === "moderator";
+  const isStaff = role === "owner" || role === "deputy" || role === "moderator" || role === "teacher";
+  const isTeacher = role === "teacher";
   const isOwner = role === "owner";
   const isDeputy = role === "deputy" || role === "owner";
-  return { role, isStaff, isOwner, isActualOwner, isDeputy, loading };
+  return { role, isStaff, isOwner, isActualOwner, isDeputy, isTeacher, loading };
 }
