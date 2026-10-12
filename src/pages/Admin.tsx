@@ -594,6 +594,15 @@ const Admin = () => {
                         {r.roles.includes("moderator") ? "Demote" : "Mod"}
                       </Button>
                     )}
+                    {isDeputy && r.id !== user?.id && !r.roles.includes("owner") && (
+                      <Button
+                        size="sm"
+                        variant={r.roles.includes("teacher") ? "destructive" : "outline"}
+                        onClick={() => handleRole(r.id, "teacher" as any, r.roles.includes("teacher"))}
+                      >
+                        {r.roles.includes("teacher") ? "Remove Teacher" : "Teacher"}
+                      </Button>
+                    )}
                     {isActualOwner && r.id !== user?.id && !r.roles.includes("owner") && (
                       <Button
                         size="sm"
