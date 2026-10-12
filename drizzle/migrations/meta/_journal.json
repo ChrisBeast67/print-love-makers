@@ -50,6 +50,13 @@
       "when": 1791619612933,
       "tag": "0006_delete_user_warning_rpc",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791804301258,
+      "tag": "0007_teacher_role",
+      "breakpoints": true
     }
   ]
 }

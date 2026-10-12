@@ -1112,6 +1112,13 @@ export type Database = {
         Returns: undefined
       }
       equip_avatar: { Args: { _avatar_item_id: string }; Returns: undefined }
+      get_user_ranks: {
+        Args: { _ids: string[] }
+        Returns: {
+          rank: string
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1193,7 +1200,7 @@ export type Database = {
       unequip_avatar: { Args: never; Returns: undefined }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user" | "owner" | "deputy"
+      app_role: "admin" | "moderator" | "user" | "owner" | "deputy" | "teacher"
       chat_member_role: "admin" | "member"
       chat_type: "dm" | "group"
       event_type: "easter" | "christmas" | "halloween" | "luck_boost" | "custom"
@@ -1326,7 +1333,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user", "owner", "deputy"],
+      app_role: ["admin", "moderator", "user", "owner", "deputy", "teacher"],
       chat_member_role: ["admin", "member"],
       chat_type: ["dm", "group"],
       event_type: ["easter", "christmas", "halloween", "luck_boost", "custom"],
