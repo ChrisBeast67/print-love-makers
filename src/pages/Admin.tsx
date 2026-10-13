@@ -463,7 +463,7 @@ const Admin = () => {
               {filtered.map((r) => (
                 <div
                   key={r.id}
-                  className="rounded-xl border border-border bg-card p-4 flex flex-col md:flex-row md:items-center gap-3 hover:border-primary/40 transition-colors"
+                  className="rounded-xl border border-border bg-card p-4 flex min-w-0 flex-col gap-4 hover:border-primary/40 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -483,13 +483,13 @@ const Admin = () => {
                       <Coins className="h-3 w-3" /> {r.balance} credits
                     </div>
                     {r.email && (
-                      <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                        <Mail className="h-3 w-3" /> {r.email}
+                      <div className="text-xs text-muted-foreground flex items-start gap-1 mt-0.5">
+                        <Mail className="h-3 w-3 shrink-0 mt-0.5" /> <span className="min-w-0 break-all">{r.email}</span>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex min-w-0 items-center gap-2 flex-wrap border-t border-border pt-3 [&>button]:shrink-0">
                     <Input
                       type="number"
                       placeholder="±credits"

@@ -1,0 +1,2 @@
+## Layout rules
+- Keep admin user details above wrapping action controls, and constrain group settings to the viewport with shrinkable fields and a grid footer, so controls cannot obscure names or expand dialogs.
