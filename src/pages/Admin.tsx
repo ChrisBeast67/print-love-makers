@@ -398,7 +398,7 @@ const Admin = () => {
   return (
     <div className="min-h-screen bg-background hi-tech-grid">
       <nav className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-        <div className="container mx-auto flex items-center justify-between px-6 py-3">
+        <div className="container mx-auto flex flex-wrap items-center justify-between gap-3 px-6 py-3">
           <Link to="/" className="flex items-center gap-2 font-bold">
             <ArrowLeft className="h-4 w-4" /> Back
           </Link>
@@ -407,7 +407,7 @@ const Admin = () => {
             <span className="font-bold gradient-text">Admin Panel</span>
             <Badge variant="outline" className="ml-2">{isOwner ? "Owner" : isTeacher ? "Teacher" : isDeputy ? "Deputy" : "Moderator"}</Badge>
           </div>
-          <div className="flex gap-2">
+          <div className="flex min-w-0 flex-wrap gap-2">
             <Button size="sm" variant={tab === "users" ? "default" : "outline"} onClick={() => setTab("users")}>Users</Button>
             {!isTeacher && (<Button size="sm" variant={tab === "events" ? "default" : "outline"} onClick={() => setTab("events")}>
               <PartyPopper className="h-4 w-4 mr-1" /> Events
