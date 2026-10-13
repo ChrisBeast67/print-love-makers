@@ -985,9 +985,9 @@ const loadChats = async () => {
                       <span className="hidden sm:inline">Members</span>
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-md">
+                  <DialogContent className="w-[calc(100%-2rem)] max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto [&>*]:min-w-0">
                     <DialogHeader>
-                      <DialogTitle>{getChatName(activeChat)}</DialogTitle>
+                      <DialogTitle className="break-words pr-6">{getChatName(activeChat)}</DialogTitle>
                       <DialogDescription>Manage members and invites</DialogDescription>
                     </DialogHeader>
 
@@ -1000,9 +1000,10 @@ const loadChats = async () => {
                               value={inviteUsername}
                               onChange={(e) => setInviteUsername(e.target.value)}
                               placeholder="username"
+                              className="min-w-0 flex-1"
                               onKeyDown={(e) => e.key === "Enter" && addMemberByUsername()}
                             />
-                            <Button onClick={addMemberByUsername} size="sm">
+                            <Button onClick={addMemberByUsername} size="sm" className="shrink-0" title="Add member">
                               <UserPlus className="h-4 w-4" />
                             </Button>
                           </div>
@@ -1010,8 +1011,8 @@ const loadChats = async () => {
                         <div className="space-y-2">
                           <label className="text-sm font-medium">Invite link</label>
                           <div className="flex gap-2">
-                            <Input value={inviteLink ?? ""} readOnly placeholder="Generate to share" />
-                            <Button onClick={generateInvite} size="sm" variant="outline">
+                            <Input className="min-w-0 flex-1" value={inviteLink ?? ""} readOnly placeholder="Generate to share" />
+                            <Button onClick={generateInvite} size="sm" variant="outline" className="shrink-0" title="Generate invite link">
                               <Link2 className="h-4 w-4" />
                             </Button>
                           </div>
@@ -1024,8 +1025,8 @@ const loadChats = async () => {
                       {members.map((m) => {
                         const p = profiles[m.user_id];
                         return (
-                          <div key={m.user_id} className="flex items-center justify-between gap-2 py-1.5 px-2 rounded hover:bg-secondary/40">
-                            <div className="flex items-center gap-2 min-w-0">
+                          <div key={m.user_id} className="flex flex-wrap items-center justify-between gap-2 py-1.5 px-2 rounded hover:bg-secondary/40">
+                            <div className="flex flex-1 items-center gap-2 min-w-0">
                               <Avatar className="h-7 w-7 shrink-0">
                                 <AvatarFallback className="bg-secondary text-xs">
                                   {(p?.username ?? "?").slice(0, 2).toUpperCase()}
@@ -1033,13 +1034,13 @@ const loadChats = async () => {
                               </Avatar>
                               <span className="text-sm truncate">{p?.username ?? "user"}</span>
                               {m.role === "admin" && (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30">
+                                <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30">
                                   admin
                                 </span>
                               )}
                             </div>
                             {activeChat.type === "group" && isAdminHere && m.user_id !== user.id && (
-                              <div className="flex items-center gap-1">
+                              <div className="flex shrink-0 items-center gap-1">
                                 <Button
                                   size="sm"
                                   variant={m.role === "admin" ? "destructive" : "secondary"}
@@ -1061,7 +1062,7 @@ const loadChats = async () => {
                       })}
                     </div>
 
-                    <DialogFooter className="flex-col sm:flex-row gap-2">
+                    <DialogFooter className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-2 sm:space-x-0 [&>button]:w-full">
                       {activeChat.type === "group" && isStaff && !isAdminHere && (
                         <Button variant="outline" size="sm" onClick={staffSelfPromote}>
                           <Shield className="h-4 w-4" /> Become Admin
@@ -1100,10 +1101,9 @@ const loadChats = async () => {
                         </>
                       )}
                       {activeChat.type === "group" && isAdminHere && (
-                        <div className="flex items-center gap-2">
-                          <Lock className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">Admin-only chat</span>
-                          <Switch checked={!!activeChat.admin_only} onCheckedChange={toggleAdminOnly} />
+                        <div className="col-span-full flex items-center justify-between gap-2 py-2">
+                          <span className="flex min-w-0 items-center gap-2 text-sm"><Lock className="h-4 w-4 shrink-0 text-muted-foreground" />Admin-only chat</span>
+                          <Switch aria-label="Admin-only chat" className="shrink-0" checked={!!activeChat.admin_only} onCheckedChange={toggleAdminOnly} />
                         </div>
                       )}
                       {activeChat.type === "group" && (

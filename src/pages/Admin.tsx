@@ -398,7 +398,7 @@ const Admin = () => {
   return (
     <div className="min-h-screen bg-background hi-tech-grid">
       <nav className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-        <div className="container mx-auto flex items-center justify-between px-6 py-3">
+        <div className="container mx-auto flex flex-wrap items-center justify-between gap-3 px-6 py-3">
           <Link to="/" className="flex items-center gap-2 font-bold">
             <ArrowLeft className="h-4 w-4" /> Back
           </Link>
@@ -407,7 +407,7 @@ const Admin = () => {
             <span className="font-bold gradient-text">Admin Panel</span>
             <Badge variant="outline" className="ml-2">{isOwner ? "Owner" : isTeacher ? "Teacher" : isDeputy ? "Deputy" : "Moderator"}</Badge>
           </div>
-          <div className="flex gap-2">
+          <div className="flex min-w-0 flex-wrap gap-2">
             <Button size="sm" variant={tab === "users" ? "default" : "outline"} onClick={() => setTab("users")}>Users</Button>
             {!isTeacher && (<Button size="sm" variant={tab === "events" ? "default" : "outline"} onClick={() => setTab("events")}>
               <PartyPopper className="h-4 w-4 mr-1" /> Events
@@ -463,7 +463,7 @@ const Admin = () => {
               {filtered.map((r) => (
                 <div
                   key={r.id}
-                  className="rounded-xl border border-border bg-card p-4 flex flex-col md:flex-row md:items-center gap-3 hover:border-primary/40 transition-colors"
+                  className="rounded-xl border border-border bg-card p-4 flex min-w-0 flex-col gap-4 hover:border-primary/40 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -483,13 +483,13 @@ const Admin = () => {
                       <Coins className="h-3 w-3" /> {r.balance} credits
                     </div>
                     {r.email && (
-                      <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                        <Mail className="h-3 w-3" /> {r.email}
+                      <div className="text-xs text-muted-foreground flex items-start gap-1 mt-0.5">
+                        <Mail className="h-3 w-3 shrink-0 mt-0.5" /> <span className="min-w-0 break-all">{r.email}</span>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex min-w-0 items-center gap-2 flex-wrap border-t border-border pt-3 [&>button]:shrink-0">
                     <Input
                       type="number"
                       placeholder="±credits"

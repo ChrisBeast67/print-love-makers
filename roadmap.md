@@ -1,0 +1,3 @@
+- [x] Separate admin user details from action controls.
+- [x] Keep group settings fields, members, and actions inside the window.
+- [x] Verify both views while signed in at desktop and narrow widths.
