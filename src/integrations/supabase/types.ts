@@ -1078,6 +1078,10 @@ export type Database = {
       buy_avatar: { Args: { _avatar_item_id: string }; Returns: Json }
       buy_luck_boost: { Args: { _tier: number }; Returns: string }
       buy_premium: { Args: never; Returns: undefined }
+      can_view_user_safety: {
+        Args: { _target: string; _viewer: string }
+        Returns: boolean
+      }
       cancel_trade_offer: { Args: { _id: string }; Returns: undefined }
       claim_daily_credits: { Args: never; Returns: number }
       claim_milestone: { Args: { _milestone_id: string }; Returns: string }

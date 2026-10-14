@@ -57,6 +57,13 @@
       "when": 1791804301258,
       "tag": "0007_teacher_role",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791999536356,
+      "tag": "0008_teacher_scope_asmadrid",
+      "breakpoints": true
     }
   ]
 }
