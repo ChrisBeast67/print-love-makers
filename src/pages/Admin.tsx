@@ -192,6 +192,7 @@ const Admin = () => {
 
 
   const refreshTab = async (fn: () => Promise<void> | void) => {
+    if (tab === "audit") setAudit([]);
     try { await fn(); toast.success("Refreshed"); } catch (e: any) { toast.error(e?.message ?? "Could not refresh"); }
   };
 
