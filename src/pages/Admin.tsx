@@ -192,7 +192,16 @@ const Admin = () => {
 
 
   const refreshTab = async (fn: () => Promise<void> | void) => {
-    try { await fn(); toast.success("Refreshed"); } catch (e: any) { toast.error(e?.message ?? "Could not refresh"); }
+    try {
+      if (tab === "audit") {
+        await supabase.rpc("clear_admin_audit_log");
+        setAudit([]);
+        toast.success("Audit log cleared — next action will be logged");
+        return;
+      }
+      await fn();
+      toast.success("Refreshed");
+    } catch (e: any) { toast.error(e?.message ?? "Could not refresh"); }
   };
 
   const handleStartMusic = async () => {
