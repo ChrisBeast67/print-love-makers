@@ -8,16 +8,16 @@ export function useStaffRole() {
   const { user } = useAuth();
   const [role, setRole] = useState<StaffRole>(null);
   const [isActualOwner, setIsActualOwner] = useState(false);
-  const [loadedFor, setLoadedFor] = useState<string | null | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     if (!user) {
       setRole(null);
-      setIsActualOwner(false);
-      setLoadedFor(null);
+      setLoading(false);
       return;
     }
+    setLoading(true);
     supabase
       .from("user_roles")
       .select("role")
@@ -25,21 +25,19 @@ export function useStaffRole() {
       .then(({ data }) => {
         if (cancelled) return;
         const roles = (data ?? []).map((r) => r.role as string);
-        setIsActualOwner(roles.includes("owner"));
-        if (roles.includes("owner")) setRole("owner");
-        else if (roles.includes("deputy") || roles.includes("admin")) setRole("deputy"); // legacy admins act as deputies
+        if (roles.includes("owner")) { setRole("owner"); setIsActualOwner(true); }
+        else if (roles.includes("deputy")) { setRole("deputy"); setIsActualOwner(false); }
+        else if (roles.includes("admin")) { setRole("deputy"); setIsActualOwner(false); } // legacy admins act as deputies
         else if (roles.includes("moderator")) setRole("moderator");
         else if (roles.includes("teacher")) setRole("teacher");
         else setRole(null);
-        setLoadedFor(user.id);
+        setLoading(false);
       });
     return () => {
       cancelled = true;
     };
   }, [user]);
 
-  // Still loading until roles are fetched for the current user (avoids early redirects).
-  const loading = loadedFor !== (user?.id ?? null);
   const isStaff = role === "owner" || role === "deputy" || role === "moderator" || role === "teacher";
   const isTeacher = role === "teacher";
   const isOwner = role === "owner";

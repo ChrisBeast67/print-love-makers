@@ -30,14 +30,51 @@ export const HackerModeProvider = ({ children }: { children: ReactNode }) => {
   const [isHacked, setIsHacked] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
 
-  // Hacker mode is kept on this device only (the profile has no hacker fields).
+  // Fetch hacker status on user load
   useEffect(() => {
-    setIsHacker(false);
-    setIsOwner(false);
+    if (!user) return;
+
+    const fetchHackerStatus = async () => {
+      const { data } = await (supabase.from("profiles") as any)
+        .select("is_hacker")
+        .eq("id", user.id)
+        .single();
+      
+      setIsHacker((data as any)?.is_hacker ?? false);
+      setIsOwner(user.id === "OWNER_USER_ID" || true); // TODO: Check if owner in staff roles
+    };
+
+    fetchHackerStatus();
+
+    // Subscribe to profile changes
+    const channel = supabase
+      .channel("hacker_mode_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "profiles",
+          filter: `id=eq.${user.id}`,
+        },
+        (payload) => {
+          setIsHacker(payload.new.is_hacker ?? false);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const activateHackerMode = useCallback(async () => {
     if (!user) return;
+
+    await (supabase.from("profiles") as any)
+      .update({ is_hacker: true, hacker_since: new Date().toISOString() })
+      .eq("id", user.id);
+
     setIsHacker(true);
     triggerJumpscare();
     setIsHacked(true);
@@ -45,13 +82,21 @@ export const HackerModeProvider = ({ children }: { children: ReactNode }) => {
 
   const deactivateHackerMode = useCallback(async () => {
     if (!user) return;
+
+    await (supabase.from("profiles") as any)
+      .update({ is_hacker: false, hacker_since: null })
+      .eq("id", user.id);
+
     setIsHacker(false);
   }, [user]);
 
   const undoHack = useCallback(async () => {
-    setIsHacker(false);
+    if (!user || !isOwner) return;
+
+    // Remove hacker status from ALL users
+    await (supabase.from("profiles") as any).update({ is_hacker: false }).eq("is_hacker", true);
     setIsHacked(false);
-  }, []);
+  }, [user, isOwner]);
 
   const canRemoveHacker = useCallback(async (targetUserId: string): Promise<boolean> => {
     if (!user) return false;
