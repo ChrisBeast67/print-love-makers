@@ -5,6 +5,8 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // GitHub Pages project site lives at /print-lovemakers/ -> /print-love-makers/
+  base: '/print-love-makers/',
   server: {
     host: "::",
     port: 8080,
