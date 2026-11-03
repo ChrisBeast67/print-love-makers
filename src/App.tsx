@@ -23,12 +23,16 @@ import { GlobalMusic } from "@/components/GlobalMusic";
 
 const queryClient = new QueryClient();
 
+// Sub-path hosting (e.g. GitHub Pages project site) -> basename "/print-love-makers".
+// Root hosting (Lovable / custom domain / localhost) -> no basename.
+const routerBase = import.meta.env.BASE_URL.replace(/\/$/, '') || undefined;
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+      <BrowserRouter basename={routerBase}>
         <AuthProvider>
           <HackerModeProvider>
             <LanguageProvider>

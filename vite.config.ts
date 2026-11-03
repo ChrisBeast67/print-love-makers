@@ -5,8 +5,10 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // GitHub Pages project site lives at /print-lovemakers/ -> /print-love-makers/
-  base: '/print-love-makers/',
+  // Default: serve from the domain root (Lovable / custom domain / local).
+  // GitHub Pages project site lives under /print-love-makers/ -> build with:
+  //   BASE_PATH=/print-love-makers/ npm run build
+  base: process.env.BASE_PATH || '/',
   server: {
     host: "::",
     port: 8080,
